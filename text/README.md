@@ -10,7 +10,7 @@ We aim at having a human-readable format with minimal extra information (Paragra
 
 ### File extension
 
-Since the projects name is `Thaw` and we are dealing with a text file, the file extension should be `*.ttx`.
+Since the projects name is `Thaw` and we are dealing with a text file, the file extension should be `*.tdt` as an abbreviation of *Thaw document text*.
 
 ### Emphasis
 
