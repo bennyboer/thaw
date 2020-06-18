@@ -127,3 +127,5 @@ Multiple sources:
 ```
 This is a citation #CITE, (source-name-1, pages=34), (source-name-2, pages=54), ...#
 ```
+
+Syntax may depend on the citation style.
