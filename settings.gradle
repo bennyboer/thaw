@@ -1,0 +1,10 @@
+rootProject.name = 'thaw'
+
+include 'core'
+include 'text'
+include 'style'
+include 'reference'
+include 'info'
+include 'typeset'
+include 'export'
+include 'plugin'
