@@ -113,3 +113,17 @@ I am a paragraph having inline math formulas #MATH, \frac{1}{2}#.
 
 #MATH, \frac{1}{2}, alignment=CENTER#
 ```
+
+### Reference sources
+
+Single source:
+
+```
+This is a citation #CITE, source-name, pages=45#
+```
+
+Multiple sources:
+
+```
+This is a citation #CITE, (source-name-1, pages=34), (source-name-2, pages=54), ...#
+```
