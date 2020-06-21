@@ -72,6 +72,7 @@ public class TextTokenizer {
                     continue;
                 } else if (c == '\n') {
                     // Skip the new line character.
+                    ctx.incLineNum();
                     skippedNewLines++;
                     if (skippedNewLines == 1) {
                         // Replace with white space character

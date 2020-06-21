@@ -4,6 +4,7 @@ import de.be.thaw.text.model.element.emphasis.TextEmphasis;
 import de.be.thaw.text.tokenizer.exception.InvalidStateException;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;
 import de.be.thaw.text.tokenizer.token.FormattedToken;
+import de.be.thaw.text.tokenizer.token.ThingyToken;
 import de.be.thaw.text.tokenizer.token.Token;
 import de.be.thaw.text.tokenizer.token.TokenType;
 import de.be.thaw.text.util.TextRange;
@@ -278,6 +279,72 @@ public class TextTokenizerTest {
 
         Assertions.assertEquals(2, tokens.size());
         Assertions.assertEquals("System.out.println('This is code: \\Test\\')", tokens.get(1).getValue());
+    }
+
+    @Test
+    public void testSimpleThingy() throws TokenizeException {
+        String text = "#H1# First-level headline";
+
+        TextTokenizer tt = new TextTokenizer();
+
+        List<Token> tokens = new ArrayList<>();
+        tt.tokenize(new StringReader(text), tokens::add);
+
+        Assertions.assertEquals(2, tokens.size());
+        Assertions.assertEquals(TokenType.THINGY, tokens.get(0).getType());
+        Assertions.assertEquals(new TextRange(0, 4), tokens.get(0).getRange());
+
+        ThingyToken token = (ThingyToken) tokens.get(0);
+        Assertions.assertEquals("H1", token.getName());
+        Assertions.assertEquals(0, token.getArguments().size());
+        Assertions.assertEquals(0, token.getOptions().size());
+
+        Assertions.assertEquals(TokenType.TEXT, tokens.get(1).getType());
+        Assertions.assertEquals(new TextRange(4, text.length()), tokens.get(1).getRange());
+    }
+
+    @Test
+    public void testThingyTokenizeError1() {
+        String text = "#";
+
+        TextTokenizer tt = new TextTokenizer();
+
+        Assertions.assertThrows(InvalidStateException.class, () -> {
+            tt.tokenize(new StringReader(text), token -> {
+            });
+        });
+    }
+
+    @Test
+    public void testThingyTokenizeError2() {
+        String text = "##";
+
+        TextTokenizer tt = new TextTokenizer();
+
+        Assertions.assertThrows(InvalidStateException.class, () -> {
+            tt.tokenize(new StringReader(text), token -> {
+            });
+        });
+    }
+
+    @Test
+    public void testThingyWithArguments() {
+        // TODO
+    }
+
+    @Test
+    public void testThingyWithOptionsNoArguments() {
+        // TODO
+    }
+
+    @Test
+    public void testThingyComplex() {
+        // TODO Thingy test with multiple thingys + lines + formatting + ...
+    }
+
+    @Test
+    public void testThingyInCodeBlock() {
+        // TODO
     }
 
 }

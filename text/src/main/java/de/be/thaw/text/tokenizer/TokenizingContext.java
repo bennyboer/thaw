@@ -23,6 +23,16 @@ public class TokenizingContext {
     private int endPos = 0;
 
     /**
+     * Number of the line currently tokenizing.
+     */
+    private int lineNum = 1;
+
+    /**
+     * Offset in line where currently tokenizing.
+     */
+    private int inLineOffset = 1;
+
+    /**
      * Buffer holding the characters of the current token.
      */
     private final StringBuilder buffer = new StringBuilder();
@@ -48,6 +58,27 @@ public class TokenizingContext {
     ) {
         this.acceptor = acceptor;
         this.lookAheadFunction = lookAheadFunction;
+    }
+
+    public void incLineNum() {
+        lineNum++;
+        resetInLineOffset();
+    }
+
+    private void incInLineOffset() {
+        inLineOffset++;
+    }
+
+    private void resetInLineOffset() {
+        inLineOffset = 1;
+    }
+
+    public int getLineNum() {
+        return lineNum;
+    }
+
+    public int getInLineOffset() {
+        return inLineOffset;
     }
 
     /**
@@ -100,6 +131,7 @@ public class TokenizingContext {
      */
     public void incEndPos() {
         endPos++;
+        incInLineOffset();
     }
 
     /**
@@ -141,7 +173,7 @@ public class TokenizingContext {
      *
      * @return token value
      */
-    private String readValueAndReset() {
+    public String readValueAndReset() {
         var val = buffer.toString();
 
         buffer.setLength(0);

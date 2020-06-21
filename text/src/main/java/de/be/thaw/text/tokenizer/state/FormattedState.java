@@ -109,6 +109,11 @@ public class FormattedState implements State {
                 emphases.push(TextEmphasis.CODE);
                 yield this;
             }
+            case '#' -> { // Enter thingy block
+                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+
+                yield new ThingyState(this);
+            }
             case '\\' -> new EscapedState(this);
             default -> {
                 ctx.buffer(c);
@@ -157,6 +162,11 @@ public class FormattedState implements State {
 
                 emphases.push(TextEmphasis.CODE);
                 yield this;
+            }
+            case '#' -> { // Enter thingy block
+                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+
+                yield new ThingyState(this);
             }
             case '\\' -> new EscapedState(this);
             default -> {
@@ -223,6 +233,11 @@ public class FormattedState implements State {
 
                 emphases.push(TextEmphasis.CODE);
                 yield this;
+            }
+            case '#' -> { // Enter thingy block
+                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+
+                yield new ThingyState(this);
             }
             case '\\' -> new EscapedState(this);
             default -> {

@@ -26,6 +26,10 @@ public class TextState implements State {
                 ctx.acceptToken(value -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1)));
                 yield new FormattedState(TextEmphasis.CODE);
             }
+            case '#' -> {
+                ctx.acceptToken(value -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1)));
+                yield new ThingyState(new TextState());
+            }
             case '\\' -> new EscapedState(this);
             default -> {
                 ctx.buffer(c);
