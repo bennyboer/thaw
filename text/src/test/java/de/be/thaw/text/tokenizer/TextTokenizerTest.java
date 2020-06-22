@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TextTokenizerTest {
@@ -328,23 +329,98 @@ public class TextTokenizerTest {
     }
 
     @Test
-    public void testThingyWithArguments() {
-        // TODO
+    public void testThingyWithArguments() throws TokenizeException {
+        String text = "#H1, first-level-heading, 3, 42, hey there, \" hey there\"# First-level headline";
+
+        TextTokenizer tt = new TextTokenizer();
+
+        List<Token> tokens = new ArrayList<>();
+        tt.tokenize(new StringReader(text), tokens::add);
+
+        Assertions.assertEquals(2, tokens.size());
+
+        Assertions.assertEquals(TokenType.THINGY, tokens.get(0).getType());
+        Assertions.assertEquals(new TextRange(0, 57), tokens.get(0).getRange());
+
+        ThingyToken thingyToken = (ThingyToken) tokens.get(0);
+        Assertions.assertEquals("H1", thingyToken.getName());
+        Assertions.assertEquals(Arrays.asList("first-level-heading", "3", "42", "hey there", "\" hey there\""), thingyToken.getArguments());
+        Assertions.assertEquals(0, thingyToken.getOptions().size());
+
+        Assertions.assertEquals(" First-level headline", tokens.get(1).getValue());
+        Assertions.assertEquals(new TextRange(57, text.length()), tokens.get(1).getRange());
     }
 
     @Test
-    public void testThingyWithOptionsNoArguments() {
-        // TODO
+    public void testThingyWithOptionsNoArguments() throws TokenizeException {
+        String text = "#H1, label=first-level-headline, hey = there, key = \"hello world\"# First-level headline";
+
+        TextTokenizer tt = new TextTokenizer();
+
+        List<Token> tokens = new ArrayList<>();
+        tt.tokenize(new StringReader(text), tokens::add);
+
+        Assertions.assertEquals(2, tokens.size());
+
+        Assertions.assertEquals(TokenType.THINGY, tokens.get(0).getType());
+        Assertions.assertEquals(new TextRange(0, 66), tokens.get(0).getRange());
+
+        ThingyToken thingyToken = (ThingyToken) tokens.get(0);
+        Assertions.assertEquals("H1", thingyToken.getName());
+
+        Assertions.assertEquals(0, thingyToken.getArguments().size());
+
+        Assertions.assertEquals("first-level-headline", thingyToken.getOptions().get("label"));
+        Assertions.assertEquals("there", thingyToken.getOptions().get("hey"));
+        Assertions.assertEquals("\"hello world\"", thingyToken.getOptions().get("key"));
+
+        Assertions.assertEquals(" First-level headline", tokens.get(1).getValue());
+        Assertions.assertEquals(new TextRange(66, text.length()), tokens.get(1).getRange());
     }
 
     @Test
-    public void testThingyComplex() {
-        // TODO Thingy test with multiple thingys + lines + formatting + ...
+    public void testThingyComplex() throws TokenizeException {
+        String text = "#H1, label=headline# Headline\n" +
+                "\n" +
+                "I am a *simple* _paragraph_ with some code `COOOOODE`.\n" +
+                "Additionally I feature a lot of ***_formatting_*** to please the eye.\n" +
+                "\n" +
+                "#IMG, src=\"C:\\Users\\YOURNAME\\cool_image.png\", width=600, height=250, alignment = CENTER#\n";
+
+        TextTokenizer tt = new TextTokenizer();
+
+        List<Token> tokens = new ArrayList<>();
+        tt.tokenize(new StringReader(text), tokens::add);
+
+        Assertions.assertEquals(15, tokens.size());
+
+        ThingyToken h1Thingy = (ThingyToken) tokens.get(0);
+        Assertions.assertEquals("H1", h1Thingy.getName());
+        Assertions.assertEquals(1, h1Thingy.getOptions().size());
+
+        ThingyToken imgThingy = (ThingyToken) tokens.get(13);
+        Assertions.assertEquals("IMG", imgThingy.getName());
+        Assertions.assertEquals(0, imgThingy.getArguments().size());
+        Assertions.assertEquals(4, imgThingy.getOptions().size());
+        Assertions.assertEquals("\"C:\\Users\\YOURNAME\\cool_image.png\"", imgThingy.getOptions().get("src"));
+        Assertions.assertEquals("600", imgThingy.getOptions().get("width"));
+        Assertions.assertEquals("250", imgThingy.getOptions().get("height"));
+        Assertions.assertEquals("CENTER", imgThingy.getOptions().get("alignment"));
     }
 
     @Test
-    public void testThingyInCodeBlock() {
-        // TODO
+    public void testThingyInCodeBlock() throws TokenizeException {
+        String text = "I am a code block with a thingy in me: `#H1, label=test#`";
+
+        TextTokenizer tt = new TextTokenizer();
+
+        List<Token> tokens = new ArrayList<>();
+        tt.tokenize(new StringReader(text), tokens::add);
+
+        Assertions.assertEquals(2, tokens.size());
+
+        Assertions.assertEquals(TokenType.FORMATTED, tokens.get(1).getType());
+        Assertions.assertEquals("#H1, label=test#", tokens.get(1).getValue());
     }
 
 }
