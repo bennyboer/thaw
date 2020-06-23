@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Tokenizer for the thaw document text format.
@@ -25,6 +26,16 @@ public class TextTokenizer implements Iterator<Result<Token, TokenizeException>>
     private State currentState = new TextState();
 
     /**
+     * Amount of consecutive skipped new line characters.
+     */
+    private int skippedNewLines = 0;
+
+    /**
+     * Tokens currently buffered and ready to be received.
+     */
+    private final Queue<Token> tokenBuffer = new LinkedList<>();
+
+    /**
      * Buffer for looked ahead characters.
      */
     private final LinkedList<Integer> lookAheadBuffer = new LinkedList<>();
@@ -32,17 +43,7 @@ public class TextTokenizer implements Iterator<Result<Token, TokenizeException>>
     /**
      * Context used during tokenizing.
      */
-    private final TokenizingContext ctx = new TokenizingContext(token -> nextToken = token, this::lookAhead);
-
-    /**
-     * Amount of consecutive skipped new line characters.
-     */
-    private int skippedNewLines = 0;
-
-    /**
-     * The next token to be returned.
-     */
-    private Token nextToken;
+    private final TokenizingContext ctx = new TokenizingContext(tokenBuffer::add, this::lookAhead);
 
     /**
      * The reader to read the text to be tokenized from.
@@ -58,12 +59,12 @@ public class TextTokenizer implements Iterator<Result<Token, TokenizeException>>
 
     @Override
     public boolean hasNext() {
-        return nextToken != null;
+        return !tokenBuffer.isEmpty();
     }
 
     @Override
     public Result<Token, TokenizeException> next() {
-        Token toReturn = nextToken;
+        Token toReturn = tokenBuffer.poll();
 
         try {
             tokenizeNext();
@@ -78,11 +79,11 @@ public class TextTokenizer implements Iterator<Result<Token, TokenizeException>>
      * Tokenize the next token.
      */
     private void tokenizeNext() throws TokenizeException {
-        nextToken = null;
+        int oldLen = tokenBuffer.size();
 
         int c = -1;
         try {
-            while (nextToken == null && (c = lookAheadBuffer.isEmpty() ? reader.read() : lookAheadBuffer.poll()) != -1) {
+            while (tokenBuffer.size() == oldLen && (c = lookAheadBuffer.isEmpty() ? reader.read() : lookAheadBuffer.poll()) != -1) {
                 if (ctx.getIgnoreCounter() > 0) {
                     ctx.decrementIgnoreCounter();
                     continue;
@@ -107,13 +108,18 @@ public class TextTokenizer implements Iterator<Result<Token, TokenizeException>>
                         }
                     }
                     continue;
-                } else if (skippedNewLines > 1) {
-                    // One or more empty lines occurred -> force end the current state
-                    skippedNewLines = 0;
-                    ctx.buffer('\n');
-                    ctx.buffer('\n');
-                    ctx.acceptToken(v -> new EmptyLineToken(v, new TextRange(ctx.getStartPos(), ctx.getEndPos())));
-                    currentState = new TextState();
+                } else if (skippedNewLines > 0) {
+                    // One or more empty lines occurred
+                    boolean multipleNewLineSkips = skippedNewLines > 1;
+
+                    skippedNewLines = 0; // Reset
+
+                    if (multipleNewLineSkips) {
+                        ctx.buffer('\n');
+                        ctx.buffer('\n');
+                        ctx.acceptToken(v -> new EmptyLineToken(v, new TextRange(ctx.getStartPos(), ctx.getEndPos())));
+                        currentState = new TextState();
+                    }
                 }
 
                 currentState = currentState.translate((char) c, ctx);

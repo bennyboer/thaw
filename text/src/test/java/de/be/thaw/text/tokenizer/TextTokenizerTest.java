@@ -2,10 +2,7 @@ package de.be.thaw.text.tokenizer;
 
 import de.be.thaw.text.model.element.emphasis.TextEmphasis;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;
-import de.be.thaw.text.tokenizer.token.FormattedToken;
-import de.be.thaw.text.tokenizer.token.ThingyToken;
-import de.be.thaw.text.tokenizer.token.Token;
-import de.be.thaw.text.tokenizer.token.TokenType;
+import de.be.thaw.text.tokenizer.token.*;
 import de.be.thaw.text.tokenizer.util.result.Result;
 import de.be.thaw.text.util.TextRange;
 import org.junit.jupiter.api.Assertions;
@@ -63,11 +60,11 @@ public class TextTokenizerTest {
 
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
-        Assertions.assertEquals("Hello World! I am a multi line string!", tokens.get(0).getValue());
-        Assertions.assertEquals(new TextRange(0, 39), tokens.get(0).getRange());
+        Assertions.assertEquals("Hello World! I am a multi line string! ", tokens.get(0).getValue());
+        Assertions.assertEquals(new TextRange(0, 40), tokens.get(0).getRange());
 
         Assertions.assertEquals(TokenType.EMPTY_LINE, tokens.get(1).getType());
-        Assertions.assertEquals(new TextRange(39, 44), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextRange(40, 44), tokens.get(1).getRange());
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(2).getType());
         Assertions.assertEquals("With multiple empty lines.", tokens.get(2).getValue());
@@ -217,13 +214,13 @@ public class TextTokenizerTest {
         Assertions.assertTrue(((FormattedToken) tokens.get(1)).getEmphases().contains(TextEmphasis.UNDERLINED));
         Assertions.assertTrue(((FormattedToken) tokens.get(1)).getEmphases().contains(TextEmphasis.ITALIC));
 
-        Assertions.assertEquals(TokenType.FORMATTED, tokens.get(8).getType());
-        Assertions.assertEquals("anyone", tokens.get(8).getValue());
-        Assertions.assertEquals(new TextRange(90, 98), tokens.get(8).getRange());
-        Assertions.assertEquals(3, ((FormattedToken) tokens.get(8)).getEmphases().size());
-        Assertions.assertTrue(((FormattedToken) tokens.get(8)).getEmphases().contains(TextEmphasis.UNDERLINED));
-        Assertions.assertTrue(((FormattedToken) tokens.get(8)).getEmphases().contains(TextEmphasis.ITALIC));
-        Assertions.assertTrue(((FormattedToken) tokens.get(8)).getEmphases().contains(TextEmphasis.BOLD));
+        Assertions.assertEquals(TokenType.FORMATTED, tokens.get(9).getType());
+        Assertions.assertEquals("anyone", tokens.get(9).getValue());
+        Assertions.assertEquals(new TextRange(90, 98), tokens.get(9).getRange());
+        Assertions.assertEquals(3, ((FormattedToken) tokens.get(9)).getEmphases().size());
+        Assertions.assertTrue(((FormattedToken) tokens.get(9)).getEmphases().contains(TextEmphasis.UNDERLINED));
+        Assertions.assertTrue(((FormattedToken) tokens.get(9)).getEmphases().contains(TextEmphasis.ITALIC));
+        Assertions.assertTrue(((FormattedToken) tokens.get(9)).getEmphases().contains(TextEmphasis.BOLD));
     }
 
     @Test
@@ -378,6 +375,75 @@ public class TextTokenizerTest {
 
         Assertions.assertEquals(TokenType.FORMATTED, tokens.get(1).getType());
         Assertions.assertEquals("#H1, label=test#", tokens.get(1).getValue());
+    }
+
+    @Test
+    public void testSimpleEnumeration() throws TokenizeException {
+        String text = "Hello world\n" +
+                "- Hello\n" +
+                "  - World";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(5, tokens.size());
+
+        Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
+        Assertions.assertEquals("Hello world ", tokens.get(0).getValue());
+        Assertions.assertEquals(new TextRange(0, 12), tokens.get(0).getRange());
+
+        Assertions.assertEquals(TokenType.ENUMERATION_ITEM_START, tokens.get(1).getType());
+        Assertions.assertEquals("-", tokens.get(1).getValue());
+        Assertions.assertEquals(new TextRange(12, 14), tokens.get(1).getRange());
+        Assertions.assertEquals(0, ((EnumerationItemStartToken) tokens.get(1)).getIndent());
+
+        Assertions.assertEquals(TokenType.TEXT, tokens.get(2).getType());
+        Assertions.assertEquals("Hello ", tokens.get(2).getValue());
+        Assertions.assertEquals(new TextRange(14, 20), tokens.get(2).getRange());
+
+        Assertions.assertEquals(TokenType.ENUMERATION_ITEM_START, tokens.get(3).getType());
+        Assertions.assertEquals("-", tokens.get(3).getValue());
+        Assertions.assertEquals(new TextRange(20, 24), tokens.get(3).getRange());
+        Assertions.assertEquals(2, ((EnumerationItemStartToken) tokens.get(3)).getIndent());
+
+        Assertions.assertEquals(TokenType.TEXT, tokens.get(4).getType());
+        Assertions.assertEquals("World", tokens.get(4).getValue());
+        Assertions.assertEquals(new TextRange(24, text.length()), tokens.get(4).getRange());
+    }
+
+    @Test
+    public void testComplexEnumeration() throws TokenizeException {
+        String text = "#H1, label=headline# A complex enumeration\n" +
+                "\n" +
+                "The following enumeration is complex!\n" +
+                "- A\n" +
+                "- B\n" +
+                "  - a)\n" +
+                "  - b)\n" +
+                "- C\n" +
+                "  - a)\n" +
+                "    - 1.\n" +
+                "    - 2.\n" +
+                "  - b)\n";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(22, tokens.size());
+
+        EnumerationItemStartToken token = (EnumerationItemStartToken) tokens.get(18);
+
+        Assertions.assertEquals(TokenType.ENUMERATION_ITEM_START, token.getType());
+        Assertions.assertEquals(4, token.getIndent());
+    }
+
+    @Test
+    public void testNoEnumeration() throws TokenizeException {
+        String text = "The following enumeration is no enumeration!\n" +
+                "-A\n" +
+                "-B\n";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(1, tokens.size());
     }
 
 }

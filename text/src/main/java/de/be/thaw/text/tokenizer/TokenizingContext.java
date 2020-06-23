@@ -153,6 +153,16 @@ public class TokenizingContext {
     }
 
     /**
+     * Get char in buffer at the passed index.
+     *
+     * @param index to get char in buffer
+     * @return char at the passed index
+     */
+    public char bufferCharAt(int index) {
+        return buffer.charAt(index);
+    }
+
+    /**
      * Accept the current token.
      *
      * @param tokenGenerator generating a token

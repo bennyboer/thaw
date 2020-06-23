@@ -8,6 +8,7 @@ public enum TokenType {
     EMPTY_LINE,
     TEXT,
     FORMATTED,
-    THINGY
+    THINGY,
+    ENUMERATION_ITEM_START
 
 }
