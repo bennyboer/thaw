@@ -1,7 +1,7 @@
 package de.be.thaw.text.tokenizer.util;
 
 /**
- * A function functional interface that will rethrow exception.s
+ * A function functional interface that will rethrow exceptions.
  *
  * @param <T> parameter type
  * @param <R> result type

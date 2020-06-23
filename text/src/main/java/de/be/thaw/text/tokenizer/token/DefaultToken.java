@@ -32,4 +32,9 @@ public abstract class DefaultToken implements Token {
         return range;
     }
 
+    @Override
+    public String toString() {
+        return String.format("[%s] %s, '%s'", getType().name(), getRange(), getValue());
+    }
+
 }

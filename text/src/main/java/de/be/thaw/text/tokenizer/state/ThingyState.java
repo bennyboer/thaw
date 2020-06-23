@@ -129,6 +129,13 @@ public class ThingyState implements State {
         throw new InvalidStateException("Anticipated thingy end '#' before text end");
     }
 
+    @Override
+    public State onNewLine(TokenizingContext ctx) throws InvalidStateException {
+        // Thingy is able to stretch over multiple lines. New line is replaced with white space character.
+        ctx.buffer(' ');
+        return this;
+    }
+
     /**
      * Internal state of the thingy state.
      */

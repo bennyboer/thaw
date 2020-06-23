@@ -39,4 +39,11 @@ public class EscapedState implements State {
         returnState.forceEnd(ctx);
     }
 
+    @Override
+    public State onNewLine(TokenizingContext ctx) throws InvalidStateException {
+        ctx.buffer('\\');
+        ctx.buffer(' '); // Add white space instead of new line character
+        return returnState;
+    }
+
 }

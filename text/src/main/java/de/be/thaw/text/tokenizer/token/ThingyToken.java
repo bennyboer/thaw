@@ -50,4 +50,15 @@ public class ThingyToken extends DefaultToken {
         return options;
     }
 
+    @Override
+    public String toString() {
+        return String.format(
+                "%s > Name: '%s', Args: %s, Options: %s",
+                super.toString(),
+                getName(),
+                getArguments(),
+                getOptions()
+        );
+    }
+
 }

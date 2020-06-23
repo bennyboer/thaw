@@ -1,64 +1,88 @@
 package de.be.thaw.text.tokenizer;
 
+import de.be.thaw.text.tokenizer.exception.InvalidStateException;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;
 import de.be.thaw.text.tokenizer.state.State;
 import de.be.thaw.text.tokenizer.state.TextState;
 import de.be.thaw.text.tokenizer.token.EmptyLineToken;
 import de.be.thaw.text.tokenizer.token.Token;
+import de.be.thaw.text.tokenizer.util.result.Result;
 import de.be.thaw.text.util.TextRange;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.function.Consumer;
 
 /**
  * Tokenizer for the thaw document text format.
  */
-public class TextTokenizer {
+public class TextTokenizer implements Iterator<Result<Token, TokenizeException>> {
 
     /**
-     * Tokenize the text represented by the passed reader.
-     * Accepted tokens are published over the passed consumer.
-     *
-     * @param reader        to read the text
-     * @param tokenConsumer where tokens are published with
-     * @throws TokenizeException in case a problem occurs
+     * The current tokenizer state.
      */
-    public void tokenize(Reader reader, Consumer<Token> tokenConsumer) throws TokenizeException {
-        State currentState = new TextState();
+    private State currentState = new TextState();
 
-        // Create tokenizing context used as interface for states to influence the reading process/accepting tokens, ...
-        LinkedList<Integer> lookAheadBuffer = new LinkedList<>();
-        TokenizingContext ctx = new TokenizingContext(
-                tokenConsumer,
-                relativePos -> {
-                    if (relativePos <= 0) {
-                        throw new IllegalArgumentException("Cannot lookahead 0 or less characters");
-                    }
+    /**
+     * Buffer for looked ahead characters.
+     */
+    private final LinkedList<Integer> lookAheadBuffer = new LinkedList<>();
 
-                    int toReadCount = relativePos - lookAheadBuffer.size();
-                    for (int i = 0; i < toReadCount; i++) {
-                        try {
-                            int next = reader.read();
-                            if (next == -1) {
-                                return -1; // End of stream reached
-                            }
+    /**
+     * Context used during tokenizing.
+     */
+    private final TokenizingContext ctx = new TokenizingContext(token -> nextToken = token, this::lookAhead);
 
-                            lookAheadBuffer.add(next);
-                        } catch (IOException e) {
-                            throw new TokenizeException(e);
-                        }
-                    }
+    /**
+     * Amount of consecutive skipped new line characters.
+     */
+    private int skippedNewLines = 0;
 
-                    return lookAheadBuffer.get(relativePos - 1);
-                }
-        );
+    /**
+     * The next token to be returned.
+     */
+    private Token nextToken;
 
-        int skippedNewLines = 0;
-        int c;
+    /**
+     * The reader to read the text to be tokenized from.
+     */
+    private final Reader reader;
+
+    public TextTokenizer(Reader reader) throws TokenizeException {
+        this.reader = reader;
+
+        // Get initial token
+        tokenizeNext();
+    }
+
+    @Override
+    public boolean hasNext() {
+        return nextToken != null;
+    }
+
+    @Override
+    public Result<Token, TokenizeException> next() {
+        Token toReturn = nextToken;
+
         try {
-            while ((c = lookAheadBuffer.isEmpty() ? reader.read() : lookAheadBuffer.poll()) != -1) {
+            tokenizeNext();
+        } catch (TokenizeException e) {
+            return Result.error(e);
+        }
+
+        return Result.success(toReturn);
+    }
+
+    /**
+     * Tokenize the next token.
+     */
+    private void tokenizeNext() throws TokenizeException {
+        nextToken = null;
+
+        int c = -1;
+        try {
+            while (nextToken == null && (c = lookAheadBuffer.isEmpty() ? reader.read() : lookAheadBuffer.poll()) != -1) {
                 if (ctx.getIgnoreCounter() > 0) {
                     ctx.decrementIgnoreCounter();
                     continue;
@@ -75,14 +99,14 @@ public class TextTokenizer {
                     ctx.incLineNum();
                     skippedNewLines++;
                     if (skippedNewLines == 1) {
-                        // Replace with white space character
-                        c = ' ';
+                        // Let state handle new line character
+                        currentState = currentState.onNewLine(ctx);
                     } else {
                         if (ctx.bufferLength() > 0) {
                             currentState.forceEnd(ctx);
                         }
-                        continue;
                     }
+                    continue;
                 } else if (skippedNewLines > 1) {
                     // One or more empty lines occurred -> force end the current state
                     skippedNewLines = 0;
@@ -94,12 +118,44 @@ public class TextTokenizer {
 
                 currentState = currentState.translate((char) c, ctx);
             }
-        } catch (IOException e) {
+
+            if (c == -1) {
+                // Create last dangling token (if any).
+                currentState.forceEnd(ctx);
+            }
+        } catch (IOException | InvalidStateException e) {
             throw new TokenizeException(e);
         }
+    }
 
-        // Create last dangling token (if any).
-        currentState.forceEnd(ctx);
+    /**
+     * Look ahead the character at the passed relativePos.
+     * Where relativePos = 1 means the next character.
+     *
+     * @param relativePos to look ahead
+     * @return the character at the passed relative position or -1 if the end of the stream has been reached
+     * @throws TokenizeException in case looking ahead went wrong
+     */
+    private int lookAhead(int relativePos) throws TokenizeException {
+        if (relativePos <= 0) {
+            throw new IllegalArgumentException("Cannot lookahead 0 or less characters");
+        }
+
+        int toReadCount = relativePos - lookAheadBuffer.size();
+        for (int i = 0; i < toReadCount; i++) {
+            try {
+                int next = reader.read();
+                if (next == -1) {
+                    return -1; // End of stream reached
+                }
+
+                lookAheadBuffer.add(next);
+            } catch (IOException e) {
+                throw new TokenizeException(e);
+            }
+        }
+
+        return lookAheadBuffer.get(relativePos - 1);
     }
 
 }

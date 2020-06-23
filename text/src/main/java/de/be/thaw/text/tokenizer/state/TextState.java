@@ -44,4 +44,11 @@ public class TextState implements State {
         ctx.acceptToken(value -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos())));
     }
 
+    @Override
+    public State onNewLine(TokenizingContext ctx) throws InvalidStateException {
+        // State ignores new line character and replaces it with a white space character
+        ctx.buffer(' ');
+        return this;
+    }
+
 }

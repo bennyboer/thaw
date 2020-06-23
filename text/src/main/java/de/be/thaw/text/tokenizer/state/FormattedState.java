@@ -51,6 +51,13 @@ public class FormattedState implements State {
         );
     }
 
+    @Override
+    public State onNewLine(TokenizingContext ctx) throws InvalidStateException {
+        // State does ignore new lines -> Add white space instead of new line character
+        ctx.buffer(' ');
+        return this;
+    }
+
     /**
      * Handle the translation when a code emphasis is the uppermost emphasis.
      *

@@ -1,12 +1,12 @@
 package de.be.thaw.text.tokenizer;
 
 import de.be.thaw.text.model.element.emphasis.TextEmphasis;
-import de.be.thaw.text.tokenizer.exception.InvalidStateException;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;
 import de.be.thaw.text.tokenizer.token.FormattedToken;
 import de.be.thaw.text.tokenizer.token.ThingyToken;
 import de.be.thaw.text.tokenizer.token.Token;
 import de.be.thaw.text.tokenizer.token.TokenType;
+import de.be.thaw.text.tokenizer.util.result.Result;
 import de.be.thaw.text.util.TextRange;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -18,15 +18,35 @@ import java.util.List;
 
 public class TextTokenizerTest {
 
+    /**
+     * Helper method to tokenize the passed string.
+     *
+     * @param s to tokenize
+     * @return the list of tokens
+     * @throws TokenizeException in case tokenizing went wrong
+     */
+    private List<Token> tokenize(String s) throws TokenizeException {
+        TextTokenizer tt = new TextTokenizer(new StringReader(s));
+
+        List<Token> result = new ArrayList<>();
+        while (tt.hasNext()) {
+            Result<Token, TokenizeException> r = tt.next();
+
+            if (r.isError()) {
+                throw r.error();
+            } else {
+                result.add(r.result());
+            }
+        }
+        return result;
+    }
+
     @Test
     public void testSimple() throws TokenizeException {
         // Testing look ahead logic by using the ** bold modifier where a look ahead is necessary.
         String text = "Hello World!";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(1, tokens.size());
         Assertions.assertEquals("Hello World!", tokens.get(0).getValue());
@@ -39,10 +59,7 @@ public class TextTokenizerTest {
         // Testing look ahead logic by using the ** bold modifier where a look ahead is necessary.
         String text = "Hello World!\nI am a multi line string!\n\n\n\n\nWith multiple empty lines.";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
@@ -61,10 +78,7 @@ public class TextTokenizerTest {
     public void testItalicFormatting() throws TokenizeException {
         String text = "Hel*lo Wor*ld!";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
@@ -85,10 +99,7 @@ public class TextTokenizerTest {
     public void testBoldFormatting() throws TokenizeException {
         String text = "Hel**lo Wor**ld!";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
@@ -110,10 +121,7 @@ public class TextTokenizerTest {
         // Testing look ahead logic by using the ** bold modifier where a look ahead is necessary.
         String text = "Hello **World**!";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Token token = tokens.get(1);
         Assertions.assertTrue(token instanceof FormattedToken);
@@ -129,10 +137,7 @@ public class TextTokenizerTest {
     public void testUnderlineFormatting() throws TokenizeException {
         String text = "Hel_lo Wor_ld!";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
@@ -153,10 +158,7 @@ public class TextTokenizerTest {
     public void testCodeFormatting() throws TokenizeException {
         String text = "Hel`lo Wor`ld!";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
@@ -177,10 +179,7 @@ public class TextTokenizerTest {
     public void testCodeIsOverlayingEveryFormatting() throws TokenizeException {
         String text = "Hel**`l_o_ Wor`**ld!";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
@@ -205,10 +204,7 @@ public class TextTokenizerTest {
                 "\n" +
                 "Why would _***anyone***_ format **_*using*_** `UNDERLINE`?\n";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
         Assertions.assertEquals("This is kind of a ", tokens.get(0).getValue());
@@ -231,26 +227,18 @@ public class TextTokenizerTest {
     }
 
     @Test
-    public void testIncompleteFormatting() throws TokenizeException {
+    public void testIncompleteFormatting() {
         String text = "Hel`lo World!";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        Assertions.assertThrows(InvalidStateException.class, () -> {
-            tt.tokenize(new StringReader(text), token -> {
-            });
-        });
+        Assertions.assertThrows(TokenizeException.class, () -> tokenize(text));
     }
 
     @Test
     public void testEscaping() throws TokenizeException {
         String[] texts = {"Hel\\`lo World!", "Hel\\*lo World!", "Hel\\_lo World!", "Hel\\#lo World!"};
 
-        TextTokenizer tt = new TextTokenizer();
-
         for (String text : texts) {
-            List<Token> tokens = new ArrayList<>();
-            tt.tokenize(new StringReader(text), tokens::add);
+            List<Token> tokens = tokenize(text);
 
             Assertions.assertEquals(1, tokens.size());
         }
@@ -260,10 +248,7 @@ public class TextTokenizerTest {
     public void testEscapingInCode() throws TokenizeException {
         String text = "This is code: `System.out.println('This is code: \\`Test\\`')`";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(2, tokens.size());
         Assertions.assertEquals("System.out.println('This is code: `Test`')", tokens.get(1).getValue());
@@ -273,10 +258,7 @@ public class TextTokenizerTest {
     public void testFakeEscape() throws TokenizeException {
         String text = "This is code: `System.out.println('This is code: \\Test\\')`";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(2, tokens.size());
         Assertions.assertEquals("System.out.println('This is code: \\Test\\')", tokens.get(1).getValue());
@@ -286,10 +268,7 @@ public class TextTokenizerTest {
     public void testSimpleThingy() throws TokenizeException {
         String text = "#H1# First-level headline";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(2, tokens.size());
         Assertions.assertEquals(TokenType.THINGY, tokens.get(0).getType());
@@ -308,34 +287,21 @@ public class TextTokenizerTest {
     public void testThingyTokenizeError1() {
         String text = "#";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        Assertions.assertThrows(InvalidStateException.class, () -> {
-            tt.tokenize(new StringReader(text), token -> {
-            });
-        });
+        Assertions.assertThrows(TokenizeException.class, () -> tokenize(text));
     }
 
     @Test
     public void testThingyTokenizeError2() {
         String text = "##";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        Assertions.assertThrows(InvalidStateException.class, () -> {
-            tt.tokenize(new StringReader(text), token -> {
-            });
-        });
+        Assertions.assertThrows(TokenizeException.class, () -> tokenize(text));
     }
 
     @Test
     public void testThingyWithArguments() throws TokenizeException {
         String text = "#H1, first-level-heading, 3, 42, hey there, \" hey there\"# First-level headline";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(2, tokens.size());
 
@@ -355,10 +321,7 @@ public class TextTokenizerTest {
     public void testThingyWithOptionsNoArguments() throws TokenizeException {
         String text = "#H1, label=first-level-headline, hey = there, key = \"hello world\"# First-level headline";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(2, tokens.size());
 
@@ -387,10 +350,7 @@ public class TextTokenizerTest {
                 "\n" +
                 "#IMG, src=\"C:\\Users\\YOURNAME\\cool_image.png\", width=600, height=250, alignment = CENTER#\n";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(15, tokens.size());
 
@@ -412,10 +372,7 @@ public class TextTokenizerTest {
     public void testThingyInCodeBlock() throws TokenizeException {
         String text = "I am a code block with a thingy in me: `#H1, label=test#`";
 
-        TextTokenizer tt = new TextTokenizer();
-
-        List<Token> tokens = new ArrayList<>();
-        tt.tokenize(new StringReader(text), tokens::add);
+        List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(2, tokens.size());
 

@@ -26,4 +26,13 @@ public interface State {
      */
     void forceEnd(TokenizingContext ctx) throws InvalidStateException;
 
+    /**
+     * Called on a new line character.
+     *
+     * @param ctx the tokenizing context
+     * @return another state to translate to
+     * @throws InvalidStateException in case a new line is not allowed
+     */
+    State onNewLine(TokenizingContext ctx) throws InvalidStateException;
+
 }
