@@ -73,9 +73,10 @@ public class ThingyState implements State {
 
                 // Add fake value to buffer in order to be able to accept a token
                 ctx.buffer('#');
-                ctx.acceptToken(value -> new ThingyToken(
+                ctx.acceptToken((value, pos) -> new ThingyToken(
                         value,
                         new TextRange(ctx.getStartPos(), ctx.getEndPos()),
+                        pos,
                         name,
                         arguments,
                         options

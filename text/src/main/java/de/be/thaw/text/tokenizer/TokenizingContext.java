@@ -3,9 +3,10 @@ package de.be.thaw.text.tokenizer;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;
 import de.be.thaw.text.tokenizer.token.Token;
 import de.be.thaw.text.tokenizer.util.RethrowingFunction;
+import de.be.thaw.text.util.TextPosition;
 
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * Current tokenizing context used during tokenizing.
@@ -23,6 +24,11 @@ public class TokenizingContext {
     private int endPos = 0;
 
     /**
+     * Number of the line the current token started.
+     */
+    private int startLineNum = 1;
+
+    /**
      * Number of the line currently tokenizing.
      */
     private int lineNum = 1;
@@ -31,6 +37,11 @@ public class TokenizingContext {
      * Offset in line where currently tokenizing.
      */
     private int inLineOffset = 1;
+
+    /**
+     * In line offset at the start of a token.
+     */
+    private int startInLineOffset = 1;
 
     /**
      * Buffer holding the characters of the current token.
@@ -114,6 +125,14 @@ public class TokenizingContext {
         return startPos;
     }
 
+    public int getStartLineNum() {
+        return startLineNum;
+    }
+
+    public int getStartInLineOffset() {
+        return startInLineOffset;
+    }
+
     public void setStartPos(int startPos) {
         this.startPos = startPos;
     }
@@ -167,15 +186,18 @@ public class TokenizingContext {
      *
      * @param tokenGenerator generating a token
      */
-    public void acceptToken(Function<String, Token> tokenGenerator) {
+    public void acceptToken(BiFunction<String, TextPosition, Token> tokenGenerator) {
         String value = readValueAndReset();
+        TextPosition position = new TextPosition(getStartLineNum(), getLineNum(), getStartInLineOffset(), getInLineOffset());
 
-        Token token = tokenGenerator.apply(value);
+        Token token = tokenGenerator.apply(value, position);
         if (!value.isEmpty()) {
             acceptor.accept(token);
         }
 
         setStartPos(token.getRange().getEnd());
+        startLineNum = lineNum;
+        startInLineOffset = inLineOffset;
     }
 
     /**

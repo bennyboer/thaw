@@ -1,5 +1,6 @@
 package de.be.thaw.text.tokenizer.token;
 
+import de.be.thaw.text.util.TextPosition;
 import de.be.thaw.text.util.TextRange;
 
 import java.util.Collection;
@@ -25,8 +26,8 @@ public class ThingyToken extends DefaultToken {
      */
     private final Map<String, String> options;
 
-    public ThingyToken(String value, TextRange range, String name, Collection<String> arguments, Map<String, String> options) {
-        super(value, range);
+    public ThingyToken(String value, TextRange range, TextPosition position, String name, Collection<String> arguments, Map<String, String> options) {
+        super(value, range, position);
 
         this.name = name;
         this.arguments = arguments;

@@ -1,5 +1,6 @@
 package de.be.thaw.text.tokenizer.token;
 
+import de.be.thaw.text.util.TextPosition;
 import de.be.thaw.text.util.TextRange;
 
 /**
@@ -12,8 +13,8 @@ public class EnumerationItemStartToken extends DefaultToken {
      */
     private final int indent;
 
-    public EnumerationItemStartToken(String value, TextRange range, int indent) {
-        super(value, range);
+    public EnumerationItemStartToken(String value, TextRange range, TextPosition position, int indent) {
+        super(value, range, position);
 
         this.indent = indent;
     }

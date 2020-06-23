@@ -18,19 +18,19 @@ public class TextState implements State {
     public State translate(char c, TokenizingContext ctx) throws InvalidStateException {
         return switch (c) {
             case '*' -> {
-                ctx.acceptToken(value -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1)));
+                ctx.acceptToken((value, pos) -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos));
                 yield new FormattedState(TextEmphasis.ITALIC);
             }
             case '_' -> {
-                ctx.acceptToken(value -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1)));
+                ctx.acceptToken((value, pos) -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos));
                 yield new FormattedState(TextEmphasis.UNDERLINED);
             }
             case '`' -> {
-                ctx.acceptToken(value -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1)));
+                ctx.acceptToken((value, pos) -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos));
                 yield new FormattedState(TextEmphasis.CODE);
             }
             case '#' -> {
-                ctx.acceptToken(value -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1)));
+                ctx.acceptToken((value, pos) -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos));
                 yield new ThingyState(new TextState());
             }
             case '-' -> {
@@ -54,10 +54,10 @@ public class TextState implements State {
                         int curEndPos = ctx.getEndPos();
 
                         // Accept text token first
-                        ctx.acceptToken(value -> new TextToken(value.substring(0, value.length() - indent), new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1 - indent)));
+                        ctx.acceptToken((value, pos) -> new TextToken(value.substring(0, value.length() - indent), new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1 - indent), pos));
 
                         ctx.buffer('-'); // Buffer symbolic enumeration character
-                        ctx.acceptToken(value -> new EnumerationItemStartToken(value, new TextRange(ctx.getStartPos(), curEndPos + 1), indent));
+                        ctx.acceptToken((value, pos) -> new EnumerationItemStartToken(value, new TextRange(ctx.getStartPos(), curEndPos + 1), pos, indent));
                         ctx.setEndPos(curEndPos + 1);
 
                         yield this;
@@ -79,7 +79,7 @@ public class TextState implements State {
     @Override
     public void forceEnd(TokenizingContext ctx) throws InvalidStateException {
         // Read end is always OK for the text state -> just accepting the last dangling token
-        ctx.acceptToken(value -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos())));
+        ctx.acceptToken((value, pos) -> new TextToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), pos));
     }
 
     @Override

@@ -117,7 +117,7 @@ public class TextTokenizer implements Iterator<Result<Token, TokenizeException>>
                     if (multipleNewLineSkips) {
                         ctx.buffer('\n');
                         ctx.buffer('\n');
-                        ctx.acceptToken(v -> new EmptyLineToken(v, new TextRange(ctx.getStartPos(), ctx.getEndPos())));
+                        ctx.acceptToken((v, pos) -> new EmptyLineToken(v, new TextRange(ctx.getStartPos(), ctx.getEndPos()), pos));
                         currentState = new TextState();
                     }
                 }

@@ -58,7 +58,7 @@ public final class TextRange {
 
     @Override
     public String toString() {
-        return String.format("[%d; %d[", start, end);
+        return String.format("[%d; %d[", getStart(), getEnd());
     }
 
 }

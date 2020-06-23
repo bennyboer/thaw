@@ -1,5 +1,6 @@
 package de.be.thaw.text.tokenizer.token;
 
+import de.be.thaw.text.util.TextPosition;
 import de.be.thaw.text.util.TextRange;
 
 /**
@@ -7,8 +8,8 @@ import de.be.thaw.text.util.TextRange;
  */
 public class EmptyLineToken extends DefaultToken {
 
-    public EmptyLineToken(String value, TextRange range) {
-        super(value, range);
+    public EmptyLineToken(String value, TextRange range, TextPosition position) {
+        super(value, range, position);
     }
 
     @Override

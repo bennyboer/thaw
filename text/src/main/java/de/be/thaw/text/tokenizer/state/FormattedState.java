@@ -68,7 +68,7 @@ public class FormattedState implements State {
     private State handleCode(char c, TokenizingContext ctx) {
         return switch (c) {
             case '`' -> { // End code emphasis
-                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), Collections.singleton(TextEmphasis.CODE)));
+                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), pos, Collections.singleton(TextEmphasis.CODE)));
 
                 emphases.pop();
                 if (emphases.isEmpty()) {
@@ -95,7 +95,7 @@ public class FormattedState implements State {
     private State handleUnderlined(char c, TokenizingContext ctx) {
         return switch (c) {
             case '_' -> { // End underline emphasis
-                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), Set.copyOf(emphases)));
+                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), pos, Set.copyOf(emphases)));
 
                 emphases.pop();
                 if (emphases.isEmpty()) {
@@ -105,19 +105,19 @@ public class FormattedState implements State {
                 }
             }
             case '*' -> { // Enter italic block
-                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
 
                 emphases.push(TextEmphasis.ITALIC);
                 yield this;
             }
             case '`' -> { // Enter code block
-                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
 
                 emphases.push(TextEmphasis.CODE);
                 yield this;
             }
             case '#' -> { // Enter thingy block
-                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
 
                 yield new ThingyState(this);
             }
@@ -148,7 +148,7 @@ public class FormattedState implements State {
                     yield this;
                 } else {
                     // End the italic block
-                    ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), Set.copyOf(emphases)));
+                    ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), pos, Set.copyOf(emphases)));
 
                     emphases.pop();
                     if (emphases.isEmpty()) {
@@ -159,19 +159,19 @@ public class FormattedState implements State {
                 }
             }
             case '_' -> { // Enter underline block
-                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
 
                 emphases.push(TextEmphasis.UNDERLINED);
                 yield this;
             }
             case '`' -> { // Enter code block
-                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
 
                 emphases.push(TextEmphasis.CODE);
                 yield this;
             }
             case '#' -> { // Enter thingy block
-                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
 
                 yield new ThingyState(this);
             }
@@ -213,7 +213,7 @@ public class FormattedState implements State {
                     ctx.incEndPos();
 
                     // End the bold block
-                    ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), Set.copyOf(emphases)));
+                    ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), pos, Set.copyOf(emphases)));
 
                     emphases.pop();
                     if (emphases.isEmpty()) {
@@ -223,26 +223,26 @@ public class FormattedState implements State {
                     }
                 } else {
                     // Start new italic block
-                    ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+                    ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
 
                     emphases.push(TextEmphasis.ITALIC);
                     yield this;
                 }
             }
             case '_' -> { // Enter underline block
-                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
 
                 emphases.push(TextEmphasis.UNDERLINED);
                 yield this;
             }
             case '`' -> { // Enter code block
-                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
 
                 emphases.push(TextEmphasis.CODE);
                 yield this;
             }
             case '#' -> { // Enter thingy block
-                ctx.acceptToken(value -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), Set.copyOf(emphases)));
+                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
 
                 yield new ThingyState(this);
             }

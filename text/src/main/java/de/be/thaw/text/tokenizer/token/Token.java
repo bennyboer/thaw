@@ -1,5 +1,6 @@
 package de.be.thaw.text.tokenizer.token;
 
+import de.be.thaw.text.util.TextPosition;
 import de.be.thaw.text.util.TextRange;
 
 /**
@@ -20,6 +21,13 @@ public interface Token {
      * @return range
      */
     TextRange getRange();
+
+    /**
+     * Get the tokens original text position.
+     *
+     * @return position
+     */
+    TextPosition getPosition();
 
     /**
      * Get the type.

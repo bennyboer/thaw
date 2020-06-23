@@ -1,5 +1,6 @@
 package de.be.thaw.text.tokenizer.token;
 
+import de.be.thaw.text.util.TextPosition;
 import de.be.thaw.text.util.TextRange;
 
 /**
@@ -7,8 +8,8 @@ import de.be.thaw.text.util.TextRange;
  */
 public class TextToken extends DefaultToken {
 
-    public TextToken(String value, TextRange range) {
-        super(value, range);
+    public TextToken(String value, TextRange range, TextPosition position) {
+        super(value, range, position);
     }
 
     @Override
