@@ -1,7 +1,6 @@
 package de.be.thaw.text.tokenizer.token;
 
 import de.be.thaw.text.util.TextPosition;
-import de.be.thaw.text.util.TextRange;
 
 /**
  * A token of the tokenizer.
@@ -14,13 +13,6 @@ public interface Token {
      * @return text value
      */
     String getValue();
-
-    /**
-     * Get the text range.
-     *
-     * @return range
-     */
-    TextRange getRange();
 
     /**
      * Get the tokens original text position.

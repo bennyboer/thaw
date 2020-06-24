@@ -5,7 +5,7 @@ import de.be.thaw.text.tokenizer.TokenizingContext;
 import de.be.thaw.text.tokenizer.exception.InvalidStateException;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;
 import de.be.thaw.text.tokenizer.token.FormattedToken;
-import de.be.thaw.text.util.TextRange;
+import de.be.thaw.text.util.TextPosition;
 
 import java.util.Collections;
 import java.util.Set;
@@ -52,9 +52,10 @@ public class FormattedState implements State {
     }
 
     @Override
-    public State onNewLine(TokenizingContext ctx) throws InvalidStateException {
+    public State onNewLine(TokenizingContext ctx) {
         // State does ignore new lines -> Add white space instead of new line character
-        ctx.buffer(' ');
+        ctx.getBuffer().append(' ');
+
         return this;
     }
 
@@ -68,7 +69,7 @@ public class FormattedState implements State {
     private State handleCode(char c, TokenizingContext ctx) {
         return switch (c) {
             case '`' -> { // End code emphasis
-                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), pos, Collections.singleton(TextEmphasis.CODE)));
+                ctx.accept((value, pos) -> new FormattedToken(value, pos, Collections.singleton(TextEmphasis.CODE)));
 
                 emphases.pop();
                 if (emphases.isEmpty()) {
@@ -79,7 +80,8 @@ public class FormattedState implements State {
             }
             case '\\' -> new EscapedState(this);
             default -> {
-                ctx.buffer(c);
+                ctx.getBuffer().append(c);
+
                 yield this;
             }
         };
@@ -95,7 +97,7 @@ public class FormattedState implements State {
     private State handleUnderlined(char c, TokenizingContext ctx) {
         return switch (c) {
             case '_' -> { // End underline emphasis
-                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), pos, Set.copyOf(emphases)));
+                ctx.accept((value, pos) -> new FormattedToken(value, pos, Set.copyOf(emphases)));
 
                 emphases.pop();
                 if (emphases.isEmpty()) {
@@ -104,28 +106,7 @@ public class FormattedState implements State {
                     yield this;
                 }
             }
-            case '*' -> { // Enter italic block
-                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
-
-                emphases.push(TextEmphasis.ITALIC);
-                yield this;
-            }
-            case '`' -> { // Enter code block
-                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
-
-                emphases.push(TextEmphasis.CODE);
-                yield this;
-            }
-            case '#' -> { // Enter thingy block
-                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
-
-                yield new ThingyState(this);
-            }
-            case '\\' -> new EscapedState(this);
-            default -> {
-                ctx.buffer(c);
-                yield this;
-            }
+            default -> handleDefault(c, ctx);
         };
     }
 
@@ -139,16 +120,18 @@ public class FormattedState implements State {
     private State handleItalic(char c, TokenizingContext ctx) {
         return switch (c) {
             case '*' -> { // Start bold block or end italic block
-                int curLength = ctx.getEndPos() - ctx.getStartPos();
-                boolean isStartBold = curLength == 2;
+                int currentLength = ctx.getBuffer().length();
+
+                boolean isStartBold = currentLength == 0 && !emphases.contains(TextEmphasis.BOLD); // Does not have any character in buffer by now?
                 if (isStartBold) {
                     // Start a new bold block
                     emphases.pop();
                     emphases.push(TextEmphasis.BOLD);
+
                     yield this;
                 } else {
                     // End the italic block
-                    ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), pos, Set.copyOf(emphases)));
+                    ctx.accept((value, pos) -> new FormattedToken(value, pos, Set.copyOf(emphases)));
 
                     emphases.pop();
                     if (emphases.isEmpty()) {
@@ -158,28 +141,7 @@ public class FormattedState implements State {
                     }
                 }
             }
-            case '_' -> { // Enter underline block
-                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
-
-                emphases.push(TextEmphasis.UNDERLINED);
-                yield this;
-            }
-            case '`' -> { // Enter code block
-                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
-
-                emphases.push(TextEmphasis.CODE);
-                yield this;
-            }
-            case '#' -> { // Enter thingy block
-                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
-
-                yield new ThingyState(this);
-            }
-            case '\\' -> new EscapedState(this);
-            default -> {
-                ctx.buffer(c);
-                yield this;
-            }
+            default -> handleDefault(c, ctx);
         };
     }
 
@@ -194,26 +156,39 @@ public class FormattedState implements State {
         return switch (c) {
             case '*' -> { // May end bold block or start italic block
                 // We need to look ahead one character!
-                boolean isEndBold = false;
+                boolean isEndBold;
                 try {
                     int nextChar = ctx.lookAhead(1);
                     if (nextChar == -1) {
                         // Text to tokenize ended
-                        ctx.buffer(c);
+                        ctx.getBuffer().append(c);
+
                         yield this;
                     }
 
                     isEndBold = ((char) nextChar) == '*';
                 } catch (TokenizeException e) {
-                    throw new InvalidStateException("Look ahead went wrong", e);
+                    throw new InvalidStateException(String.format(
+                            "Look ahead by one character went wrong at %d:%d",
+                            ctx.getCurrentLine(),
+                            ctx.getCurrentPos()
+                    ), e);
                 }
 
                 if (isEndBold) {
                     ctx.ignoreNext(1); // Ignore the next star character
-                    ctx.incEndPos();
 
                     // End the bold block
-                    ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos()), pos, Set.copyOf(emphases)));
+                    ctx.accept((value, pos) -> new FormattedToken(
+                            value,
+                            new TextPosition(
+                                    ctx.getStartLine(),
+                                    ctx.getStartPos(),
+                                    ctx.getCurrentLine(),
+                                    ctx.getCurrentPos() + 1
+                            ),
+                            Set.copyOf(emphases)
+                    ));
 
                     emphases.pop();
                     if (emphases.isEmpty()) {
@@ -222,36 +197,71 @@ public class FormattedState implements State {
                         yield this;
                     }
                 } else {
-                    // Start new italic block
-                    ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
-
-                    emphases.push(TextEmphasis.ITALIC);
-                    yield this;
+                    yield handleDefault(c, ctx);
                 }
             }
+            default -> handleDefault(c, ctx);
+        };
+    }
+
+    /**
+     * The default handler.
+     *
+     * @param c   to process
+     * @param ctx the tokenizing context
+     * @return the next state
+     */
+    private State handleDefault(char c, TokenizingContext ctx) {
+        return switch (c) {
+            case '*' -> { // Enter italic block
+                ctx.accept(createEarlyToken(ctx));
+
+                emphases.push(TextEmphasis.ITALIC);
+                yield this;
+            }
             case '_' -> { // Enter underline block
-                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
+                ctx.accept(createEarlyToken(ctx));
 
                 emphases.push(TextEmphasis.UNDERLINED);
                 yield this;
             }
             case '`' -> { // Enter code block
-                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
+                ctx.accept(createEarlyToken(ctx));
 
                 emphases.push(TextEmphasis.CODE);
                 yield this;
             }
             case '#' -> { // Enter thingy block
-                ctx.acceptToken((value, pos) -> new FormattedToken(value, new TextRange(ctx.getStartPos(), ctx.getEndPos() - 1), pos, Set.copyOf(emphases)));
+                ctx.accept(createEarlyToken(ctx));
 
                 yield new ThingyState(this);
             }
             case '\\' -> new EscapedState(this);
             default -> {
-                ctx.buffer(c);
+                ctx.getBuffer().append(c);
+
                 yield this;
             }
         };
+    }
+
+    /**
+     * Create token that ended one character before.
+     *
+     * @param ctx to create token with
+     * @return the created token
+     */
+    private FormattedToken createEarlyToken(TokenizingContext ctx) {
+        return new FormattedToken(
+                ctx.readBufferAndReset(),
+                new TextPosition(
+                        ctx.getStartLine(),
+                        ctx.getStartPos(),
+                        ctx.getCurrentLine(),
+                        ctx.getCurrentPos() - 1
+                ),
+                Set.copyOf(emphases)
+        );
     }
 
 }

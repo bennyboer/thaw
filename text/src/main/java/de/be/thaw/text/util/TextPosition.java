@@ -19,34 +19,55 @@ public final class TextPosition {
     /**
      * Start position (starting with 1) in the start line (inclusive).
      */
-    private final int start;
+    private final int startPos;
 
     /**
-     * End position (starting with 1) in the end line (exclusive).
+     * End position (starting with 1) in the end line (inclusive).
      */
-    private final int end;
+    private final int endPos;
 
-    public TextPosition(int startLine, int endLine, int start, int end) {
+    public TextPosition(int startLine, int startPos, int endLine, int endPos) {
         this.startLine = startLine;
+        this.startPos = startPos;
+
         this.endLine = endLine;
-        this.start = start;
-        this.end = end;
+        this.endPos = endPos;
     }
 
+    /**
+     * Get the starting line number.
+     *
+     * @return starting line number
+     */
     public int getStartLine() {
         return startLine;
     }
 
+    /**
+     * Get the ending line number.
+     *
+     * @return ending line number
+     */
     public int getEndLine() {
         return endLine;
     }
 
+    /**
+     * Get the start position (starting with 1) in the start line (inclusive).
+     *
+     * @return start position
+     */
     public int getStartPos() {
-        return start;
+        return startPos;
     }
 
+    /**
+     * Get the end position (starting with 1) in the end line (inclusive).
+     *
+     * @return end position
+     */
     public int getEndPos() {
-        return end;
+        return endPos;
     }
 
     @Override
@@ -58,22 +79,22 @@ public final class TextPosition {
 
         if (startLine != that.startLine) return false;
         if (endLine != that.endLine) return false;
-        if (start != that.start) return false;
-        return end == that.end;
+        if (startPos != that.startPos) return false;
+        return endPos == that.endPos;
     }
 
     @Override
     public int hashCode() {
         int result = startLine;
         result = 31 * result + endLine;
-        result = 31 * result + start;
-        result = 31 * result + end;
+        result = 31 * result + startPos;
+        result = 31 * result + endPos;
         return result;
     }
 
     @Override
     public String toString() {
-        return String.format("[%d:%d; %d:%d[", getStartLine(), getStartPos(), getEndLine(), getEndPos());
+        return String.format("[%d:%d - %d:%d]", getStartLine(), getStartPos(), getEndLine(), getEndPos());
     }
 
 }

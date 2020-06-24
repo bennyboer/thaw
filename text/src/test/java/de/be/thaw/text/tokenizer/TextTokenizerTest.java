@@ -2,9 +2,13 @@ package de.be.thaw.text.tokenizer;
 
 import de.be.thaw.text.model.element.emphasis.TextEmphasis;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;
-import de.be.thaw.text.tokenizer.token.*;
+import de.be.thaw.text.tokenizer.token.EnumerationItemStartToken;
+import de.be.thaw.text.tokenizer.token.FormattedToken;
+import de.be.thaw.text.tokenizer.token.ThingyToken;
+import de.be.thaw.text.tokenizer.token.Token;
+import de.be.thaw.text.tokenizer.token.TokenType;
 import de.be.thaw.text.tokenizer.util.result.Result;
-import de.be.thaw.text.util.TextRange;
+import de.be.thaw.text.util.TextPosition;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -48,27 +52,33 @@ public class TextTokenizerTest {
         Assertions.assertEquals(1, tokens.size());
         Assertions.assertEquals("Hello World!", tokens.get(0).getValue());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
-        Assertions.assertEquals(new TextRange(0, text.length()), tokens.get(0).getRange());
+        Assertions.assertEquals(new TextPosition(1, 1, 1, 12), tokens.get(0).getPosition());
     }
 
     @Test
     public void testSimpleMultiline() throws TokenizeException {
         // Testing look ahead logic by using the ** bold modifier where a look ahead is necessary.
-        String text = "Hello World!\nI am a multi line string!\n\n\n\n\nWith multiple empty lines.";
+        String text = "Hello World!\n" +
+                "I am a multi line string!\n" +
+                "\n" +
+                "\n" +
+                "\n" +
+                "\n" +
+                "With multiple empty lines.";
 
         List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
-        Assertions.assertEquals("Hello World! I am a multi line string! ", tokens.get(0).getValue());
-        Assertions.assertEquals(new TextRange(0, 40), tokens.get(0).getRange());
+        Assertions.assertEquals("Hello World! I am a multi line string!", tokens.get(0).getValue());
+        Assertions.assertEquals(new TextPosition(1, 1, 2, 25), tokens.get(0).getPosition());
 
         Assertions.assertEquals(TokenType.EMPTY_LINE, tokens.get(1).getType());
-        Assertions.assertEquals(new TextRange(40, 44), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextPosition(2, 26, 6, 1), tokens.get(1).getPosition());
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(2).getType());
         Assertions.assertEquals("With multiple empty lines.", tokens.get(2).getValue());
-        Assertions.assertEquals(new TextRange(44, text.length()), tokens.get(2).getRange());
+        Assertions.assertEquals(new TextPosition(7, 1, 7, 26), tokens.get(2).getPosition());
     }
 
     @Test
@@ -80,16 +90,16 @@ public class TextTokenizerTest {
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
         Assertions.assertEquals("Hel", tokens.get(0).getValue());
-        Assertions.assertEquals(new TextRange(0, 3), tokens.get(0).getRange());
+        Assertions.assertEquals(new TextPosition(1, 1, 1, 3), tokens.get(0).getPosition());
 
         Assertions.assertEquals(TokenType.FORMATTED, tokens.get(1).getType());
         Assertions.assertEquals("lo Wor", tokens.get(1).getValue());
-        Assertions.assertEquals(new TextRange(3, 11), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextPosition(1, 4, 1, 11), tokens.get(1).getPosition());
         Assertions.assertEquals(TextEmphasis.ITALIC, ((FormattedToken) tokens.get(1)).getEmphases().toArray()[0]);
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(2).getType());
         Assertions.assertEquals("ld!", tokens.get(2).getValue());
-        Assertions.assertEquals(new TextRange(11, 14), tokens.get(2).getRange());
+        Assertions.assertEquals(new TextPosition(1, 12, 1, 14), tokens.get(2).getPosition());
     }
 
     @Test
@@ -101,16 +111,16 @@ public class TextTokenizerTest {
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
         Assertions.assertEquals("Hel", tokens.get(0).getValue());
-        Assertions.assertEquals(new TextRange(0, 3), tokens.get(0).getRange());
+        Assertions.assertEquals(new TextPosition(1, 1, 1, 3), tokens.get(0).getPosition());
 
         Assertions.assertEquals(TokenType.FORMATTED, tokens.get(1).getType());
         Assertions.assertEquals("lo Wor", tokens.get(1).getValue());
-        Assertions.assertEquals(new TextRange(3, 13), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextPosition(1, 4, 1, 13), tokens.get(1).getPosition());
         Assertions.assertEquals(TextEmphasis.BOLD, ((FormattedToken) tokens.get(1)).getEmphases().toArray()[0]);
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(2).getType());
         Assertions.assertEquals("ld!", tokens.get(2).getValue());
-        Assertions.assertEquals(new TextRange(13, 16), tokens.get(2).getRange());
+        Assertions.assertEquals(new TextPosition(1, 14, 1, 16), tokens.get(2).getPosition());
     }
 
     @Test
@@ -139,16 +149,16 @@ public class TextTokenizerTest {
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
         Assertions.assertEquals("Hel", tokens.get(0).getValue());
-        Assertions.assertEquals(new TextRange(0, 3), tokens.get(0).getRange());
+        Assertions.assertEquals(new TextPosition(1, 1, 1, 3), tokens.get(0).getPosition());
 
         Assertions.assertEquals(TokenType.FORMATTED, tokens.get(1).getType());
         Assertions.assertEquals("lo Wor", tokens.get(1).getValue());
-        Assertions.assertEquals(new TextRange(3, 11), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextPosition(1, 4, 1, 11), tokens.get(1).getPosition());
         Assertions.assertEquals(TextEmphasis.UNDERLINED, ((FormattedToken) tokens.get(1)).getEmphases().toArray()[0]);
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(2).getType());
         Assertions.assertEquals("ld!", tokens.get(2).getValue());
-        Assertions.assertEquals(new TextRange(11, 14), tokens.get(2).getRange());
+        Assertions.assertEquals(new TextPosition(1, 12, 1, 14), tokens.get(2).getPosition());
     }
 
     @Test
@@ -160,16 +170,16 @@ public class TextTokenizerTest {
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
         Assertions.assertEquals("Hel", tokens.get(0).getValue());
-        Assertions.assertEquals(new TextRange(0, 3), tokens.get(0).getRange());
+        Assertions.assertEquals(new TextPosition(1, 1, 1, 3), tokens.get(0).getPosition());
 
         Assertions.assertEquals(TokenType.FORMATTED, tokens.get(1).getType());
         Assertions.assertEquals("lo Wor", tokens.get(1).getValue());
-        Assertions.assertEquals(new TextRange(3, 11), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextPosition(1, 4, 1, 11), tokens.get(1).getPosition());
         Assertions.assertEquals(TextEmphasis.CODE, ((FormattedToken) tokens.get(1)).getEmphases().toArray()[0]);
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(2).getType());
         Assertions.assertEquals("ld!", tokens.get(2).getValue());
-        Assertions.assertEquals(new TextRange(11, 14), tokens.get(2).getRange());
+        Assertions.assertEquals(new TextPosition(1, 12, 1, 14), tokens.get(2).getPosition());
     }
 
     @Test
@@ -181,17 +191,17 @@ public class TextTokenizerTest {
         Assertions.assertEquals(3, tokens.size());
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
         Assertions.assertEquals("Hel", tokens.get(0).getValue());
-        Assertions.assertEquals(new TextRange(0, 3), tokens.get(0).getRange());
+        Assertions.assertEquals(new TextPosition(1, 1, 1, 3), tokens.get(0).getPosition());
 
         Assertions.assertEquals(TokenType.FORMATTED, tokens.get(1).getType());
         Assertions.assertEquals("l_o_ Wor", tokens.get(1).getValue());
-        Assertions.assertEquals(new TextRange(5, 15), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextPosition(1, 6, 1, 15), tokens.get(1).getPosition());
         Assertions.assertEquals(1, ((FormattedToken) tokens.get(1)).getEmphases().size());
         Assertions.assertEquals(TextEmphasis.CODE, ((FormattedToken) tokens.get(1)).getEmphases().toArray()[0]);
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(2).getType());
         Assertions.assertEquals("ld!", tokens.get(2).getValue());
-        Assertions.assertEquals(new TextRange(17, 20), tokens.get(2).getRange());
+        Assertions.assertEquals(new TextPosition(1, 18, 1, 20), tokens.get(2).getPosition());
     }
 
     @Test
@@ -205,22 +215,22 @@ public class TextTokenizerTest {
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
         Assertions.assertEquals("This is kind of a ", tokens.get(0).getValue());
-        Assertions.assertEquals(new TextRange(0, 18), tokens.get(0).getRange());
+        Assertions.assertEquals(new TextPosition(1, 1, 1, 18), tokens.get(0).getPosition());
 
         Assertions.assertEquals(TokenType.FORMATTED, tokens.get(1).getType());
         Assertions.assertEquals("longer", tokens.get(1).getValue());
-        Assertions.assertEquals(new TextRange(19, 27), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextPosition(1, 20, 1, 27), tokens.get(1).getPosition());
         Assertions.assertEquals(2, ((FormattedToken) tokens.get(1)).getEmphases().size());
         Assertions.assertTrue(((FormattedToken) tokens.get(1)).getEmphases().contains(TextEmphasis.UNDERLINED));
         Assertions.assertTrue(((FormattedToken) tokens.get(1)).getEmphases().contains(TextEmphasis.ITALIC));
 
-        Assertions.assertEquals(TokenType.FORMATTED, tokens.get(9).getType());
-        Assertions.assertEquals("anyone", tokens.get(9).getValue());
-        Assertions.assertEquals(new TextRange(90, 98), tokens.get(9).getRange());
-        Assertions.assertEquals(3, ((FormattedToken) tokens.get(9)).getEmphases().size());
-        Assertions.assertTrue(((FormattedToken) tokens.get(9)).getEmphases().contains(TextEmphasis.UNDERLINED));
-        Assertions.assertTrue(((FormattedToken) tokens.get(9)).getEmphases().contains(TextEmphasis.ITALIC));
-        Assertions.assertTrue(((FormattedToken) tokens.get(9)).getEmphases().contains(TextEmphasis.BOLD));
+        Assertions.assertEquals(TokenType.FORMATTED, tokens.get(8).getType());
+        Assertions.assertEquals("anyone", tokens.get(8).getValue());
+        Assertions.assertEquals(new TextPosition(4, 14, 4, 21), tokens.get(8).getPosition());
+        Assertions.assertEquals(3, ((FormattedToken) tokens.get(8)).getEmphases().size());
+        Assertions.assertTrue(((FormattedToken) tokens.get(8)).getEmphases().contains(TextEmphasis.UNDERLINED));
+        Assertions.assertTrue(((FormattedToken) tokens.get(8)).getEmphases().contains(TextEmphasis.ITALIC));
+        Assertions.assertTrue(((FormattedToken) tokens.get(8)).getEmphases().contains(TextEmphasis.BOLD));
     }
 
     @Test
@@ -269,7 +279,7 @@ public class TextTokenizerTest {
 
         Assertions.assertEquals(2, tokens.size());
         Assertions.assertEquals(TokenType.THINGY, tokens.get(0).getType());
-        Assertions.assertEquals(new TextRange(0, 4), tokens.get(0).getRange());
+        Assertions.assertEquals(new TextPosition(1, 1, 1, 4), tokens.get(0).getPosition());
 
         ThingyToken token = (ThingyToken) tokens.get(0);
         Assertions.assertEquals("H1", token.getName());
@@ -277,7 +287,7 @@ public class TextTokenizerTest {
         Assertions.assertEquals(0, token.getOptions().size());
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(1).getType());
-        Assertions.assertEquals(new TextRange(4, text.length()), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextPosition(1, 5, 1, 25), tokens.get(1).getPosition());
     }
 
     @Test
@@ -303,7 +313,7 @@ public class TextTokenizerTest {
         Assertions.assertEquals(2, tokens.size());
 
         Assertions.assertEquals(TokenType.THINGY, tokens.get(0).getType());
-        Assertions.assertEquals(new TextRange(0, 57), tokens.get(0).getRange());
+        Assertions.assertEquals(new TextPosition(1, 1, 1, 57), tokens.get(0).getPosition());
 
         ThingyToken thingyToken = (ThingyToken) tokens.get(0);
         Assertions.assertEquals("H1", thingyToken.getName());
@@ -311,7 +321,7 @@ public class TextTokenizerTest {
         Assertions.assertEquals(0, thingyToken.getOptions().size());
 
         Assertions.assertEquals(" First-level headline", tokens.get(1).getValue());
-        Assertions.assertEquals(new TextRange(57, text.length()), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextPosition(1, 58, 1, 78), tokens.get(1).getPosition());
     }
 
     @Test
@@ -323,7 +333,7 @@ public class TextTokenizerTest {
         Assertions.assertEquals(2, tokens.size());
 
         Assertions.assertEquals(TokenType.THINGY, tokens.get(0).getType());
-        Assertions.assertEquals(new TextRange(0, 66), tokens.get(0).getRange());
+        Assertions.assertEquals(new TextPosition(1, 1, 1, 66), tokens.get(0).getPosition());
 
         ThingyToken thingyToken = (ThingyToken) tokens.get(0);
         Assertions.assertEquals("H1", thingyToken.getName());
@@ -335,7 +345,7 @@ public class TextTokenizerTest {
         Assertions.assertEquals("\"hello world\"", thingyToken.getOptions().get("key"));
 
         Assertions.assertEquals(" First-level headline", tokens.get(1).getValue());
-        Assertions.assertEquals(new TextRange(66, text.length()), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextPosition(1, 67, 1, 87), tokens.get(1).getPosition());
     }
 
     @Test
@@ -349,7 +359,7 @@ public class TextTokenizerTest {
 
         List<Token> tokens = tokenize(text);
 
-        Assertions.assertEquals(15, tokens.size());
+        Assertions.assertEquals(14, tokens.size());
 
         ThingyToken h1Thingy = (ThingyToken) tokens.get(0);
         Assertions.assertEquals("H1", h1Thingy.getName());
@@ -389,25 +399,25 @@ public class TextTokenizerTest {
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(0).getType());
         Assertions.assertEquals("Hello world ", tokens.get(0).getValue());
-        Assertions.assertEquals(new TextRange(0, 12), tokens.get(0).getRange());
+        Assertions.assertEquals(new TextPosition(1, 1, 1, 12), tokens.get(0).getPosition());
 
         Assertions.assertEquals(TokenType.ENUMERATION_ITEM_START, tokens.get(1).getType());
         Assertions.assertEquals("-", tokens.get(1).getValue());
-        Assertions.assertEquals(new TextRange(12, 14), tokens.get(1).getRange());
+        Assertions.assertEquals(new TextPosition(2, 1, 2, 2), tokens.get(1).getPosition());
         Assertions.assertEquals(0, ((EnumerationItemStartToken) tokens.get(1)).getIndent());
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(2).getType());
         Assertions.assertEquals("Hello ", tokens.get(2).getValue());
-        Assertions.assertEquals(new TextRange(14, 20), tokens.get(2).getRange());
+        Assertions.assertEquals(new TextPosition(2, 3, 2, 8), tokens.get(2).getPosition());
 
         Assertions.assertEquals(TokenType.ENUMERATION_ITEM_START, tokens.get(3).getType());
         Assertions.assertEquals("-", tokens.get(3).getValue());
-        Assertions.assertEquals(new TextRange(20, 24), tokens.get(3).getRange());
+        Assertions.assertEquals(new TextPosition(3, 1, 3, 4), tokens.get(3).getPosition());
         Assertions.assertEquals(2, ((EnumerationItemStartToken) tokens.get(3)).getIndent());
 
         Assertions.assertEquals(TokenType.TEXT, tokens.get(4).getType());
         Assertions.assertEquals("World", tokens.get(4).getValue());
-        Assertions.assertEquals(new TextRange(24, text.length()), tokens.get(4).getRange());
+        Assertions.assertEquals(new TextPosition(3, 5, 3, 9), tokens.get(4).getPosition());
     }
 
     @Test

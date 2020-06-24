@@ -18,16 +18,18 @@ public class EscapedState implements State {
     }
 
     @Override
-    public State translate(char c, TokenizingContext ctx) throws InvalidStateException {
+    public State translate(char c, TokenizingContext ctx) {
         return switch (c) {
             case '#', '_', '*', '`' -> {
-                ctx.buffer(c);
+                ctx.getBuffer().append(c);
+
                 yield returnState;
             }
             default -> {
                 // There was no need to escape that character -> add escape character to buffer
-                ctx.buffer('\\');
-                ctx.buffer(c);
+                ctx.getBuffer().append('\\');
+                ctx.getBuffer().append(c);
+
                 yield returnState;
             }
         };
@@ -35,14 +37,16 @@ public class EscapedState implements State {
 
     @Override
     public void forceEnd(TokenizingContext ctx) throws InvalidStateException {
-        ctx.buffer('\\');
+        ctx.getBuffer().append('\\');
+
         returnState.forceEnd(ctx);
     }
 
     @Override
-    public State onNewLine(TokenizingContext ctx) throws InvalidStateException {
-        ctx.buffer('\\');
-        ctx.buffer(' '); // Add white space instead of new line character
+    public State onNewLine(TokenizingContext ctx) {
+        ctx.getBuffer().append('\\');
+        ctx.getBuffer().append(' '); // Add white space instead of new line character
+
         return returnState;
     }
 

@@ -14,34 +14,29 @@ import java.util.function.Consumer;
 public class TokenizingContext {
 
     /**
-     * Start position of the current token in the original text.
+     * Number of the line the current token started in the original text.
      */
-    private int startPos = 0;
+    private int startLine = 1;
 
     /**
-     * Current end position of the current token in the original text.
+     * Number of the line currently tokenizing in the original text..
      */
-    private int endPos = 0;
+    private int currentLine = 1;
 
     /**
-     * Number of the line the current token started.
+     * Offset in line where currently tokenizing in the original text.
      */
-    private int startLineNum = 1;
+    private int currentPos = 0;
 
     /**
-     * Number of the line currently tokenizing.
+     * Start offset in the starting line of the current token in the original text.
      */
-    private int lineNum = 1;
+    private int startPos = 1;
 
     /**
-     * Offset in line where currently tokenizing.
+     * Length of the last line.
      */
-    private int inLineOffset = 1;
-
-    /**
-     * In line offset at the start of a token.
-     */
-    private int startInLineOffset = 1;
+    private int lastLineLength = -1;
 
     /**
      * Buffer holding the characters of the current token.
@@ -71,25 +66,80 @@ public class TokenizingContext {
         this.lookAheadFunction = lookAheadFunction;
     }
 
-    public void incLineNum() {
-        lineNum++;
-        resetInLineOffset();
+    /**
+     * Increase the current line number.
+     */
+    public void increaseLineNumber() {
+        currentLine++;
+        lastLineLength = currentPos;
+        currentPos = 0; // Resetting line offset
     }
 
-    private void incInLineOffset() {
-        inLineOffset++;
+    /**
+     * Increase the current position where currently at in the original text.
+     */
+    public void increaseCurrentPos() {
+        currentPos++;
     }
 
-    private void resetInLineOffset() {
-        inLineOffset = 1;
+    /**
+     * Get the current line number.
+     *
+     * @return current line number
+     */
+    public int getCurrentLine() {
+        return currentLine;
     }
 
-    public int getLineNum() {
-        return lineNum;
+    /**
+     * Get the current position in the current line in the original text.
+     *
+     * @return current position
+     */
+    public int getCurrentPos() {
+        return currentPos;
     }
 
-    public int getInLineOffset() {
-        return inLineOffset;
+    /**
+     * Get the starting line in the original text of the current token.
+     *
+     * @return starting line number
+     */
+    public int getStartLine() {
+        return startLine;
+    }
+
+    /**
+     * Get the start position in the starting line.
+     *
+     * @return start position
+     */
+    public int getStartPos() {
+        return startPos;
+    }
+
+    /**
+     * Get the buffer.
+     * Used to buffer characters for a token that
+     * has not yet been accepted.
+     *
+     * @return buffer
+     */
+    public StringBuilder getBuffer() {
+        return buffer;
+    }
+
+    /**
+     * Read the current token value and reset the buffer.
+     *
+     * @return token value
+     */
+    public String readBufferAndReset() {
+        var val = buffer.toString();
+
+        buffer.setLength(0);
+
+        return val;
     }
 
     /**
@@ -113,104 +163,93 @@ public class TokenizingContext {
         ignoreCounter = count;
     }
 
+    /**
+     * Get the current ignore counter.
+     *
+     * @return ignore counter
+     */
     public int getIgnoreCounter() {
         return ignoreCounter;
     }
 
+    /**
+     * Decrement the ignore counter by one.
+     */
     public void decrementIgnoreCounter() {
         ignoreCounter--;
     }
 
-    public int getStartPos() {
-        return startPos;
+    /**
+     * Set the current line.
+     *
+     * @param currentLine current line
+     */
+    public void setCurrentLine(int currentLine) {
+        this.currentLine = currentLine;
     }
 
-    public int getStartLineNum() {
-        return startLineNum;
+    /**
+     * Set the current position.
+     *
+     * @param currentPos current position.
+     */
+    public void setCurrentPos(int currentPos) {
+        this.currentPos = currentPos;
     }
 
-    public int getStartInLineOffset() {
-        return startInLineOffset;
+    /**
+     * Set the starting line  number.
+     *
+     * @param startLine starting line number
+     */
+    public void setStartLine(int startLine) {
+        this.startLine = startLine;
     }
 
+    /**
+     * Set the starting position.
+     *
+     * @param startPos starting position.
+     */
     public void setStartPos(int startPos) {
         this.startPos = startPos;
     }
 
-    public int getEndPos() {
-        return endPos;
-    }
-
-    public void setEndPos(int endPos) {
-        this.endPos = endPos;
-    }
-
     /**
-     * Increase the end position.
-     */
-    public void incEndPos() {
-        endPos++;
-        incInLineOffset();
-    }
-
-    /**
-     * Add the passed character to the value buffer.
+     * Get the length of the last line.
      *
-     * @param c to buffer
+     * @return length of the last line
      */
-    public void buffer(char c) {
-        buffer.append(c);
+    public int getLastLineLength() {
+        return lastLineLength;
     }
 
     /**
-     * Get the current amount of buffered characters.
+     * Accept a token.
      *
-     * @return length
+     * @param token to accept
      */
-    public int bufferLength() {
-        return buffer.length();
-    }
-
-    /**
-     * Get char in buffer at the passed index.
-     *
-     * @param index to get char in buffer
-     * @return char at the passed index
-     */
-    public char bufferCharAt(int index) {
-        return buffer.charAt(index);
-    }
-
-    /**
-     * Accept the current token.
-     *
-     * @param tokenGenerator generating a token
-     */
-    public void acceptToken(BiFunction<String, TextPosition, Token> tokenGenerator) {
-        String value = readValueAndReset();
-        TextPosition position = new TextPosition(getStartLineNum(), getLineNum(), getStartInLineOffset(), getInLineOffset());
-
-        Token token = tokenGenerator.apply(value, position);
-        if (!value.isEmpty()) {
+    public void accept(Token token) {
+        // Only accepting non-empty tokens
+        if (!token.getValue().isEmpty()) {
             acceptor.accept(token);
         }
 
-        setStartPos(token.getRange().getEnd());
-        startLineNum = lineNum;
-        startInLineOffset = inLineOffset;
+        startLine = token.getPosition().getEndLine();
+        startPos = token.getPosition().getEndPos() + 1; // Increase by one since the end pos is inclusive!
     }
 
     /**
-     * Read the current token value and reset the buffer.
+     * Accept a token using a token generator.
      *
-     * @return token value
+     * @param tokenGenerator to generate the token to accept
      */
-    public String readValueAndReset() {
-        var val = buffer.toString();
+    public void accept(BiFunction<String, TextPosition, Token> tokenGenerator) {
+        String value = readBufferAndReset();
+        TextPosition position = new TextPosition(getStartLine(), getStartPos(), getCurrentLine(), getCurrentPos());
 
-        buffer.setLength(0);
-
-        return val;
+        Token token = tokenGenerator.apply(value, position);
+        accept(token);
     }
 
 }

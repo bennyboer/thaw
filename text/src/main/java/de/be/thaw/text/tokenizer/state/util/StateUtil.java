@@ -14,7 +14,7 @@ public class StateUtil {
      * @return whether the current character is the first non-whitespace char in line
      */
     public static boolean isFirstNonWhiteSpaceCharacterInLine(TokenizingContext ctx) {
-        return lastNWhiteSpaceChars(ctx, ctx.getInLineOffset() - 2);
+        return lastNWhiteSpaceChars(ctx, ctx.getCurrentPos() - 2);
     }
 
     /**
@@ -26,10 +26,10 @@ public class StateUtil {
     public static boolean lastNWhiteSpaceChars(TokenizingContext ctx, int n) {
         boolean result = true;
 
-        int bufferLen = ctx.bufferLength();
+        int bufferLen = ctx.getBuffer().length();
 
         for (int i = bufferLen - 1; i >= Math.max(0, bufferLen - n); i--) {
-            if (ctx.bufferCharAt(i) != ' ') {
+            if (ctx.getBuffer().charAt(i) != ' ') {
                 result = false;
             }
         }

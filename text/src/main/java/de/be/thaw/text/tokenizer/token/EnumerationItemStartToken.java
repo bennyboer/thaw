@@ -1,7 +1,6 @@
 package de.be.thaw.text.tokenizer.token;
 
 import de.be.thaw.text.util.TextPosition;
-import de.be.thaw.text.util.TextRange;
 
 /**
  * Token that represents an enumeration item start.
@@ -9,12 +8,17 @@ import de.be.thaw.text.util.TextRange;
 public class EnumerationItemStartToken extends DefaultToken {
 
     /**
+     * Default value that is applied to each enumeration item start token.
+     */
+    private static final String VALUE = "-";
+
+    /**
      * Indent of the enumeration item start.
      */
     private final int indent;
 
-    public EnumerationItemStartToken(String value, TextRange range, TextPosition position, int indent) {
-        super(value, range, position);
+    public EnumerationItemStartToken(TextPosition position, int indent) {
+        super(VALUE, position);
 
         this.indent = indent;
     }

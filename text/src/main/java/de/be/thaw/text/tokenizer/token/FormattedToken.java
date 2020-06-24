@@ -2,7 +2,6 @@ package de.be.thaw.text.tokenizer.token;
 
 import de.be.thaw.text.model.element.emphasis.TextEmphasis;
 import de.be.thaw.text.util.TextPosition;
-import de.be.thaw.text.util.TextRange;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,8 +16,8 @@ public class FormattedToken extends DefaultToken {
      */
     private final Set<TextEmphasis> emphases;
 
-    public FormattedToken(String value, TextRange range, TextPosition position, Set<TextEmphasis> emphases) {
-        super(value, range, position);
+    public FormattedToken(String value, TextPosition position, Set<TextEmphasis> emphases) {
+        super(value, position);
         this.emphases = emphases;
     }
 
