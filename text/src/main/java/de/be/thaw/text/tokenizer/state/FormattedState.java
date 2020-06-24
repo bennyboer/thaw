@@ -117,12 +117,12 @@ public class FormattedState implements State {
      * @param ctx of the tokenizing process
      * @return the next state
      */
-    private State handleItalic(char c, TokenizingContext ctx) {
+    private State handleItalic(char c, TokenizingContext ctx) throws InvalidStateException {
         return switch (c) {
             case '*' -> { // Start bold block or end italic block
                 int currentLength = ctx.getBuffer().length();
+                boolean isStartBold = currentLength == 0 && !emphases.contains(TextEmphasis.BOLD);
 
-                boolean isStartBold = currentLength == 0 && !emphases.contains(TextEmphasis.BOLD); // Does not have any character in buffer by now?
                 if (isStartBold) {
                     // Start a new bold block
                     emphases.pop();
@@ -130,14 +130,53 @@ public class FormattedState implements State {
 
                     yield this;
                 } else {
-                    // End the italic block
-                    ctx.accept((value, pos) -> new FormattedToken(value, pos, Set.copyOf(emphases)));
+                    try {
+                        int nextChar = ctx.lookAhead(1);
+                        if (nextChar == -1) {
+                            // Text to tokenize ended
+                            ctx.getBuffer().append(c);
 
-                    emphases.pop();
-                    if (emphases.isEmpty()) {
-                        yield new TextState();
-                    } else {
+                            yield this;
+                        }
+
+                        isStartBold = ((char) nextChar) == '*';
+                    } catch (TokenizeException e) {
+                        throw new InvalidStateException(String.format(
+                                "Look ahead by one character went wrong at %d:%d",
+                                ctx.getCurrentLine(),
+                                ctx.getCurrentPos()
+                        ), e);
+                    }
+
+                    if (isStartBold && !emphases.contains(TextEmphasis.BOLD)) {
+                        if (currentLength > 0) {
+                            // Accept current token first
+                            ctx.accept(new FormattedToken(
+                                    ctx.readBufferAndReset(),
+                                    new TextPosition(
+                                            ctx.getStartLine(),
+                                            ctx.getStartPos(),
+                                            ctx.getCurrentLine(),
+                                            ctx.getCurrentPos() - 1
+                                    ),
+                                    Set.copyOf(emphases)
+                            ));
+                        }
+
+                        ctx.ignoreNext(1);
+                        emphases.push(TextEmphasis.BOLD);
+
                         yield this;
+                    } else {
+                        // End the italic block
+                        ctx.accept((value, pos) -> new FormattedToken(value, pos, Set.copyOf(emphases)));
+
+                        emphases.pop();
+                        if (emphases.isEmpty()) {
+                            yield new TextState();
+                        } else {
+                            yield this;
+                        }
                     }
                 }
             }

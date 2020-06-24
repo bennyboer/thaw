@@ -272,6 +272,26 @@ public class TextTokenizerTest {
     }
 
     @Test
+    public void testComplexFormatting2() throws TokenizeException {
+        String text = "***_Example_***";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(1, tokens.size());
+        Assertions.assertEquals(TokenType.FORMATTED, tokens.get(0).getType());
+        Assertions.assertEquals("Example", tokens.get(0).getValue());
+    }
+
+    @Test
+    public void testComplexFormatting3() throws TokenizeException {
+        String text = "_Under*Ital**Bold**ic*line_";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(5, tokens.size());
+    }
+
+    @Test
     public void testSimpleThingy() throws TokenizeException {
         String text = "#H1# First-level headline";
 

@@ -2,9 +2,18 @@ package de.be.thaw.text.parser;
 
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.parser.exception.ParseException;
+import de.be.thaw.text.parser.rule.ParseRule;
+import de.be.thaw.text.parser.rule.impl.EmptyLineRule;
+import de.be.thaw.text.parser.rule.impl.EnumerationItemStartRule;
+import de.be.thaw.text.parser.rule.impl.FormattedRule;
+import de.be.thaw.text.parser.rule.impl.TextRule;
+import de.be.thaw.text.parser.rule.impl.ThingyRule;
+import de.be.thaw.text.parser.tree.Node;
+import de.be.thaw.text.parser.tree.NodeType;
 import de.be.thaw.text.tokenizer.TextTokenizer;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;
 import de.be.thaw.text.tokenizer.token.Token;
+import de.be.thaw.text.tokenizer.token.TokenType;
 import de.be.thaw.text.tokenizer.util.result.Result;
 
 import java.io.BufferedReader;
@@ -13,11 +22,26 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Parser for the thaw document text format.
  */
 public class TextParser {
+
+    /**
+     * Map of token types to rules that should process them.
+     */
+    private static final Map<TokenType, ParseRule> RULES = new HashMap<>();
+
+    static {
+        RULES.put(TokenType.TEXT, new TextRule());
+        RULES.put(TokenType.EMPTY_LINE, new EmptyLineRule());
+        RULES.put(TokenType.THINGY, new ThingyRule());
+        RULES.put(TokenType.FORMATTED, new FormattedRule());
+        RULES.put(TokenType.ENUMERATION_ITEM_START, new EnumerationItemStartRule());
+    }
 
     public static void main(String[] args) {
         // TODO just for testing -> Remove later!
@@ -38,6 +62,11 @@ public class TextParser {
      * @throws ParseException in case parsing failed
      */
     public TextModel parse(Reader reader) throws ParseException {
+        Node root = new Node(NodeType.ROOT, null);
+
+        Node currentNode = new Node(NodeType.BOX, null);
+        root.addChild(currentNode);
+
         try {
             TextTokenizer tokenizer = new TextTokenizer(reader);
 
@@ -47,11 +76,14 @@ public class TextParser {
                     throw new ParseException(r.error());
                 }
 
-                onNextToken(r.result());
+                currentNode = onNextToken(currentNode, r.result());
             }
         } catch (TokenizeException e) {
             throw new ParseException(e);
         }
+
+        System.out.println("-----");
+        System.out.println(root.toString());
 
         return null;
     }
@@ -59,12 +91,23 @@ public class TextParser {
     /**
      * Process the next token.
      *
+     * @param node  the current node
      * @param token to process
+     * @return the next node
      * @throws ParseException in case something went wrong during parsing
      */
-    private void onNextToken(Token token) throws ParseException {
-        // TODO
+    private Node onNextToken(Node node, Token token) throws ParseException {
         System.out.println(token);
+
+        ParseRule rule = RULES.get(token.getType());
+        if (rule == null) {
+            throw new ParseException(String.format(
+                    "Token type '%s' does not have a parsing rule associated with",
+                    token.getType().name()
+            ));
+        }
+
+        return rule.apply(node, token);
     }
 
 }
