@@ -1,6 +1,6 @@
 package de.be.thaw.text.tokenizer.state;
 
-import de.be.thaw.text.model.element.emphasis.TextEmphasis;
+import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.tokenizer.TokenizingContext;
 import de.be.thaw.text.tokenizer.exception.InvalidStateException;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;
@@ -132,14 +132,9 @@ public class FormattedState implements State {
                 } else {
                     try {
                         int nextChar = ctx.lookAhead(1);
-                        if (nextChar == -1) {
-                            // Text to tokenize ended
-                            ctx.getBuffer().append(c);
-
-                            yield this;
+                        if (nextChar != -1) {
+                            isStartBold = ((char) nextChar) == '*';
                         }
-
-                        isStartBold = ((char) nextChar) == '*';
                     } catch (TokenizeException e) {
                         throw new InvalidStateException(String.format(
                                 "Look ahead by one character went wrong at %d:%d",

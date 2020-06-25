@@ -1,6 +1,6 @@
 package de.be.thaw.text.tokenizer.token;
 
-import de.be.thaw.text.model.element.emphasis.TextEmphasis;
+import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.util.TextPosition;
 
 import java.util.Set;

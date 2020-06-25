@@ -1,6 +1,6 @@
 package de.be.thaw.text.parser.rule.impl;
 
-import de.be.thaw.text.model.element.emphasis.TextEmphasis;
+import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.parser.exception.ParseException;
 import de.be.thaw.text.parser.rule.ParseRule;
 import de.be.thaw.text.parser.tree.Node;

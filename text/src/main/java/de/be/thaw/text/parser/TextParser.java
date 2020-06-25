@@ -16,11 +16,6 @@ import de.be.thaw.text.tokenizer.token.Token;
 import de.be.thaw.text.tokenizer.token.TokenType;
 import de.be.thaw.text.tokenizer.util.result.Result;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,17 +36,6 @@ public class TextParser {
         RULES.put(TokenType.THINGY, new ThingyRule());
         RULES.put(TokenType.FORMATTED, new FormattedRule());
         RULES.put(TokenType.ENUMERATION_ITEM_START, new EnumerationItemStartRule());
-    }
-
-    public static void main(String[] args) {
-        // TODO just for testing -> Remove later!
-        String filePath = args[5];
-
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath))))) {
-            new TextParser().parse(br);
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -82,10 +66,7 @@ public class TextParser {
             throw new ParseException(e);
         }
 
-        System.out.println("-----");
-        System.out.println(root.toString());
-
-        return null;
+        return new TextModel(root);
     }
 
     /**

@@ -1,30 +1,28 @@
 package de.be.thaw.text.model;
 
-import de.be.thaw.text.model.box.TextBox;
-
-import java.util.Collection;
+import de.be.thaw.text.parser.tree.Node;
 
 /**
- * Text model representing the thaw document text format.
+ * Text model representing a tree of the thaw document text format.
  */
 public class TextModel {
 
     /**
-     * Text boxes holding the text contents.
+     * Reference to the root node of the text model tree.
      */
-    private final Collection<TextBox> boxes;
+    private final Node root;
 
-    public TextModel(Collection<TextBox> boxes) {
-        this.boxes = boxes;
+    public TextModel(Node root) {
+        this.root = root;
     }
 
     /**
-     * A collection of text boxes the text consists of.
+     * Get the root node of the text model tree.
      *
-     * @return collection of text boxes
+     * @return root node
      */
-    public Collection<TextBox> boxes() {
-        return boxes;
+    public Node getRoot() {
+        return root;
     }
 
 }

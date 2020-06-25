@@ -1,6 +1,6 @@
 package de.be.thaw.text.tokenizer.state;
 
-import de.be.thaw.text.model.element.emphasis.TextEmphasis;
+import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.tokenizer.TokenizingContext;
 import de.be.thaw.text.tokenizer.exception.InvalidStateException;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;

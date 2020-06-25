@@ -1,6 +1,6 @@
 package de.be.thaw.text.tokenizer;
 
-import de.be.thaw.text.model.element.emphasis.TextEmphasis;
+import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;
 import de.be.thaw.text.tokenizer.token.EnumerationItemStartToken;
 import de.be.thaw.text.tokenizer.token.FormattedToken;
@@ -100,6 +100,24 @@ public class TextTokenizerTest {
         Assertions.assertEquals(TokenType.TEXT, tokens.get(2).getType());
         Assertions.assertEquals("ld!", tokens.get(2).getValue());
         Assertions.assertEquals(new TextPosition(1, 12, 1, 14), tokens.get(2).getPosition());
+    }
+
+    @Test
+    public void testItalicFormatting2() throws TokenizeException {
+        String text = "Hey *you*";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(2, tokens.size());
+    }
+
+    @Test
+    public void testItalicFormatting3() throws TokenizeException {
+        String text = "*Hey* you";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(2, tokens.size());
     }
 
     @Test
@@ -405,6 +423,19 @@ public class TextTokenizerTest {
 
         Assertions.assertEquals(TokenType.FORMATTED, tokens.get(1).getType());
         Assertions.assertEquals("#H1, label=test#", tokens.get(1).getValue());
+    }
+
+    @Test
+    public void testMultiLineThingy() throws TokenizeException {
+        String text = "#H1\n" +
+                ",\n" +
+                "label=headline\n" +
+                "# Headline\n";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(2, tokens.size());
+        Assertions.assertEquals(new TextPosition(1, 1, 4, 1), tokens.get(0).getPosition());
     }
 
     @Test
