@@ -30,9 +30,29 @@ public class EnumerationItemStartRule implements ParseRule {
                 yield item;
             }
             case ENUMERATION_ITEM -> {
+                EnumerationItemStartToken nodeToken = (EnumerationItemStartToken) node.getToken();
+                assert nodeToken != null;
+                int oldIndent = nodeToken.getIndent();
+                int newIndent = ((EnumerationItemStartToken) token).getIndent();
+
+                Node enumerationNode;
+                if (oldIndent == newIndent) {
+                    // Is the same enumeration level
+                    enumerationNode = node.getParent();
+                } else if (oldIndent < newIndent) {
+                    // Create new enumeration level
+                    enumerationNode = new Node(NodeType.ENUMERATION, null);
+                    assert node.getParent() != null;
+                    node.getParent().addChild(enumerationNode);
+                } else {
+                    // Go up one enumeration level
+                    assert node.getParent() != null;
+                    enumerationNode = node.getParent().getParent();
+                }
+
                 Node item = new Node(NodeType.ENUMERATION_ITEM, token);
-                assert node.getParent() != null;
-                node.getParent().addChild(item);
+                assert enumerationNode != null;
+                enumerationNode.addChild(item);
 
                 yield item;
             }

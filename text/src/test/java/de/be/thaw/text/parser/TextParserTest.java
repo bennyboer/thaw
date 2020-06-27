@@ -155,4 +155,36 @@ public class TextParserTest {
                 "    - [TEXT]: [TEXT] [4:2 - 4:10], ' Headline'\n", model.getRoot().toString());
     }
 
+    @Test
+    public void testNestedEnumeration() throws ParseException {
+        String text = "- **Hello World**\n" +
+                "  - I am nested\n" +
+                "  - Me too!\n" +
+                "- I am not..\n" +
+                "  - Again nested\n" +
+                "    - Even more nesting!";
+
+        TextModel model = parse(text);
+
+        Assertions.assertEquals("- [ROOT]: X\n" +
+                "  - [BOX]: X\n" +
+                "    - [ENUMERATION]: X\n" +
+                "      - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [1:1 - 1:2], '-'\n" +
+                "        - [FORMATTED]: [FORMATTED] [1:3 - 1:17], 'Hello World' > BOLD\n" +
+                "        - [TEXT]: [TEXT] [1:18 - 1:18], ' '\n" +
+                "      - [ENUMERATION]: X\n" +
+                "        - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [2:1 - 2:4], '-'\n" +
+                "          - [TEXT]: [TEXT] [2:5 - 2:16], 'I am nested '\n" +
+                "        - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [3:1 - 3:4], '-'\n" +
+                "          - [TEXT]: [TEXT] [3:5 - 3:12], 'Me too! '\n" +
+                "      - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [4:1 - 4:2], '-'\n" +
+                "        - [TEXT]: [TEXT] [4:3 - 4:13], 'I am not.. '\n" +
+                "      - [ENUMERATION]: X\n" +
+                "        - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [5:1 - 5:4], '-'\n" +
+                "          - [TEXT]: [TEXT] [5:5 - 5:17], 'Again nested '\n" +
+                "        - [ENUMERATION]: X\n" +
+                "          - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [6:1 - 6:6], '-'\n" +
+                "            - [TEXT]: [TEXT] [6:7 - 6:24], 'Even more nesting!'\n", model.getRoot().toString());
+    }
+
 }
