@@ -13,6 +13,7 @@ The project is organized in multiple modules:
 
 | Module name | Folder | Description |
 | --- | --- | --- |
+| CLI | `/cli` | Command-line interface for the Thaw project |
 | Core | `/core` | The core module containing the document model. |
 | Text | `/text` | Text file parsing and model. |
 | Style | `/style` | Style file parsing and model. |
