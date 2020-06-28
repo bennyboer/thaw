@@ -1,6 +1,6 @@
 package de.be.thaw.text.model;
 
-import de.be.thaw.text.model.tree.Node;
+import de.be.thaw.text.model.tree.impl.RootNode;
 
 /**
  * Text model representing a tree of the thaw document text format.
@@ -10,9 +10,9 @@ public class TextModel {
     /**
      * Reference to the root node of the text model tree.
      */
-    private final Node root;
+    private final RootNode root;
 
-    public TextModel(Node root) {
+    public TextModel(RootNode root) {
         this.root = root;
     }
 
@@ -21,7 +21,7 @@ public class TextModel {
      *
      * @return root node
      */
-    public Node getRoot() {
+    public RootNode getRoot() {
         return root;
     }
 

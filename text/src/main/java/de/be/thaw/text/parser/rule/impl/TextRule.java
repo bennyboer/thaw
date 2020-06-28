@@ -1,9 +1,10 @@
 package de.be.thaw.text.parser.rule.impl;
 
-import de.be.thaw.text.parser.exception.ParseException;
-import de.be.thaw.text.parser.rule.ParseRule;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
+import de.be.thaw.text.model.tree.impl.TextNode;
+import de.be.thaw.text.parser.exception.ParseException;
+import de.be.thaw.text.parser.rule.ParseRule;
 import de.be.thaw.text.tokenizer.token.TextToken;
 import de.be.thaw.text.tokenizer.token.Token;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +20,7 @@ public class TextRule implements ParseRule {
             throw new ParseException("Rule can only parse tokens of type TextToken");
         }
 
-        Node text = new Node(NodeType.TEXT, token);
+        Node text = new TextNode(token.getValue(), token.getPosition());
 
         return switch (node.getType()) {
             case FORMATTED -> {

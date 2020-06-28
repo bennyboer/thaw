@@ -19,8 +19,8 @@ public class TextParserTest {
 
         TextModel model = parse(text);
 
-        Assertions.assertEquals("- [ROOT]: X\n" +
-                "  - [BOX]: X\n", model.getRoot().toString());
+        Assertions.assertEquals("- [ROOT]: ~\n" +
+                "  - [BOX]: ~\n", model.getRoot().toString());
     }
 
     @Test
@@ -29,10 +29,10 @@ public class TextParserTest {
 
         TextModel model = parse(text);
 
-        Assertions.assertEquals("- [ROOT]: X\n" +
-                "  - [BOX]: X\n" +
-                "    - [TEXT]: [TEXT] [1:1 - 1:4], 'Hey '\n" +
-                "    - [FORMATTED]: [FORMATTED] [1:5 - 1:17], '<Your Name>' > CODE\n", model.getRoot().toString());
+        Assertions.assertEquals("- [ROOT]: ~\n" +
+                "  - [BOX]: ~\n" +
+                "    - [TEXT]: 'Hey '\n" +
+                "    - [FORMATTED]: '<Your Name>' [CODE]\n", model.getRoot().toString());
     }
 
     @Test
@@ -41,10 +41,10 @@ public class TextParserTest {
 
         TextModel model = parse(text);
 
-        Assertions.assertEquals("- [ROOT]: X\n" +
-                "  - [BOX]: X\n" +
-                "    - [TEXT]: [TEXT] [1:1 - 1:4], 'Hey '\n" +
-                "    - [FORMATTED]: [FORMATTED] [1:5 - 1:9], 'you' > ITALIC\n", model.getRoot().toString());
+        Assertions.assertEquals("- [ROOT]: ~\n" +
+                "  - [BOX]: ~\n" +
+                "    - [TEXT]: 'Hey '\n" +
+                "    - [FORMATTED]: 'you' [ITALIC]\n", model.getRoot().toString());
     }
 
     @Test
@@ -53,10 +53,10 @@ public class TextParserTest {
 
         TextModel model = parse(text);
 
-        Assertions.assertEquals("- [ROOT]: X\n" +
-                "  - [BOX]: X\n" +
-                "    - [TEXT]: [TEXT] [1:1 - 1:4], 'Hey '\n" +
-                "    - [FORMATTED]: [FORMATTED] [1:5 - 1:11], 'you' > BOLD\n", model.getRoot().toString());
+        Assertions.assertEquals("- [ROOT]: ~\n" +
+                "  - [BOX]: ~\n" +
+                "    - [TEXT]: 'Hey '\n" +
+                "    - [FORMATTED]: 'you' [BOLD]\n", model.getRoot().toString());
     }
 
     @Test
@@ -65,10 +65,10 @@ public class TextParserTest {
 
         TextModel model = parse(text);
 
-        Assertions.assertEquals("- [ROOT]: X\n" +
-                "  - [BOX]: X\n" +
-                "    - [TEXT]: [TEXT] [1:1 - 1:4], 'Hey '\n" +
-                "    - [FORMATTED]: [FORMATTED] [1:5 - 1:9], 'you' > UNDERLINED\n", model.getRoot().toString());
+        Assertions.assertEquals("- [ROOT]: ~\n" +
+                "  - [BOX]: ~\n" +
+                "    - [TEXT]: 'Hey '\n" +
+                "    - [FORMATTED]: 'you' [UNDERLINED]\n", model.getRoot().toString());
     }
 
     @Test
@@ -77,15 +77,15 @@ public class TextParserTest {
 
         TextModel model = parse(text);
 
-        Assertions.assertEquals("- [ROOT]: X\n" +
-                "  - [BOX]: X\n" +
-                "    - [TEXT]: [TEXT] [1:1 - 1:5], 'What '\n" +
-                "    - [FORMATTED]: [FORMATTED] [1:6 - 1:9], 'is ' > ITALIC\n" +
-                "      - [FORMATTED]: [FORMATTED] [1:10 - 1:17], 'Love' > BOLD, ITALIC\n" +
-                "    - [FORMATTED]: [FORMATTED] [1:18 - 1:19], '?' > ITALIC\n" +
-                "    - [TEXT]: [TEXT] [1:20 - 1:25], ' Baby '\n" +
-                "    - [FORMATTED]: [FORMATTED] [1:26 - 1:32], 'don't' > UNDERLINED\n" +
-                "    - [TEXT]: [TEXT] [1:33 - 1:41], ' hurt me!'\n", model.getRoot().toString());
+        Assertions.assertEquals("- [ROOT]: ~\n" +
+                "  - [BOX]: ~\n" +
+                "    - [TEXT]: 'What '\n" +
+                "    - [FORMATTED]: 'is ' [ITALIC]\n" +
+                "      - [FORMATTED]: 'Love' [BOLD, ITALIC]\n" +
+                "    - [FORMATTED]: '?' [ITALIC]\n" +
+                "    - [TEXT]: ' Baby '\n" +
+                "    - [FORMATTED]: 'don't' [UNDERLINED]\n" +
+                "    - [TEXT]: ' hurt me!'\n", model.getRoot().toString());
     }
 
     @Test
@@ -103,41 +103,41 @@ public class TextParserTest {
 
         TextModel model = parse(text);
 
-        Assertions.assertEquals("- [ROOT]: X\n" +
-                "  - [BOX]: X\n" +
-                "    - [THINGY]: [THINGY] [1:1 - 1:20], '#' > Name: 'H1', Args: [], Options: {label=headline}\n" +
-                "    - [TEXT]: [TEXT] [1:21 - 1:29], ' Headline'\n" +
-                "  - [BOX]: X\n" +
-                "    - [TEXT]: [TEXT] [3:1 - 3:33], 'Hallo Welt, dass ist ein kleines '\n" +
-                "    - [FORMATTED]: [FORMATTED] [3:37 - 3:46], 'Beispiel' > BOLD, ITALIC, UNDERLINED\n" +
-                "    - [TEXT]: [TEXT] [3:50 - 3:50], '!'\n" +
-                "  - [BOX]: X\n" +
-                "    - [ENUMERATION]: X\n" +
-                "      - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [5:1 - 5:2], '-'\n" +
-                "        - [TEXT]: [TEXT] [5:3 - 5:10], 'Erstens '\n" +
-                "      - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [6:1 - 6:2], '-'\n" +
-                "        - [TEXT]: [TEXT] [6:3 - 6:35], 'Zweitens ist das hier auch bold: '\n" +
-                "        - [FORMATTED]: [FORMATTED] [6:36 - 6:42], 'Hi!' > BOLD\n" +
-                "        - [TEXT]: [TEXT] [6:43 - 7:5], ' Test '\n" +
-                "        - [FORMATTED]: [FORMATTED] [7:6 - 7:11], 'Under' > UNDERLINED\n" +
-                "          - [FORMATTED]: [FORMATTED] [7:12 - 7:16], 'Ital' > ITALIC, UNDERLINED\n" +
-                "            - [FORMATTED]: [FORMATTED] [7:17 - 7:24], 'Bold' > BOLD, ITALIC, UNDERLINED\n" +
-                "          - [FORMATTED]: [FORMATTED] [7:25 - 7:27], 'ic' > ITALIC, UNDERLINED\n" +
-                "        - [FORMATTED]: [FORMATTED] [7:28 - 7:32], 'line' > UNDERLINED\n" +
-                "        - [TEXT]: [TEXT] [7:33 - 7:37], ' yay '\n" +
-                "      - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [8:1 - 8:2], '-'\n" +
-                "        - [TEXT]: [TEXT] [8:3 - 8:10], 'Drittens'\n" +
-                "  - [BOX]: X\n" +
-                "    - [TEXT]: [TEXT] [10:1 - 10:23], 'Another text with some '\n" +
-                "    - [FORMATTED]: [FORMATTED] [10:24 - 10:43], 'formatting applied ' > UNDERLINED\n" +
-                "      - [FORMATTED]: [FORMATTED] [10:44 - 10:47], 'it' > ITALIC, UNDERLINED\n" +
-                "    - [FORMATTED]: [FORMATTED] [10:48 - 10:51], ' is ' > UNDERLINED\n" +
-                "      - [FORMATTED]: [FORMATTED] [10:52 - 10:61], 'indeed' > BOLD, UNDERLINED\n" +
-                "    - [FORMATTED]: [FORMATTED] [10:62 - 10:73], ' quite some ' > UNDERLINED\n" +
-                "      - [FORMATTED]: [FORMATTED] [10:76 - 10:87], 'formatting' > BOLD, ITALIC, UNDERLINED\n" +
-                "      - [FORMATTED]: [FORMATTED] [10:88 - 10:96], ' around' > BOLD, UNDERLINED\n" +
-                "    - [FORMATTED]: [FORMATTED] [10:97 - 10:102], ' here' > UNDERLINED\n" +
-                "    - [TEXT]: [TEXT] [10:103 - 10:103], '.'\n", model.getRoot().toString());
+        Assertions.assertEquals("- [ROOT]: ~\n" +
+                "  - [BOX]: ~\n" +
+                "    - [THINGY]: Name: 'H1', Args: [], Options: {label=headline}\n" +
+                "    - [TEXT]: ' Headline'\n" +
+                "  - [BOX]: ~\n" +
+                "    - [TEXT]: 'Hallo Welt, dass ist ein kleines '\n" +
+                "    - [FORMATTED]: 'Beispiel' [BOLD, ITALIC, UNDERLINED]\n" +
+                "    - [TEXT]: '!'\n" +
+                "  - [BOX]: ~\n" +
+                "    - [ENUMERATION]: Level: 1\n" +
+                "      - [ENUMERATION_ITEM]: ~\n" +
+                "        - [TEXT]: 'Erstens '\n" +
+                "      - [ENUMERATION_ITEM]: ~\n" +
+                "        - [TEXT]: 'Zweitens ist das hier auch bold: '\n" +
+                "        - [FORMATTED]: 'Hi!' [BOLD]\n" +
+                "        - [TEXT]: ' Test '\n" +
+                "        - [FORMATTED]: 'Under' [UNDERLINED]\n" +
+                "          - [FORMATTED]: 'Ital' [ITALIC, UNDERLINED]\n" +
+                "            - [FORMATTED]: 'Bold' [BOLD, ITALIC, UNDERLINED]\n" +
+                "          - [FORMATTED]: 'ic' [ITALIC, UNDERLINED]\n" +
+                "        - [FORMATTED]: 'line' [UNDERLINED]\n" +
+                "        - [TEXT]: ' yay '\n" +
+                "      - [ENUMERATION_ITEM]: ~\n" +
+                "        - [TEXT]: 'Drittens'\n" +
+                "  - [BOX]: ~\n" +
+                "    - [TEXT]: 'Another text with some '\n" +
+                "    - [FORMATTED]: 'formatting applied ' [UNDERLINED]\n" +
+                "      - [FORMATTED]: 'it' [ITALIC, UNDERLINED]\n" +
+                "    - [FORMATTED]: ' is ' [UNDERLINED]\n" +
+                "      - [FORMATTED]: 'indeed' [BOLD, UNDERLINED]\n" +
+                "    - [FORMATTED]: ' quite some ' [UNDERLINED]\n" +
+                "      - [FORMATTED]: 'formatting' [BOLD, ITALIC, UNDERLINED]\n" +
+                "      - [FORMATTED]: ' around' [BOLD, UNDERLINED]\n" +
+                "    - [FORMATTED]: ' here' [UNDERLINED]\n" +
+                "    - [TEXT]: '.'\n", model.getRoot().toString());
     }
 
     @Test
@@ -149,10 +149,10 @@ public class TextParserTest {
 
         TextModel model = parse(text);
 
-        Assertions.assertEquals("- [ROOT]: X\n" +
-                "  - [BOX]: X\n" +
-                "    - [THINGY]: [THINGY] [1:1 - 4:1], '#' > Name: 'H1', Args: [], Options: {label=headline}\n" +
-                "    - [TEXT]: [TEXT] [4:2 - 4:10], ' Headline'\n", model.getRoot().toString());
+        Assertions.assertEquals("- [ROOT]: ~\n" +
+                "  - [BOX]: ~\n" +
+                "    - [THINGY]: Name: 'H1', Args: [], Options: {label=headline}\n" +
+                "    - [TEXT]: ' Headline'\n", model.getRoot().toString());
     }
 
     @Test
@@ -166,25 +166,25 @@ public class TextParserTest {
 
         TextModel model = parse(text);
 
-        Assertions.assertEquals("- [ROOT]: X\n" +
-                "  - [BOX]: X\n" +
-                "    - [ENUMERATION]: X\n" +
-                "      - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [1:1 - 1:2], '-'\n" +
-                "        - [FORMATTED]: [FORMATTED] [1:3 - 1:17], 'Hello World' > BOLD\n" +
-                "        - [TEXT]: [TEXT] [1:18 - 1:18], ' '\n" +
-                "      - [ENUMERATION]: X\n" +
-                "        - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [2:1 - 2:4], '-'\n" +
-                "          - [TEXT]: [TEXT] [2:5 - 2:16], 'I am nested '\n" +
-                "        - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [3:1 - 3:4], '-'\n" +
-                "          - [TEXT]: [TEXT] [3:5 - 3:12], 'Me too! '\n" +
-                "      - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [4:1 - 4:2], '-'\n" +
-                "        - [TEXT]: [TEXT] [4:3 - 4:13], 'I am not.. '\n" +
-                "      - [ENUMERATION]: X\n" +
-                "        - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [5:1 - 5:4], '-'\n" +
-                "          - [TEXT]: [TEXT] [5:5 - 5:17], 'Again nested '\n" +
-                "        - [ENUMERATION]: X\n" +
-                "          - [ENUMERATION_ITEM]: [ENUMERATION_ITEM_START] [6:1 - 6:6], '-'\n" +
-                "            - [TEXT]: [TEXT] [6:7 - 6:24], 'Even more nesting!'\n", model.getRoot().toString());
+        Assertions.assertEquals("- [ROOT]: ~\n" +
+                "  - [BOX]: ~\n" +
+                "    - [ENUMERATION]: Level: 1\n" +
+                "      - [ENUMERATION_ITEM]: ~\n" +
+                "        - [FORMATTED]: 'Hello World' [BOLD]\n" +
+                "        - [TEXT]: ' '\n" +
+                "      - [ENUMERATION]: Level: 2\n" +
+                "        - [ENUMERATION_ITEM]: ~\n" +
+                "          - [TEXT]: 'I am nested '\n" +
+                "        - [ENUMERATION_ITEM]: ~\n" +
+                "          - [TEXT]: 'Me too! '\n" +
+                "      - [ENUMERATION_ITEM]: ~\n" +
+                "        - [TEXT]: 'I am not.. '\n" +
+                "      - [ENUMERATION]: Level: 2\n" +
+                "        - [ENUMERATION_ITEM]: ~\n" +
+                "          - [TEXT]: 'Again nested '\n" +
+                "        - [ENUMERATION]: Level: 3\n" +
+                "          - [ENUMERATION_ITEM]: ~\n" +
+                "            - [TEXT]: 'Even more nesting!'\n", model.getRoot().toString());
     }
 
 }

@@ -1,9 +1,10 @@
 package de.be.thaw.text.parser.rule.impl;
 
+import de.be.thaw.text.model.tree.Node;
+import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
+import de.be.thaw.text.model.tree.impl.EnumerationNode;
 import de.be.thaw.text.parser.exception.ParseException;
 import de.be.thaw.text.parser.rule.ParseRule;
-import de.be.thaw.text.model.tree.Node;
-import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.tokenizer.token.EnumerationItemStartToken;
 import de.be.thaw.text.tokenizer.token.Token;
 import org.jetbrains.annotations.NotNull;
@@ -21,18 +22,18 @@ public class EnumerationItemStartRule implements ParseRule {
 
         return switch (node.getType()) {
             case BOX -> {
-                Node enumeration = new Node(NodeType.ENUMERATION, null);
+                Node enumeration = new EnumerationNode(1);
                 node.addChild(enumeration);
 
-                Node item = new Node(NodeType.ENUMERATION_ITEM, token);
+                Node item = new EnumerationItemNode(token.getPosition(), ((EnumerationItemStartToken) token).getIndent());
                 enumeration.addChild(item);
 
                 yield item;
             }
             case ENUMERATION_ITEM -> {
-                EnumerationItemStartToken nodeToken = (EnumerationItemStartToken) node.getToken();
-                assert nodeToken != null;
-                int oldIndent = nodeToken.getIndent();
+                EnumerationItemNode enumItemNode = (EnumerationItemNode) node;
+
+                int oldIndent = enumItemNode.getIndent();
                 int newIndent = ((EnumerationItemStartToken) token).getIndent();
 
                 Node enumerationNode;
@@ -41,17 +42,14 @@ public class EnumerationItemStartRule implements ParseRule {
                     enumerationNode = node.getParent();
                 } else if (oldIndent < newIndent) {
                     // Create new enumeration level
-                    enumerationNode = new Node(NodeType.ENUMERATION, null);
-                    assert node.getParent() != null;
+                    enumerationNode = new EnumerationNode(((EnumerationNode) node.getParent()).getLevel() + 1);
                     node.getParent().addChild(enumerationNode);
                 } else {
                     // Go up one enumeration level
-                    assert node.getParent() != null;
                     enumerationNode = node.getParent().getParent();
                 }
 
-                Node item = new Node(NodeType.ENUMERATION_ITEM, token);
-                assert enumerationNode != null;
+                Node item = new EnumerationItemNode(token.getPosition(), newIndent);
                 enumerationNode.addChild(item);
 
                 yield item;

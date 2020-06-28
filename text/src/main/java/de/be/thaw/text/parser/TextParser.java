@@ -1,6 +1,9 @@
 package de.be.thaw.text.parser;
 
 import de.be.thaw.text.model.TextModel;
+import de.be.thaw.text.model.tree.Node;
+import de.be.thaw.text.model.tree.impl.BoxNode;
+import de.be.thaw.text.model.tree.impl.RootNode;
 import de.be.thaw.text.parser.exception.ParseException;
 import de.be.thaw.text.parser.rule.ParseRule;
 import de.be.thaw.text.parser.rule.impl.EmptyLineRule;
@@ -8,8 +11,6 @@ import de.be.thaw.text.parser.rule.impl.EnumerationItemStartRule;
 import de.be.thaw.text.parser.rule.impl.FormattedRule;
 import de.be.thaw.text.parser.rule.impl.TextRule;
 import de.be.thaw.text.parser.rule.impl.ThingyRule;
-import de.be.thaw.text.model.tree.Node;
-import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.tokenizer.TextTokenizer;
 import de.be.thaw.text.tokenizer.exception.TokenizeException;
 import de.be.thaw.text.tokenizer.token.Token;
@@ -46,9 +47,9 @@ public class TextParser {
      * @throws ParseException in case parsing failed
      */
     public TextModel parse(Reader reader) throws ParseException {
-        Node root = new Node(NodeType.ROOT, null);
+        RootNode root = new RootNode();
 
-        Node currentNode = new Node(NodeType.BOX, null);
+        Node currentNode = new BoxNode();
         root.addChild(currentNode);
 
         try {

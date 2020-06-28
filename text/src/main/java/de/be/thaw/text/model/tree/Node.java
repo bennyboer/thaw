@@ -1,24 +1,20 @@
 package de.be.thaw.text.model.tree;
 
-import de.be.thaw.text.tokenizer.token.Token;
 import de.be.thaw.text.util.TextPosition;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Node {
+/**
+ * Node of the thaw document text format tree.
+ */
+public abstract class Node {
 
     /**
      * Type of the node.
      */
     private final NodeType type;
-
-    /**
-     * Token the node is representing.
-     */
-    @Nullable
-    private final Token token;
 
     /**
      * List of children.
@@ -30,9 +26,13 @@ public class Node {
      */
     private Node parent;
 
-    public Node(NodeType type, @Nullable Token token) {
+    /**
+     * Create new node.
+     *
+     * @param type of the node
+     */
+    public Node(NodeType type) {
         this.type = type;
-        this.token = token;
     }
 
     /**
@@ -119,39 +119,12 @@ public class Node {
     }
 
     /**
-     * Get the token the node is representing.
-     *
-     * @return token
-     */
-    @Nullable
-    public Token getToken() {
-        return token;
-    }
-
-    /**
-     * Check whether the nodes allows children.
-     *
-     * @return whether allows children
-     */
-    public boolean allowsChildren() {
-        return type == NodeType.ROOT
-                || type == NodeType.BOX
-                || type == NodeType.FORMATTED
-                || type == NodeType.ENUMERATION
-                || type == NodeType.ENUMERATION_ITEM;
-    }
-
-    /**
      * Get the text position for the node.
-     * May return null if the node does not have a token and children.
      *
      * @return text position
      */
-    @Nullable
     public TextPosition getTextPosition() {
-        if (token != null) {
-            return token.getPosition();
-        } else if (hasChildren()) {
+        if (hasChildren()) {
             // Create new text position object over all children tokens
             if (children().size() == 1) {
                 return children.get(0).getTextPosition();
@@ -163,9 +136,18 @@ public class Node {
                         children().get(children().size() - 1).getTextPosition().getEndPos()
                 );
             }
+        } else {
+            return null;
         }
+    }
 
-        return null;
+    /**
+     * Get string that represents the nodes internal settings (e. g. Formatting, ...).
+     *
+     * @return string representation
+     */
+    public String getInternalNodeRepresentation() {
+        return "~";
     }
 
     @Override
@@ -186,7 +168,8 @@ public class Node {
                 "%s- [%s]: %s\n",
                 " ".repeat(indent),
                 type.name(),
-                token != null ? token.toString() : 'X')
+                getInternalNodeRepresentation()
+                )
         );
 
         if (hasChildren()) {

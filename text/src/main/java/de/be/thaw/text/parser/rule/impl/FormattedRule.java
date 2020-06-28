@@ -1,10 +1,11 @@
 package de.be.thaw.text.parser.rule.impl;
 
 import de.be.thaw.text.model.emphasis.TextEmphasis;
-import de.be.thaw.text.parser.exception.ParseException;
-import de.be.thaw.text.parser.rule.ParseRule;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
+import de.be.thaw.text.model.tree.impl.FormattedNode;
+import de.be.thaw.text.parser.exception.ParseException;
+import de.be.thaw.text.parser.rule.ParseRule;
 import de.be.thaw.text.tokenizer.token.FormattedToken;
 import de.be.thaw.text.tokenizer.token.Token;
 import org.jetbrains.annotations.NotNull;
@@ -22,31 +23,35 @@ public class FormattedRule implements ParseRule {
         if (!(token instanceof FormattedToken)) {
             throw new ParseException("Rule can only parse tokens of type FormattedToken");
         }
+
         FormattedToken fmtToken = (FormattedToken) token;
 
-        Node fmt = new Node(NodeType.FORMATTED, token);
+        Node fmt = new FormattedNode(
+                token.getValue(),
+                token.getPosition(),
+                ((FormattedToken) token).getEmphases()
+        );
 
         return switch (node.getType()) {
             case FORMATTED -> {
                 // Check if the styles differ
-                Token otherToken = node.getToken();
-                while (otherToken instanceof FormattedToken) {
+                Node otherNode = node;
+
+                while (otherNode.getType() == NodeType.FORMATTED) {
                     Set<TextEmphasis> newTokenEmphases = new HashSet<>(fmtToken.getEmphases());
-                    for (TextEmphasis te : ((FormattedToken) otherToken).getEmphases()) {
+
+                    for (TextEmphasis te : ((FormattedNode) otherNode).getEmphases()) {
                         newTokenEmphases.remove(te);
                     }
 
                     if (newTokenEmphases.isEmpty()) {
-                        // Pop level and try again
-                        node = node.getParent();
-                        otherToken = node.getToken();
+                        otherNode = otherNode.getParent(); // Pop level and try again
                     } else {
-                        // Push another level with the additional emphasis
-                        break;
+                        break; // Push another level with the additional emphasis
                     }
                 }
 
-                node.addChild(fmt);
+                otherNode.addChild(fmt);
 
                 yield fmt;
             }
