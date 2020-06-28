@@ -1,6 +1,6 @@
 package de.be.thaw.text.model;
 
-import de.be.thaw.text.parser.tree.Node;
+import de.be.thaw.text.model.tree.Node;
 
 /**
  * Text model representing a tree of the thaw document text format.

@@ -1,4 +1,4 @@
-package de.be.thaw.text.parser.tree;
+package de.be.thaw.text.model.tree;
 
 import de.be.thaw.text.tokenizer.token.Token;
 import de.be.thaw.text.util.TextPosition;

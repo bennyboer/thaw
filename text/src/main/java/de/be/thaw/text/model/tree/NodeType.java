@@ -1,4 +1,4 @@
-package de.be.thaw.text.parser.tree;
+package de.be.thaw.text.model.tree;
 
 public enum NodeType {
 
