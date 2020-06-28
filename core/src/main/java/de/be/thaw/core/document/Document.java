@@ -5,4 +5,6 @@ package de.be.thaw.core.document;
  */
 public class Document {
 
+
+
 }
