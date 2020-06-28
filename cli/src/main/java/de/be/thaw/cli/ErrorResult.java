@@ -8,7 +8,8 @@ public enum ErrorResult {
     OK(0),
     MISSING_TEXT_FILE(1),
     MORE_THAN_ONE_TEXT_FILE(2),
-    TEXT_FILE_PARSING_ERROR(3);
+    TEXT_FILE_PARSING_ERROR(3),
+    EXPORT_ERROR(4);
 
     /**
      * Code of the error.

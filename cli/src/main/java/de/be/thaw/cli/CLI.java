@@ -1,5 +1,9 @@
 package de.be.thaw.cli;
 
+import de.be.thaw.core.document.Document;
+import de.be.thaw.export.Exporter;
+import de.be.thaw.export.exception.ExportException;
+import de.be.thaw.export.pdf.PdfExporter;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.parser.TextParser;
 import de.be.thaw.text.parser.exception.ParseException;
@@ -10,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 
@@ -28,7 +33,13 @@ public class CLI implements Callable<Integer> {
      * Path to the folder with the root thaw document info file in it (the *.tdi file).
      */
     @CommandLine.Option(names = {"-r", "--root-folder"}, description = "Path to the folder containing the root *.tdi file")
-    private File rootInfoFolderPath;
+    private String rootInfoFolderPath;
+
+    /**
+     * Path where to save the resulting file to.
+     */
+    @CommandLine.Option(names = {"-o", "--output"}, description = "Path where to save the resulting file to")
+    private String outputPath;
 
     /**
      * Name of the charset the files to process are encoded in.
@@ -52,12 +63,25 @@ public class CLI implements Callable<Integer> {
      *
      * @return root info folder path
      */
-    private File getRootInfoFolderPath() {
+    private Path getRootInfoFolderPath() {
         if (rootInfoFolderPath == null) {
-            return new File(System.getProperty("user.dir"));
+            return Path.of(System.getProperty("user.dir"));
         }
 
-        return rootInfoFolderPath;
+        return Path.of(rootInfoFolderPath);
+    }
+
+    /**
+     * Get the path to save the resulting file to.
+     *
+     * @return path to save the resulting file to
+     */
+    private Path getOutputPath() {
+        if (outputPath == null) {
+            return Path.of(System.getProperty("user.dir"), "out.pdf");
+        }
+
+        return Path.of(outputPath);
     }
 
     /**
@@ -87,7 +111,7 @@ public class CLI implements Callable<Integer> {
         System.out.println();
         System.out.println("### Processing ###");
 
-        File root = getRootInfoFolderPath();
+        File root = getRootInfoFolderPath().toFile();
         System.out.println(String.format("Searching for Thaw files within folder at '%s'...", root.getAbsolutePath()));
 
         System.out.println();
@@ -122,7 +146,21 @@ public class CLI implements Callable<Integer> {
             return ErrorResult.TEXT_FILE_PARSING_ERROR.getCode();
         }
 
-        System.out.println(textModel.getRoot().toString());
+        System.out.println(textModel.getRoot().toString()); // TODO Remove (only for testing)
+
+        Document document = new Document(textModel);
+
+        Exporter exporter = new PdfExporter();
+        try {
+            exporter.export(document, getOutputPath());
+        } catch (ExportException e) {
+            System.err.println(String.format(
+                    "An exception occurred while trying to export the resulting document.\n" +
+                            "The exception message is: '%s'",
+                    e.getMessage()
+            ));
+            return ErrorResult.EXPORT_ERROR.getCode();
+        }
 
         return ErrorResult.OK.getCode();
     }
