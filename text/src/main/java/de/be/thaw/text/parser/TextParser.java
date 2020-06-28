@@ -79,9 +79,8 @@ public class TextParser {
      * @throws ParseException in case something went wrong during parsing
      */
     private Node onNextToken(Node node, Token token) throws ParseException {
-        System.out.println(token);
-
         ParseRule rule = RULES.get(token.getType());
+
         if (rule == null) {
             throw new ParseException(String.format(
                     "Token type '%s' does not have a parsing rule associated with",
