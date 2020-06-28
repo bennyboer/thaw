@@ -1,0 +1,21 @@
+plugins {
+    id 'application'
+}
+
+application {
+    mainClass.set('de.be.thaw.cli.CLI')
+}
+
+dependencies {
+    implementation project(':text')
+    implementation project(':core')
+
+    // Command line argument parser library
+    compile group: 'info.picocli', name: 'picocli', version: '4.3.2'
+    annotationProcessor group: 'info.picocli', name: 'picocli-codegen', version: '4.3.2'
+}
+
+compileJava {
+    // Additional compiler arguments needed by picocli
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
