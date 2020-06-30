@@ -9,6 +9,7 @@ import de.be.thaw.core.typesetting.knuthplass.item.impl.Penalty;
 import de.be.thaw.core.typesetting.knuthplass.item.impl.box.EmptyBox;
 import de.be.thaw.core.typesetting.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.core.typesetting.knuthplass.paragraph.Paragraph;
+import de.be.thaw.core.typesetting.page.Page;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
@@ -48,6 +49,15 @@ public class KnuthPlassLineBreaking {
         initializeForNode(document.getTextModel().getRoot());
 
         finalizeParagraph(); // Finalize the last paragraph
+    }
+
+    /**
+     * Calculate the finished pages utilizing the Knuth-Plass line breaking algorithm.
+     *
+     * @return the pages that are ready to be printed
+     */
+    public List<Page> calculate() {
+        return null; // TODO Implement algorithm and create the needed pages with text elements in the first step (later images, ...)
     }
 
     /**
