@@ -59,8 +59,10 @@ public class LineBreakingConfigBuilder {
      *
      * @param firstLineIndent to set
      */
-    public void setFirstLineIndent(double firstLineIndent) {
+    public LineBreakingConfigBuilder setFirstLineIndent(double firstLineIndent) {
         this.firstLineIndent = firstLineIndent;
+
+        return this;
     }
 
     /**
@@ -77,8 +79,10 @@ public class LineBreakingConfigBuilder {
      *
      * @param pageSize to set
      */
-    public void setPageSize(Size pageSize) {
+    public LineBreakingConfigBuilder setPageSize(Size pageSize) {
         this.pageSize = pageSize;
+
+        return this;
     }
 
     /**
@@ -96,8 +100,10 @@ public class LineBreakingConfigBuilder {
      *
      * @param fontDetailsSupplier to set
      */
-    public void setFontDetailsSupplier(FontDetailsSupplier fontDetailsSupplier) {
+    public LineBreakingConfigBuilder setFontDetailsSupplier(FontDetailsSupplier fontDetailsSupplier) {
         this.fontDetailsSupplier = fontDetailsSupplier;
+
+        return this;
     }
 
     /**
@@ -114,8 +120,10 @@ public class LineBreakingConfigBuilder {
      *
      * @param hyphenator to set
      */
-    public void setHyphenator(Hyphenator hyphenator) {
+    public LineBreakingConfigBuilder setHyphenator(Hyphenator hyphenator) {
         this.hyphenator = hyphenator;
+
+        return this;
     }
 
     /**
@@ -132,8 +140,10 @@ public class LineBreakingConfigBuilder {
      *
      * @param glueConfig to set
      */
-    public void setGlueConfig(GlueConfig glueConfig) {
+    public LineBreakingConfigBuilder setGlueConfig(GlueConfig glueConfig) {
         this.glueConfig = glueConfig;
+
+        return this;
     }
 
     /**
