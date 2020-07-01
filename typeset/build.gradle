@@ -1,3 +1,4 @@
 dependencies {
-    // Additional dependencies go here
+    implementation project(':core')
+    implementation project(':text')
 }

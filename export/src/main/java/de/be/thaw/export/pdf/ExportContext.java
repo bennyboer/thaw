@@ -34,12 +34,12 @@ public class ExportContext {
     private float fontSize;
 
     /**
-     * The maximum page width.
+     * The maximum de.be.thaw.typeset.page width.
      */
     private final float pageWidth;
 
     /**
-     * The maximum page height;
+     * The maximum de.be.thaw.typeset.page height;
      */
     private final float pageHeight;
 
