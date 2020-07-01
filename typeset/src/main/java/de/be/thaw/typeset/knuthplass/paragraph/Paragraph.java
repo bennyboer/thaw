@@ -25,6 +25,15 @@ public class Paragraph {
     }
 
     /**
+     * Get the items of the paragraph.
+     *
+     * @return items
+     */
+    public List<Item> items() {
+        return items;
+    }
+
+    /**
      * Check whether the paragraph does not have items yet.
      *
      * @return whether empty
