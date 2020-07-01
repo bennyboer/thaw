@@ -1,22 +1,23 @@
 package de.be.thaw.export;
 
-import de.be.thaw.core.document.Document;
 import de.be.thaw.export.exception.ExportException;
+import de.be.thaw.typeset.page.Page;
 
 import java.nio.file.Path;
+import java.util.List;
 
 /**
- * Exporter for a thaw document.
+ * Exporter for a typeset thaw document.
  */
 public interface Exporter {
 
     /**
-     * Export the passed document.
+     * Export the passed pages.
      *
-     * @param document to export
-     * @param path     to save the resulting file to
+     * @param pages to export
+     * @param path  to save the resulting file to
      * @throws ExportException in case the export goes wrong
      */
-    void export(Document document, Path path) throws ExportException;
+    void export(List<Page> pages, Path path) throws ExportException;
 
 }
