@@ -151,6 +151,11 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
                 default -> wordBuffer.append(c);
             }
         }
+
+        // Add final item
+        if (wordBuffer.length() > 0) {
+            appendWordToParagraph(wordBuffer.toString(), node);
+        }
     }
 
     /**

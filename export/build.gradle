@@ -1,5 +1,7 @@
 dependencies {
     implementation project(':typeset')
+    implementation project(':core')
+    implementation project(':text')
 
     // Library used to create PDF documents
     implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.20'

@@ -1,9 +1,9 @@
 package de.be.thaw.typeset.page.impl;
 
-import de.be.thaw.core.typesetting.page.element.AbstractElement;
-import de.be.thaw.core.util.Position;
-import de.be.thaw.core.util.Size;
 import de.be.thaw.text.model.tree.Node;
+import de.be.thaw.typeset.page.AbstractElement;
+import de.be.thaw.typeset.util.Position;
+import de.be.thaw.typeset.util.Size;
 
 /**
  * Element containing text.

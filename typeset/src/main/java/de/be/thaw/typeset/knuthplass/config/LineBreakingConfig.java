@@ -16,9 +16,37 @@ public class LineBreakingConfig {
     private final double firstLineIndent;
 
     /**
-     * Size of the de.be.thaw.typeset.page to typeset on (in millimeters).
+     * Size of the de.be.thaw.typeset.page to typeset on (in arbitrary units).
      */
     private final Size pageSize;
+
+    /**
+     * Height of a line.
+     */
+    private final double lineHeight;
+
+    /**
+     * Defines how many lines more than the optimum value are allowed.
+     */
+    private final int looseness;
+
+    /**
+     * Tolerance of the badness.
+     * This value is the maximum adjustment ratio allowed to fit a line.
+     */
+    private final double tolerance;
+
+    /**
+     * Demerit added when the break points of two consecutive lines
+     * are flagged.
+     */
+    private final double flaggedDemerit;
+
+    /**
+     * Demerit added when two consecutive lines have different
+     * fitness classes.
+     */
+    private final double fitnessDemerit;
 
     /**
      * Supplier for font details.
@@ -37,7 +65,12 @@ public class LineBreakingConfig {
 
     public LineBreakingConfig(
             Size pageSize,
+            double lineHeight,
             double firstLineIndent,
+            int looseness,
+            double tolerance,
+            double flaggedDemerit,
+            double fitnessDemerit,
             FontDetailsSupplier fontDetailsSupplier,
             Hyphenator hyphenator,
             GlueConfig glueConfig
@@ -56,12 +89,28 @@ public class LineBreakingConfig {
 
         this.pageSize = pageSize;
         this.firstLineIndent = firstLineIndent;
+        this.lineHeight = lineHeight;
+
+        this.looseness = looseness;
+        this.tolerance = tolerance;
+
+        this.flaggedDemerit = flaggedDemerit;
+        this.fitnessDemerit = fitnessDemerit;
 
         this.fontDetailsSupplier = fontDetailsSupplier;
 
         this.hyphenator = hyphenator;
 
         this.glueConfig = glueConfig;
+    }
+
+    /**
+     * Get the height of a line.
+     *
+     * @return line height
+     */
+    public double getLineHeight() {
+        return lineHeight;
     }
 
     /**
@@ -108,6 +157,45 @@ public class LineBreakingConfig {
      */
     public GlueConfig getGlueConfig() {
         return glueConfig;
+    }
+
+    /**
+     * Tolerance of the badness.
+     * This value is the maximum adjustment ratio allowed to fit a line.
+     *
+     * @return tolerance
+     */
+    public double getTolerance() {
+        return tolerance;
+    }
+
+    /**
+     * Get how many lines more than the optimum value are allowed.
+     *
+     * @return looseness
+     */
+    public int getLooseness() {
+        return looseness;
+    }
+
+    /**
+     * Get the demerit added when the break points of two consecutive lines
+     * are flagged.
+     *
+     * @return flagged demerit
+     */
+    public double getFlaggedDemerit() {
+        return flaggedDemerit;
+    }
+
+    /**
+     * Get the demerit added when two consecutive lines have different
+     * fitness classes.
+     *
+     * @return fitness demerit
+     */
+    public double getFitnessDemerit() {
+        return fitnessDemerit;
     }
 
     /**

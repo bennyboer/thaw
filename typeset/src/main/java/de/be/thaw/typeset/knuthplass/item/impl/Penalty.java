@@ -13,13 +13,13 @@ public class Penalty extends AbstractItem {
      * The maximum penalty.
      * All penalties greater or equal to this are treated as impossible line breaks.
      */
-    private static final double MAX_PENALTY = 1000.0;
+    public static final double MAX_PENALTY = 1000.0;
 
     /**
      * The minimum penalty.
      * All penalties lower or equal to this are treated as mandatory line breaks.
      */
-    private static final double MIN_PENALTY = -1000.0;
+    public static final double MIN_PENALTY = -1000.0;
 
     /**
      * Penalty to line break at this point.

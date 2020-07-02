@@ -1,9 +1,7 @@
 package de.be.thaw.typeset.knuthplass.util;
 
 /**
- * Representation of a possible break point in a paragraph.
- * Essentially this means any place in a paragraph that we are allowed
- * to break the line or page at.
+ * Representation of an active break point.
  */
 public class BreakPoint {
 
@@ -13,31 +11,63 @@ public class BreakPoint {
     private final int index;
 
     /**
-     * Penalty of breaking at this break point.
+     * Number of the line ending at this break point.
      */
-    private final double penalty;
-
-    public BreakPoint(int index, double penalty) {
-        this.index = index;
-        this.penalty = penalty;
-    }
+    private int lineNumber = 0;
 
     /**
-     * Get the index of the break point in a paragraphs item list.
-     *
-     * @return index
+     * Fit of the line ending this break point.
      */
+    private LineFit lineFit = LineFit.NORMAL;
+
+    /**
+     * The demerits of this break point.
+     */
+    private double demerits = 0;
+
+    /**
+     * The currently best previous break point.
+     */
+    private BreakPoint previous;
+
+    public BreakPoint(int index) {
+        this.index = index;
+    }
+
     public int getIndex() {
         return index;
     }
 
-    /**
-     * Get the penalty for breaking at this point.
-     *
-     * @return penalty
-     */
-    public double getPenalty() {
-        return penalty;
+    public int getLineNumber() {
+        return lineNumber;
+    }
+
+    public void setLineNumber(int lineNumber) {
+        this.lineNumber = lineNumber;
+    }
+
+    public LineFit getLineFit() {
+        return lineFit;
+    }
+
+    public void setLineFit(LineFit lineFit) {
+        this.lineFit = lineFit;
+    }
+
+    public double getDemerits() {
+        return demerits;
+    }
+
+    public void setDemerits(double totalDemerits) {
+        this.demerits = totalDemerits;
+    }
+
+    public BreakPoint getPrevious() {
+        return previous;
+    }
+
+    public void setPrevious(BreakPoint previous) {
+        this.previous = previous;
     }
 
 }
