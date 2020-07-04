@@ -2,8 +2,10 @@ package de.be.thaw.font.system;
 
 import de.be.thaw.core.util.OperatingSystem;
 import de.be.thaw.core.util.exception.CouldNotDetermineOperatingSystemException;
-import de.be.thaw.font.util.FontDescriptor;
 import de.be.thaw.font.util.exception.CouldNotGetFontsException;
+import de.be.thaw.font.util.file.FontCollectionFile;
+import de.be.thaw.font.util.file.FontFile;
+import de.be.thaw.font.util.file.SingleFontFile;
 
 import java.awt.FontFormatException;
 import java.io.File;
@@ -19,7 +21,7 @@ public class SystemFontManager {
     /**
      * Available system fonts as mapping from the font name to its description.
      */
-    private static FontDescriptor[] SYSTEM_FONTS;
+    private static FontFile[] SYSTEM_FONTS;
 
     /**
      * Get all available fonts in the system.
@@ -27,9 +29,9 @@ public class SystemFontManager {
      * @return available fonts
      * @throws CouldNotGetFontsException in case fonts could not be retrieved from the system
      */
-    public static FontDescriptor[] getAvailableFonts() throws CouldNotGetFontsException {
+    public static FontFile[] getAvailableFonts() throws CouldNotGetFontsException {
         if (SYSTEM_FONTS == null) {
-            List<FontDescriptor> descriptorList = new ArrayList<>();
+            List<FontFile> descriptorList = new ArrayList<>();
 
             try {
                 for (String location : SystemFontLocations.getLocations(OperatingSystem.current())) {
@@ -38,9 +40,14 @@ public class SystemFontManager {
                     if (fontsFolder.isDirectory()) {
                         // Fetch all true type font files
                         File[] trueTypeFontFiles = fontsFolder.listFiles((dir, name) -> name.toLowerCase().endsWith(".ttf"));
-
                         for (File file : trueTypeFontFiles) {
-                            descriptorList.add(new FontDescriptor(file.getAbsolutePath()));
+                            descriptorList.add(new SingleFontFile(file.getAbsolutePath()));
+                        }
+
+                        // Fetch all true type collection files
+                        File[] trueTypeCollectionFiles = fontsFolder.listFiles((dir, name) -> name.toLowerCase().endsWith(".ttc"));
+                        for (File file : trueTypeCollectionFiles) {
+                            descriptorList.add(new FontCollectionFile(file.getAbsolutePath()));
                         }
                     }
                 }
@@ -48,7 +55,7 @@ public class SystemFontManager {
                 throw new CouldNotGetFontsException(e);
             }
 
-            SYSTEM_FONTS = descriptorList.toArray(new FontDescriptor[0]);
+            SYSTEM_FONTS = descriptorList.toArray(new FontFile[0]);
         }
 
         return SYSTEM_FONTS;

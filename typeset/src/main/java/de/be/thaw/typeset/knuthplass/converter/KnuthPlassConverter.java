@@ -130,8 +130,8 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
                     char lastChar = wordBuffer.length() > 0 ? wordBuffer.charAt(wordBuffer.length() - 1) : ' ';
                     paragraphs.get(paragraphs.size() - 1).addItem(new Glue(
                             config.getFontDetailsSupplier().getSpaceWidth(node),
-                            config.getGlueConfig().getInterWordStretchability(lastChar),
-                            config.getGlueConfig().getInterWordShrinkability(lastChar)
+                            config.getGlueConfig().getInterWordStretchability(node, lastChar),
+                            config.getGlueConfig().getInterWordShrinkability(node, lastChar)
                     ));
                 }
                 case '-' -> {

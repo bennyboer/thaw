@@ -21,7 +21,6 @@ import de.be.thaw.typeset.page.impl.TextElement;
 import de.be.thaw.typeset.util.Position;
 import de.be.thaw.typeset.util.Size;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -129,7 +128,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                     if (item instanceof TextBox) {
                         currentPageElements.add(new TextElement(
                                 ((TextBox) item).getText(),
-                                null,
+                                ((TextBox) item).getNode(),
                                 new Size(item.getWidth(), config.getLineHeight()),
                                 new Position(x, y)
                         ));

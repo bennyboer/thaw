@@ -3,7 +3,11 @@ package de.be.thaw.font.util;
 import de.be.thaw.font.system.SystemFontManager;
 import de.be.thaw.font.util.exception.CouldNotDetermineFontVariantException;
 import de.be.thaw.font.util.exception.CouldNotGetFontsException;
+import de.be.thaw.font.util.file.FontCollectionFile;
+import de.be.thaw.font.util.file.FontFile;
+import de.be.thaw.font.util.file.SingleFontFile;
 
+import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -55,49 +59,68 @@ public class FontManager {
      * Initialize the available font families.
      */
     private void initFamilies() {
-        FontDescriptor[] descriptors;
+        FontFile[] fontFiles;
         try {
-            descriptors = SystemFontManager.getAvailableFonts();
+            fontFiles = SystemFontManager.getAvailableFonts();
         } catch (CouldNotGetFontsException e) {
             throw new IllegalStateException("Could not get any fonts from the system");
         }
 
-        Map<String, Map<FontVariant, FontDescriptor>> familyMapping = new HashMap<>();
-        for (FontDescriptor descriptor : descriptors) {
-            String familyName = descriptor.getFont().getFamily();
+        Map<String, Map<FontVariant, FontVariantLocator>> familyMapping = new HashMap<>();
+        for (FontFile file : fontFiles) {
+            if (file.isCollection()) {
+                FontCollectionFile fcf = (FontCollectionFile) file;
 
-            FontVariant variant;
-            try {
-                variant = getVariantForDescriptor(descriptor);
-            } catch (CouldNotDetermineFontVariantException e) {
-                System.out.println(String.format("[WARN] '%s'", e.getMessage()));
-                continue; // Skip that one
-            }
+                for (Font font : fcf.getFonts()) {
+                    addFontToMapping(font, fcf, familyMapping);
+                }
+            } else {
+                SingleFontFile sff = (SingleFontFile) file;
 
-            Map<FontVariant, FontDescriptor> currentMapping = familyMapping.computeIfAbsent(familyName, (k) -> new HashMap<>());
-            if (!currentMapping.containsKey(variant)) {
-                // Do not overwrite existing variants
-                currentMapping.put(variant, descriptor);
+                addFontToMapping(sff.getFont(), sff, familyMapping);
             }
         }
 
-        for (Map.Entry<String, Map<FontVariant, FontDescriptor>> entry : familyMapping.entrySet()) {
+        for (Map.Entry<String, Map<FontVariant, FontVariantLocator>> entry : familyMapping.entrySet()) {
             families.put(entry.getKey(), new FontFamily(entry.getValue()));
         }
     }
 
     /**
-     * Get the font variant for the passed font descriptor.
+     * Add the passed font to the given mapping.
      *
-     * @param descriptor to get variant for
+     * @param font          to add
+     * @param file          the font belongs to
+     * @param familyMapping to add font to
+     */
+    private void addFontToMapping(Font font, FontFile file, Map<String, Map<FontVariant, FontVariantLocator>> familyMapping) {
+        String familyName = font.getFamily();
+
+        try {
+            FontVariant variant = getVariantForFont(font);
+
+            Map<FontVariant, FontVariantLocator> currentMapping = familyMapping.computeIfAbsent(familyName, (k) -> new HashMap<>());
+            if (!currentMapping.containsKey(variant)) {
+                // Do not overwrite existing variants
+                currentMapping.put(variant, new FontVariantLocator(file, font.getFontName()));
+            }
+        } catch (CouldNotDetermineFontVariantException e) {
+            System.out.println(String.format("[WARN] '%s'", e.getMessage()));
+        }
+    }
+
+    /**
+     * Get the font variant for the passed font.
+     *
+     * @param font to get variant for
      * @return the font variant
      * @throws CouldNotDetermineFontVariantException in case the font variant could not be determined
      */
-    private FontVariant getVariantForDescriptor(FontDescriptor descriptor) throws CouldNotDetermineFontVariantException {
+    private FontVariant getVariantForFont(Font font) throws CouldNotDetermineFontVariantException {
         // Try to guess the variant by the font name
-        String name = descriptor.getFont().getFontName();
-        if (name.startsWith(descriptor.getFont().getFamily())) {
-            name = name.substring(descriptor.getFont().getFamily().length());
+        String name = font.getFontName();
+        if (name.startsWith(font.getFamily())) {
+            name = name.substring(font.getFamily().length());
         }
 
         if (name.isBlank()) {
