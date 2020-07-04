@@ -3,6 +3,9 @@ package de.be.thaw.export.pdf;
 import de.be.thaw.core.document.Document;
 import de.be.thaw.export.Exporter;
 import de.be.thaw.export.exception.ExportException;
+import de.be.thaw.font.util.FontFamily;
+import de.be.thaw.font.util.FontManager;
+import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
@@ -22,8 +25,9 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
+import org.apache.pdfbox.pdmodel.font.PDType0Font;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -40,7 +44,8 @@ public class PdfExporter implements Exporter {
             PDPage page = new PDPage();
             doc.addPage(page);
 
-            PDFont pdfFont = PDType1Font.TIMES_ROMAN;
+            FontFamily family = FontManager.getInstance().getFamily("Calibri").orElseThrow();
+            PDFont pdfFont = PDType0Font.load(doc, new FileInputStream(family.getVariantFont(FontVariant.PLAIN).orElseThrow().getLocation()), true);
             float fontSize = 12;
             float leading = 1.5f * fontSize;
 

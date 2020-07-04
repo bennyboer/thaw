@@ -179,7 +179,8 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
 
             paragraph.addItem(new TextBox(
                     part.getPart(),
-                    config.getFontDetailsSupplier().getStringWidth(node, part.getPart())
+                    config.getFontDetailsSupplier().getStringWidth(node, part.getPart()),
+                    node
             ));
 
             boolean isLast = i == len - 1;

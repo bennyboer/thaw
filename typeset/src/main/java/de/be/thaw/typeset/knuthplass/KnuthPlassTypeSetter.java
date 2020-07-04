@@ -21,6 +21,7 @@ import de.be.thaw.typeset.page.impl.TextElement;
 import de.be.thaw.typeset.util.Position;
 import de.be.thaw.typeset.util.Size;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -110,11 +111,19 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
                 double lineWidth = result.getContext().getLineWidth(i + 1);
                 List<Item> line = lines.get(i);
+                LineMetrics lineMetrics = calculateLineMetrics(line);
+
+                if (lineMetrics.getMinWidth() == 0) {
+                    // No need to lay it out.
+                    // Might happen when breaking right before the paragraphs end glue with
+                    // zero width and infinite stretchability.
+                    continue;
+                }
 
                 // TODO Configuration whether justifying and what alignment needs to be applied here!
 
                 boolean isLastLine = i == lines.size() - 1;
-                double spaceWidth = getSpaceWidth(line, lineWidth);
+                double spaceWidth = getJustifiedLineSpaceWidth(lineMetrics, lineWidth);
 
                 for (Item item : line) {
                     if (item instanceof TextBox) {
@@ -158,15 +167,15 @@ public class KnuthPlassTypeSetter implements TypeSetter {
     }
 
     /**
-     * Get the width of a space when justifying.
+     * Calculate some metrics that describe the passed line.
      *
-     * @param line      to get space width for
-     * @param lineWidth width of the line
-     * @return space width
+     * @param line to calculate metrics for
+     * @return line metrics
      */
-    private double getSpaceWidth(List<Item> line, double lineWidth) {
+    private LineMetrics calculateLineMetrics(List<Item> line) {
         double totalWidth = 0;
-        double glueCount = 0;
+        int glueCount = 0; // Amount of glues (white spaces)
+
         for (Item item : line) {
             if (item.getType() != ItemType.GLUE) {
                 totalWidth += item.getWidth();
@@ -175,7 +184,18 @@ public class KnuthPlassTypeSetter implements TypeSetter {
             }
         }
 
-        return (lineWidth - totalWidth) / glueCount;
+        return new LineMetrics(totalWidth, glueCount);
+    }
+
+    /**
+     * Get the width of a space when justifying.
+     *
+     * @param lineMetrics metrics of the line to get the space width for
+     * @param lineWidth   required width of the line
+     * @return space width
+     */
+    private double getJustifiedLineSpaceWidth(LineMetrics lineMetrics, double lineWidth) {
+        return (lineWidth - lineMetrics.minWidth) / lineMetrics.getWhiteSpaces();
     }
 
     /**
@@ -512,6 +532,46 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
         public LineBreakingContext getContext() {
             return context;
+        }
+
+    }
+
+    /**
+     * Metrics about a line.
+     */
+    private static class LineMetrics {
+
+        /**
+         * Minimum width of the line.
+         */
+        private final double minWidth;
+
+        /**
+         * Count of white spaces in the line.
+         */
+        private final int whiteSpaces;
+
+        public LineMetrics(double minWidth, int whiteSpaces) {
+            this.minWidth = minWidth;
+            this.whiteSpaces = whiteSpaces;
+        }
+
+        /**
+         * Get the minimum width the line needs.
+         *
+         * @return minimum width
+         */
+        public double getMinWidth() {
+            return minWidth;
+        }
+
+        /**
+         * Get the white space count in the line.
+         *
+         * @return white space count
+         */
+        public int getWhiteSpaces() {
+            return whiteSpaces;
         }
 
     }

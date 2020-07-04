@@ -21,4 +21,5 @@ The project is organized in multiple modules:
 | Info | `/info` | Document information (meta data, etc.) and model. |
 | Typesetting | `/typeset` | Code related to typesetting a document. |
 | Export | `/export` | Related to exporting a document (for example to PDF). |
+| Font | `/font` | Helps dealing with fonts. |
 | Plugin | `/plugin` | Plugin development resources. |
