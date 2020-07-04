@@ -227,7 +227,7 @@ public class PdfExporter implements Exporter {
                 .setGlueConfig(new GlueConfig() {
                     @Override
                     public double getInterWordStretchability(Node node, char lastChar) {
-                        return getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 2 * quality;
+                        return getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 2 * (quality + 1);
                     }
 
                     @Override
