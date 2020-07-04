@@ -91,7 +91,19 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                     currentLine = new ArrayList<>();
                     lines.add(currentLine);
                 } else {
-                    currentLine.add(item);
+                    if (item.getType() == ItemType.GLUE) {
+                        // Skip leading, trailing and consecutive glues (except if they indicate explicit line breaks)
+                        if (currentLine.size() > 0) {
+                            Item previous = currentLine.get(currentLine.size() - 1);
+
+                            boolean indicatesExplicitLineBreak = item.getWidth() == 0 && item.getStretchability() > 0;
+                            if (previous.getType() != ItemType.GLUE || indicatesExplicitLineBreak) {
+                                currentLine.add(item);
+                            }
+                        }
+                    } else {
+                        currentLine.add(item);
+                    }
                 }
             }
 
@@ -121,7 +133,13 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
                 // TODO Configuration whether justifying and what alignment needs to be applied here!
 
+                // Last item is glue with width 0 -> indicates explicit line break
+                Item last = line.get(line.size() - 1);
+                boolean isExplicitLineBreakInLine = last.getType() == ItemType.GLUE && last.getWidth() == 0 && last.getStretchability() > 0;
+
                 boolean isLastLine = i == lines.size() - 1;
+                boolean justifyLine = !isExplicitLineBreakInLine && !isLastLine;
+
                 double spaceWidth = getJustifiedLineSpaceWidth(lineMetrics, lineWidth);
 
                 for (Item item : line) {
@@ -143,11 +161,11 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                                     new Position(x, y)
                             ));
 
-                            x += item.getWidth() + (isLastLine ? 0 : spaceWidth);
+                            x += item.getWidth() + (justifyLine ? spaceWidth : 0);
                         }
                     } else if (item instanceof Glue) {
                         if (item.getWidth() > 0) {
-                            x += isLastLine ? item.getWidth() : spaceWidth;
+                            x += justifyLine ? spaceWidth : item.getWidth();
                         }
                     } else {
                         x += item.getWidth();

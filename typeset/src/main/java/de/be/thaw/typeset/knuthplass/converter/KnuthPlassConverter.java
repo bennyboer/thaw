@@ -7,6 +7,7 @@ import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.text.model.tree.impl.TextNode;
+import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.config.LineBreakingConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWord;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWordPart;
@@ -59,6 +60,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
             case BOX, ENUMERATION -> initializeNewParagraph();
             case TEXT, FORMATTED -> initializeTextualNode(node);
             case ENUMERATION_ITEM -> initializeEnumerationItem((EnumerationItemNode) node);
+            case THINGY -> initializeThingy((ThingyNode) node);
         }
 
         // Process child nodes (if any)
@@ -165,6 +167,10 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
      * @param node the word belongs to
      */
     private void appendWordToParagraph(String word, Node node) {
+        if (word.isEmpty()) {
+            return;
+        }
+
         Paragraph paragraph = paragraphs.get(paragraphs.size() - 1);
 
         // Hyphenate word first
@@ -198,6 +204,24 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
      */
     private void initializeEnumerationItem(EnumerationItemNode node) {
         // TODO Special handling for an enumeration item where an explicit line break is added at the end and an enumeration item at the beginning
+    }
+
+    /**
+     * Initialize using a thingy node.
+     *
+     * @param node to initialize with
+     */
+    private void initializeThingy(ThingyNode node) {
+        // Checking for explicit line breaks
+        if (node.getName().equalsIgnoreCase("BREAK")) {
+            Paragraph current = paragraphs.get(paragraphs.size() - 1);
+
+            // Add glue as stretchable space to fill the last line
+            current.addItem(new Glue(0, config.getPageSize().getWidth(), 0));
+
+            // Add explicit line break
+            current.addItem(new Penalty(Double.NEGATIVE_INFINITY, 0, true));
+        }
     }
 
 }

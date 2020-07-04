@@ -48,7 +48,7 @@ public class PdfExporter implements Exporter {
     /**
      * Cache for already loaded and embedded fonts.
      */
-    private Map<FontVariantLocator, PDFont> fontCache = new HashMap<>();
+    private final Map<FontVariantLocator, PDFont> fontCache = new HashMap<>();
 
     /**
      * PDF document currently exporting to.
@@ -227,7 +227,7 @@ public class PdfExporter implements Exporter {
                 .setGlueConfig(new GlueConfig() {
                     @Override
                     public double getInterWordStretchability(Node node, char lastChar) {
-                        return getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 2 * (quality + 1);
+                        return (getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 2) * (quality + 1);
                     }
 
                     @Override
