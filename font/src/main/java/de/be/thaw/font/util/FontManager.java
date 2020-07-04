@@ -70,10 +70,15 @@ public class FontManager {
             try {
                 variant = getVariantForDescriptor(descriptor);
             } catch (CouldNotDetermineFontVariantException e) {
-                variant = FontVariant.PLAIN;
+                System.out.println(String.format("[WARN] '%s'", e.getMessage()));
+                continue; // Skip that one
             }
 
-            familyMapping.computeIfAbsent(familyName, (k) -> new HashMap<>()).put(variant, descriptor);
+            Map<FontVariant, FontDescriptor> currentMapping = familyMapping.computeIfAbsent(familyName, (k) -> new HashMap<>());
+            if (!currentMapping.containsKey(variant)) {
+                // Do not overwrite existing variants
+                currentMapping.put(variant, descriptor);
+            }
         }
 
         for (Map.Entry<String, Map<FontVariant, FontDescriptor>> entry : familyMapping.entrySet()) {
@@ -89,38 +94,50 @@ public class FontManager {
      * @throws CouldNotDetermineFontVariantException in case the font variant could not be determined
      */
     private FontVariant getVariantForDescriptor(FontDescriptor descriptor) throws CouldNotDetermineFontVariantException {
-        FontVariant variant = null;
+        // Try to guess the variant by the font name
+        String name = descriptor.getFont().getFontName();
+        if (name.startsWith(descriptor.getFont().getFamily())) {
+            name = name.substring(descriptor.getFont().getFamily().length());
+        }
 
-        if (descriptor.getFont().isPlain()) {
-            variant = FontVariant.PLAIN;
-        } else if (descriptor.getFont().isBold()) {
-            if (descriptor.getFont().isItalic()) {
-                variant = FontVariant.BOLD_ITALIC;
-            } else {
-                variant = FontVariant.ITALIC;
+        if (name.isBlank()) {
+            return FontVariant.PLAIN;
+        }
+
+        String originalFontVariant = name.trim();
+
+        name = name.toLowerCase();
+
+        int regularIndex = name.indexOf("regular");
+        if (regularIndex != -1) {
+            return FontVariant.PLAIN;
+        }
+
+        int boldIndex = name.indexOf("bold");
+        if (boldIndex != -1) {
+            name = name.substring(0, boldIndex) + name.substring(boldIndex + "bold".length());
+        }
+
+        int italicIndex = name.indexOf("italic");
+        if (italicIndex != -1) {
+            name = name.substring(0, italicIndex) + name.substring(italicIndex + "italic".length());
+        }
+
+        if (name.isBlank()) {
+            // There are no more font variants we do not support (yet) -> valid font variant for our uses!
+            if (boldIndex != -1 && italicIndex != -1) {
+                return FontVariant.BOLD_ITALIC;
+            } else if (boldIndex != -1) {
+                return FontVariant.BOLD;
+            } else if (italicIndex != -1) {
+                return FontVariant.ITALIC;
             }
-        } else if (descriptor.getFont().isItalic()) {
-            variant = FontVariant.ITALIC;
         }
 
-        if (variant == null || variant == FontVariant.PLAIN) {
-            // Try to guess the variant by the font name
-            String name = descriptor.getFont().getFontName().toLowerCase();
-
-            System.out.println(name);
-
-            boolean isBold = name.contains("bold");
-            boolean isItalic = name.contains("italic");
-        }
-
-        if (variant == null) {
-            throw new CouldNotDetermineFontVariantException(String.format(
-                    "Could not determine the font variant for font at '%s'",
-                    descriptor.getLocation()
-            ));
-        }
-
-        return variant;
+        throw new CouldNotDetermineFontVariantException(String.format(
+                "The font variant string '%s' could not be mapped to a known font variant",
+                originalFontVariant
+        ));
     }
 
     /**

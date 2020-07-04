@@ -133,7 +133,7 @@ public class CLI implements Callable<Integer> {
 
         TextParser textParser = new TextParser();
         TextModel textModel;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(textFile)))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(textFile), charset))) {
             textModel = textParser.parse(br);
         } catch (ParseException e) {
             System.err.println(String.format(

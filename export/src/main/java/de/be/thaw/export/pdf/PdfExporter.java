@@ -44,8 +44,8 @@ public class PdfExporter implements Exporter {
             PDPage page = new PDPage();
             doc.addPage(page);
 
-            FontFamily family = FontManager.getInstance().getFamily("Calibri").orElseThrow();
-            PDFont pdfFont = PDType0Font.load(doc, new FileInputStream(family.getVariantFont(FontVariant.PLAIN).orElseThrow().getLocation()), true);
+            FontFamily family = FontManager.getInstance().getFamily("Book Antiqua").orElseThrow();
+            PDFont pdfFont = PDType0Font.load(doc, new FileInputStream(family.getVariantFont(FontVariant.PLAIN).orElseThrow().getLocation()), false);
             float fontSize = 12;
             float leading = 1.5f * fontSize;
 
