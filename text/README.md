@@ -37,9 +37,13 @@ I am in the same paragraph as "This is one as well!".
 
 ### Explicit line breaking
 
-Sometimes you want to have an explicit line break which can be achieved by adding `#BR#` to the document.
+Sometimes you want to have an explicit line break which can be achieved by adding `#BREAK#` (or `#BREAK, type=LINE#`) to the document.
 Text enclosed in `#` characters is called a *Thingy*.
 *Thingys* simply do special stuff like line breaks!
+
+### Explicit page breaking
+
+Alike explicit line breaks you can simple type `#BREAK, type=PAGE#` to break a page.
 
 ### Headings
 

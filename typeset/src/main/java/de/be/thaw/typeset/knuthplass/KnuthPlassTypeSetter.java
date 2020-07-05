@@ -37,9 +37,9 @@ public class KnuthPlassTypeSetter implements TypeSetter {
     private final KnuthPlassTypeSettingConfig config;
 
     /**
-     * Paragraphs to type set.
+     * List of lists of consecutive paragraphs to type set.
      */
-    private List<Paragraph> paragraphs;
+    private List<List<Paragraph>> paragraphs;
 
     /**
      * The currently typeset pages.
@@ -72,84 +72,93 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
         double availableLineWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight());
 
-        for (Paragraph paragraph : paragraphs) {
-            LineBreakingResult result;
-            try {
-                result = findBreakPoints(paragraph, availableLineWidth);
-            } catch (CouldNotFindFeasibleSolutionException e) {
-                throw new TypeSettingException("Typesetting failed because the line breaking algorithm could not find a feasible solution", e);
-            }
+        for (int consecutiveParagraphsIndex = 0; consecutiveParagraphsIndex < paragraphs.size(); consecutiveParagraphsIndex++) {
+            List<Paragraph> consecutiveParagraphs = paragraphs.get(consecutiveParagraphsIndex);
 
-            List<List<Item>> lines = splitParagraphIntoLines(paragraph, result);
-
-            for (int i = 0; i < lines.size(); i++) {
-                if (y > config.getPageSize().getHeight()) {
-                    // Create next page
-                    pages.add(new Page(pages.size() + 1, config.getPageSize(), config.getPageInsets(), currentPageElements));
-                    currentPageElements = new ArrayList<>();
-                    y = config.getPageInsets().getTop();
+            for (Paragraph paragraph : consecutiveParagraphs) {
+                LineBreakingResult result;
+                try {
+                    result = findBreakPoints(paragraph, availableLineWidth);
+                } catch (CouldNotFindFeasibleSolutionException e) {
+                    throw new TypeSettingException("Typesetting failed because the line breaking algorithm could not find a feasible solution", e);
                 }
 
-                double lineWidth = result.getContext().getLineWidth(i + 1);
-                List<Item> line = lines.get(i);
-                LineMetrics lineMetrics = calculateLineMetrics(line);
+                List<List<Item>> lines = splitParagraphIntoLines(paragraph, result);
 
-                if (lineMetrics.getMinWidth() == 0) {
-                    // No need to lay it out.
-                    // Might happen when breaking right before the paragraphs end glue with
-                    // zero width and infinite stretchability.
-                    continue;
-                }
+                for (int i = 0; i < lines.size(); i++) {
+                    if (y > config.getPageSize().getHeight()) {
+                        // Create next page
+                        pages.add(new Page(pages.size() + 1, config.getPageSize(), config.getPageInsets(), currentPageElements));
+                        currentPageElements = new ArrayList<>();
+                        y = config.getPageInsets().getTop();
+                    }
 
-                // TODO Configuration whether justifying and what alignment needs to be applied here!
+                    double lineWidth = result.getContext().getLineWidth(i + 1);
+                    List<Item> line = lines.get(i);
+                    LineMetrics lineMetrics = calculateLineMetrics(line);
 
-                // Last item is glue with width 0 -> indicates explicit line break
-                Item last = line.get(line.size() - 1);
-                boolean isExplicitLineBreakInLine = last.getType() == ItemType.GLUE && last.getWidth() == 0 && last.getStretchability() > 0;
+                    if (lineMetrics.getMinWidth() == 0) {
+                        // No need to lay it out.
+                        // Might happen when breaking right before the paragraphs end glue with
+                        // zero width and infinite stretchability.
+                        continue;
+                    }
 
-                boolean isLastLine = i == lines.size() - 1;
-                boolean justifyLine = !isExplicitLineBreakInLine && !isLastLine;
+                    // TODO Configuration whether justifying and what alignment needs to be applied here!
 
-                double spaceWidth = getJustifiedLineSpaceWidth(lineMetrics, lineWidth);
+                    // Last item is glue with width 0 -> indicates explicit line break
+                    Item last = line.get(line.size() - 1);
+                    boolean isExplicitLineBreakInLine = last.getType() == ItemType.GLUE && last.getWidth() == 0 && last.getStretchability() > 0;
 
-                for (Item item : line) {
-                    if (item instanceof TextBox) {
-                        currentPageElements.add(new TextElement(
-                                ((TextBox) item).getText(),
-                                ((TextBox) item).getNode(),
-                                new Size(item.getWidth(), config.getLineHeight()),
-                                new Position(x, y)
-                        ));
+                    boolean isLastLine = i == lines.size() - 1;
+                    boolean justifyLine = !isExplicitLineBreakInLine && !isLastLine;
 
-                        x += item.getWidth();
-                    } else if (item instanceof Penalty) {
-                        if (item.isFlagged() && item.getWidth() > 0) {
+                    double spaceWidth = getJustifiedLineSpaceWidth(lineMetrics, lineWidth);
+
+                    for (Item item : line) {
+                        if (item instanceof TextBox) {
                             currentPageElements.add(new TextElement(
-                                    "-",
-                                    null,
+                                    ((TextBox) item).getText(),
+                                    ((TextBox) item).getNode(),
                                     new Size(item.getWidth(), config.getLineHeight()),
                                     new Position(x, y)
                             ));
 
-                            x += item.getWidth() + (justifyLine ? spaceWidth : 0);
-                        }
-                    } else if (item instanceof Glue) {
-                        if (item.getWidth() > 0) {
-                            x += justifyLine ? spaceWidth : item.getWidth();
-                        }
-                    } else {
-                        x += item.getWidth();
-                    }
-                }
+                            x += item.getWidth();
+                        } else if (item instanceof Penalty) {
+                            if (item.isFlagged() && item.getWidth() > 0) {
+                                currentPageElements.add(new TextElement(
+                                        "-",
+                                        null,
+                                        new Size(item.getWidth(), config.getLineHeight()),
+                                        new Position(x, y)
+                                ));
 
-                y += config.getLineHeight();
-                x = config.getPageInsets().getLeft();
+                                x += item.getWidth() + (justifyLine ? spaceWidth : 0);
+                            }
+                        } else if (item instanceof Glue) {
+                            if (item.getWidth() > 0) {
+                                x += justifyLine ? spaceWidth : item.getWidth();
+                            }
+                        } else {
+                            x += item.getWidth();
+                        }
+                    }
+
+                    y += config.getLineHeight();
+                    x = config.getPageInsets().getLeft();
+                }
+            }
+
+            // Push the current page.
+            pages.add(new Page(pages.size() + 1, config.getPageSize(), config.getPageInsets(), currentPageElements));
+
+            // Create next page (explicit page break) when this is not the last list of consecutive paragraphs
+            if (consecutiveParagraphsIndex != paragraphs.size() - 1) {
+                currentPageElements = new ArrayList<>();
+                y = config.getPageInsets().getTop();
             }
         }
-
-        // Push last page
-        pages.add(new Page(pages.size() + 1, config.getPageSize(), config.getPageInsets(), currentPageElements));
-
         return pages;
     }
 

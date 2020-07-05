@@ -20,11 +20,12 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Converter of the thaw document to the internal Knuth-Plass algorithm format.
  */
-public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
+public class KnuthPlassConverter implements DocumentConverter<List<List<Paragraph>>> {
 
     /**
      * Configuration of the line breaking algorithm.
@@ -32,21 +33,31 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
     private final KnuthPlassTypeSettingConfig config;
 
     /**
-     * The collected paragraphs.
+     * The collected consecutive paragraph lists (separated by page breaks).
      */
-    private final List<Paragraph> paragraphs = new ArrayList<>();
+    private final List<List<Paragraph>> paragraphs = new ArrayList<>();
+
+    /**
+     * Consecutive paragraphs (without page breaks).
+     */
+    private List<Paragraph> currentParagraphList;
 
     public KnuthPlassConverter(KnuthPlassTypeSettingConfig config) {
         this.config = config;
     }
 
     @Override
-    public List<Paragraph> convert(Document document) throws DocumentConversionException {
+    public List<List<Paragraph>> convert(Document document) throws DocumentConversionException {
         paragraphs.clear();
+        currentParagraphList = new ArrayList<>();
 
         initializeForNode(document.getTextModel().getRoot());
 
         finalizeParagraph(); // Finalize the last paragraph
+
+        if (!currentParagraphList.isEmpty()) {
+            paragraphs.add(currentParagraphList);
+        }
 
         return paragraphs;
     }
@@ -76,11 +87,11 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
      * Finalize the current paragraph.
      */
     private void finalizeParagraph() {
-        if (paragraphs.isEmpty()) {
+        if (currentParagraphList.isEmpty()) {
             return;
         }
 
-        Paragraph current = paragraphs.get(paragraphs.size() - 1);
+        Paragraph current = currentParagraphList.get(currentParagraphList.size() - 1);
 
         // Add glue as stretchable space to fill the last line
         current.addItem(new Glue(0, Double.POSITIVE_INFINITY, 0));
@@ -93,8 +104,8 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
      * Initialize a new paragraph.
      */
     private void initializeNewParagraph() {
-        if (!paragraphs.isEmpty()) {
-            if (!paragraphs.get(paragraphs.size() - 1).isEmpty()) {
+        if (!currentParagraphList.isEmpty()) {
+            if (!currentParagraphList.get(currentParagraphList.size() - 1).isEmpty()) {
                 finalizeParagraph();
             }
         }
@@ -102,7 +113,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
         Paragraph paragraph = new Paragraph();
         paragraph.addItem(new EmptyBox(config.getFirstLineIndent()));
 
-        paragraphs.add(paragraph);
+        currentParagraphList.add(paragraph);
     }
 
     /**
@@ -133,7 +144,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
                     char lastChar = wordBuffer.length() > 0 ? wordBuffer.charAt(wordBuffer.length() - 1) : ' ';
 
                     try {
-                        paragraphs.get(paragraphs.size() - 1).addItem(new Glue(
+                        currentParagraphList.get(currentParagraphList.size() - 1).addItem(new Glue(
                                 config.getFontDetailsSupplier().getSpaceWidth(node),
                                 config.getGlueConfig().getInterWordStretchability(node, lastChar),
                                 config.getGlueConfig().getInterWordShrinkability(node, lastChar)
@@ -150,7 +161,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
                     wordBuffer.setLength(0); // Reset word buffer
 
                     // Add explicit hyphen to the paragraph
-                    paragraphs.get(paragraphs.size() - 1).addItem(new Penalty(
+                    currentParagraphList.get(currentParagraphList.size() - 1).addItem(new Penalty(
                             config.getHyphenator().getExplicitHyphenPenalty(),
                             0,
                             true
@@ -177,7 +188,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
             return;
         }
 
-        Paragraph paragraph = paragraphs.get(paragraphs.size() - 1);
+        Paragraph paragraph = currentParagraphList.get(currentParagraphList.size() - 1);
 
         // Hyphenate word first
         HyphenatedWord hyphenatedWord = config.getHyphenator().hyphenate(word);
@@ -222,16 +233,50 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
      * @param node to initialize with
      */
     private void initializeThingy(ThingyNode node) {
-        // Checking for explicit line breaks
+        // Checking for explicit line or page breaks
         if (node.getName().equalsIgnoreCase("BREAK")) {
-            Paragraph current = paragraphs.get(paragraphs.size() - 1);
+            boolean isPageBreak = Optional.ofNullable(node.getOptions().get("type"))
+                    .orElse("LINE")
+                    .equalsIgnoreCase("PAGE");
 
-            // Add glue as stretchable space to fill the last line
-            current.addItem(new Glue(0, config.getPageSize().getWidth(), 0));
-
-            // Add explicit line break
-            current.addItem(new Penalty(Double.NEGATIVE_INFINITY, 0, true));
+            if (isPageBreak) {
+                onPageBreak();
+            } else {
+                onLineBreak();
+            }
         }
+    }
+
+    /**
+     * Called on an explicit line break.
+     */
+    private void onLineBreak() {
+        Paragraph current = currentParagraphList.get(currentParagraphList.size() - 1);
+
+        // Add glue as stretchable space to fill the last line
+        current.addItem(new Glue(0, config.getPageSize().getWidth(), 0));
+
+        // Add explicit line break
+        current.addItem(new Penalty(Double.NEGATIVE_INFINITY, 0, true));
+    }
+
+    /**
+     * Called on an explicit page break.
+     */
+    private void onPageBreak() {
+        // Create a new consecutive paragraph list after finalizing the current paragraph
+        if (!currentParagraphList.isEmpty()) {
+            if (!currentParagraphList.get(currentParagraphList.size() - 1).isEmpty()) {
+                finalizeParagraph();
+            }
+        }
+
+        if (!currentParagraphList.isEmpty()) {
+            paragraphs.add(currentParagraphList);
+        }
+
+        currentParagraphList = new ArrayList<>();
+        initializeNewParagraph();
     }
 
 }
