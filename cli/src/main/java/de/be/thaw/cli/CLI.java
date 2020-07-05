@@ -4,6 +4,9 @@ import de.be.thaw.core.document.Document;
 import de.be.thaw.export.Exporter;
 import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.PdfExporter;
+import de.be.thaw.info.ThawInfo;
+import de.be.thaw.info.parser.InfoParser;
+import de.be.thaw.info.parser.impl.DefaultInfoParser;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.parser.TextParser;
 import de.be.thaw.text.parser.exception.ParseException;
@@ -116,7 +119,33 @@ public class CLI implements Callable<Integer> {
 
         System.out.println();
 
-        // Search text file *.tdt
+        String[] infoFiles = root.list((dir, name) -> name.endsWith(".tdi"));
+        if (infoFiles.length == 0) {
+            System.out.println("[WARNING] Found not info file (*.tdi). It is recommended to have one.");
+        } else if (infoFiles.length > 1) {
+            System.err.println(String.format("There are more than one Thaw info file (ending with *.tdi) in the folder at '%s'", root.getAbsolutePath()));
+            return ErrorResult.MORE_THAN_ONE_INFO_FILE.getCode();
+        } else {
+            System.out.println(String.format("Processing Thaw info file '%s'...", infoFiles[0]));
+        }
+
+        File infoFile = new File(root, infoFiles[0]);
+
+        InfoParser infoParser = new DefaultInfoParser();
+        ThawInfo info;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(infoFile), charset))) {
+            info = infoParser.parse(br);
+        } catch (de.be.thaw.info.parser.exception.ParseException e) {
+            System.err.println(String.format(
+                    "An exception occurred while trying to parse the provided info file at '%s'.\n" +
+                            "The exception message is: '%s'",
+                    infoFile.getAbsolutePath(),
+                    e.getMessage()
+            ));
+
+            return ErrorResult.INFO_FILE_PARSING_ERROR.getCode();
+        }
+
         String[] textFiles = root.list((dir, name) -> name.endsWith(".tdt"));
 
         if (textFiles.length == 0) {
@@ -133,7 +162,7 @@ public class CLI implements Callable<Integer> {
 
         TextParser textParser = new TextParser();
         TextModel textModel;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(textFile), charset))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(textFile), info.getEncoding()))) {
             textModel = textParser.parse(br);
         } catch (ParseException e) {
             System.err.println(String.format(
