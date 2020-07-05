@@ -115,7 +115,9 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
                     double spaceWidth = getJustifiedLineSpaceWidth(lineMetrics, lineWidth);
 
-                    for (Item item : line) {
+                    for (int a = 0; a < line.size(); a++) {
+                        Item item = line.get(a);
+
                         if (item instanceof TextBox) {
                             currentPageElements.add(new TextElement(
                                     ((TextBox) item).getText(),
@@ -129,12 +131,12 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                             if (item.isFlagged() && item.getWidth() > 0) {
                                 currentPageElements.add(new TextElement(
                                         "-",
-                                        null,
+                                        ((Penalty) item).getNode(),
                                         new Size(item.getWidth(), config.getLineHeight()),
                                         new Position(x, y)
                                 ));
 
-                                x += item.getWidth() + (justifyLine ? spaceWidth : 0);
+                                x += item.getWidth();
                             }
                         } else if (item instanceof Glue) {
                             if (item.getWidth() > 0) {
@@ -180,27 +182,39 @@ public class KnuthPlassTypeSetter implements TypeSetter {
         for (int i = 0; i < len; i++) {
             Item item = paragraph.items().get(i);
 
-            if (lineBreakingResult.getBreakPoints().size() > nextBreakPointIndex
-                    && i == lineBreakingResult.getBreakPoints().get(nextBreakPointIndex).getIndex()) {
+            boolean isBreakPoint = lineBreakingResult.getBreakPoints().size() > nextBreakPointIndex
+                    && i == lineBreakingResult.getBreakPoints().get(nextBreakPointIndex).getIndex();
+
+            if (item.getType() == ItemType.GLUE) {
+                // Skip leading, trailing and consecutive glues (except if they indicate explicit line breaks)
+                if (currentLine.size() > 0) {
+                    Item previous = currentLine.get(currentLine.size() - 1);
+
+                    boolean indicatesExplicitLineBreak = item.getWidth() == 0 && item.getStretchability() > 0;
+                    boolean add = !isBreakPoint && (previous.getType() != ItemType.GLUE || indicatesExplicitLineBreak);
+                    if (add) {
+                        currentLine.add(item);
+                    }
+                }
+            } else if (item.getType() == ItemType.PENALTY) {
+                if (item.getWidth() > 0 && item.isFlagged()) {
+                    // Only allow trailing penalties
+                    if (isBreakPoint) {
+                        currentLine.add(item);
+                    }
+                } else {
+                    currentLine.add(item);
+                }
+            } else {
+                currentLine.add(item);
+            }
+
+            if (isBreakPoint) {
                 nextBreakPointIndex++;
 
                 // Push new line
                 currentLine = new ArrayList<>();
                 lines.add(currentLine);
-            } else {
-                if (item.getType() == ItemType.GLUE) {
-                    // Skip leading, trailing and consecutive glues (except if they indicate explicit line breaks)
-                    if (currentLine.size() > 0) {
-                        Item previous = currentLine.get(currentLine.size() - 1);
-
-                        boolean indicatesExplicitLineBreak = item.getWidth() == 0 && item.getStretchability() > 0;
-                        if (previous.getType() != ItemType.GLUE || indicatesExplicitLineBreak) {
-                            currentLine.add(item);
-                        }
-                    }
-                } else {
-                    currentLine.add(item);
-                }
             }
         }
 

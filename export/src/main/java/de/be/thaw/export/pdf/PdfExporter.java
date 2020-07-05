@@ -5,6 +5,9 @@ import de.be.thaw.export.Exporter;
 import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.element.ElementExporter;
 import de.be.thaw.export.pdf.element.ElementExporters;
+import de.be.thaw.hyphenation.HyphenationDictionaries;
+import de.be.thaw.hyphenation.HyphenationDictionary;
+import de.be.thaw.info.model.language.Language;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
@@ -26,10 +29,10 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Exporter exporting documents to PDF.
@@ -135,7 +138,7 @@ public class PdfExporter implements Exporter {
     private List<Page> typeset(Document document, ExportContext ctx) throws TypeSettingException {
         TypeSettingException lastException = null;
         for (int quality = 0; quality < MAX_TYPESETTING_ITERATIONS; quality++) {
-            TypeSetter typeSetter = createTypeSetter(ctx, quality);
+            TypeSetter typeSetter = createTypeSetter(ctx, document.getInfo().getLanguage(), quality);
 
             try {
                 return typeSetter.typeset(document);
@@ -152,13 +155,19 @@ public class PdfExporter implements Exporter {
     /**
      * Create a type setter.
      *
-     * @param ctx     the export context
-     * @param quality the quality (0 is the best, higher get worse)
+     * @param ctx      the export context
+     * @param language to use
+     * @param quality  the quality (0 is the best, higher get worse)
      * @return type setter to use
      */
-    private TypeSetter createTypeSetter(ExportContext ctx, int quality) {
+    private TypeSetter createTypeSetter(ExportContext ctx, Language language, int quality) throws TypeSettingException {
         final double fontSize = ctx.getFontSizeForNode(null); // TODO Determine per node when having a style model
         final double lineHeight = 1.5 * fontSize; // TODO Determine per paragraph node when having a style model
+
+        HyphenationDictionary hyphenationDictionary = HyphenationDictionaries.getDictionary(language).orElseThrow(() -> new TypeSettingException(String.format(
+                "Could not find the hyphenation dictionary for language '%s'",
+                language.name()
+        )));
 
         return new KnuthPlassTypeSetter(KnuthPlassTypeSettingConfig.newBuilder()
                 .setPageSize(ctx.getPageSize())
@@ -196,8 +205,10 @@ public class PdfExporter implements Exporter {
                 .setHyphenator(new Hyphenator() {
                     @Override
                     public HyphenatedWord hyphenate(String word) {
-                        // TODO Implement actual hyphenation
-                        return new HyphenatedWord(Collections.singletonList(new HyphenatedWordPart(word)));
+                        return new HyphenatedWord(hyphenationDictionary.hyphenate(word)
+                                .stream()
+                                .map(HyphenatedWordPart::new)
+                                .collect(Collectors.toList()));
                     }
 
                     @Override

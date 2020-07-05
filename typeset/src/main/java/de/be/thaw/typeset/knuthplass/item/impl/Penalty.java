@@ -1,5 +1,6 @@
 package de.be.thaw.typeset.knuthplass.item.impl;
 
+import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.typeset.knuthplass.item.AbstractItem;
 import de.be.thaw.typeset.knuthplass.item.ItemType;
 
@@ -39,10 +40,20 @@ public class Penalty extends AbstractItem {
      */
     private final boolean flagged;
 
+    /**
+     * The original node this penalty (when a hyphen) belongs to.
+     */
+    private final Node node;
+
     public Penalty(double penalty, double width, boolean flagged) {
+        this(penalty, width, flagged, null);
+    }
+
+    public Penalty(double penalty, double width, boolean flagged, Node node) {
         this.penalty = penalty;
         this.width = width;
         this.flagged = flagged;
+        this.node = node;
     }
 
     @Override
@@ -90,6 +101,16 @@ public class Penalty extends AbstractItem {
      */
     public boolean isImpossibleLineBreak() {
         return penalty >= MAX_PENALTY;
+    }
+
+    /**
+     * When this penalty is a hyphen, this is non-null and represents the original node the
+     * hyphen belongs to.
+     *
+     * @return node
+     */
+    public Node getNode() {
+        return node;
     }
 
 }

@@ -177,7 +177,7 @@ public class CLI implements Callable<Integer> {
 
         System.out.println(textModel.getRoot().toString()); // TODO Remove (only for testing)
 
-        Document document = new Document(textModel);
+        Document document = new Document(info, textModel);
 
         Exporter exporter = new PdfExporter();
         try {

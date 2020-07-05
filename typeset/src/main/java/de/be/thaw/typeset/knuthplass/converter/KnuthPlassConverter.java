@@ -196,7 +196,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
 
         try {
             int len = parts.size();
-            double hyphenWidth = len > 1 ? config.getFontDetailsSupplier().getCodeWidth(node, '-') : 0;
+            double hyphenWidth = len > 1 ? config.getFontDetailsSupplier().getStringWidth(node, "-") : 0;
 
             for (int i = 0; i < len; i++) {
                 HyphenatedWordPart part = parts.get(i);
@@ -210,7 +210,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
                 boolean isLast = i == len - 1;
                 if (!isLast) {
                     // Add hyphen penalty to represent an optional hyphen
-                    paragraph.addItem(new Penalty(part.getPenalty(), hyphenWidth, true));
+                    paragraph.addItem(new Penalty(part.getPenalty(), hyphenWidth, true, node));
                 }
             }
         } catch (Exception e) {
