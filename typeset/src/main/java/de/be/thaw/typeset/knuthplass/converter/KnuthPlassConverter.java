@@ -8,7 +8,7 @@ import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
-import de.be.thaw.typeset.knuthplass.config.LineBreakingConfig;
+import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWord;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWordPart;
 import de.be.thaw.typeset.knuthplass.item.impl.Glue;
@@ -28,14 +28,14 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
     /**
      * Configuration of the line breaking algorithm.
      */
-    private final LineBreakingConfig config;
+    private final KnuthPlassTypeSettingConfig config;
 
     /**
      * The collected paragraphs.
      */
     private final List<Paragraph> paragraphs = new ArrayList<>();
 
-    public KnuthPlassConverter(LineBreakingConfig config) {
+    public KnuthPlassConverter(KnuthPlassTypeSettingConfig config) {
         this.config = config;
     }
 

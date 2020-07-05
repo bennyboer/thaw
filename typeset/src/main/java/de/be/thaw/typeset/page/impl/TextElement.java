@@ -2,6 +2,7 @@ package de.be.thaw.typeset.page.impl;
 
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.typeset.page.AbstractElement;
+import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.util.Position;
 import de.be.thaw.typeset.util.Size;
 
@@ -45,6 +46,11 @@ public class TextElement extends AbstractElement {
      */
     public Node getNode() {
         return node;
+    }
+
+    @Override
+    public ElementType getType() {
+        return ElementType.TEXT;
     }
 
 }

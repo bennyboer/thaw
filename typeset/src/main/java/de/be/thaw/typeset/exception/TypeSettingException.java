@@ -5,6 +5,10 @@ package de.be.thaw.typeset.exception;
  */
 public class TypeSettingException extends Exception {
 
+    public TypeSettingException(String message) {
+        super(message);
+    }
+
     public TypeSettingException(String message, Throwable cause) {
         super(message, cause);
     }

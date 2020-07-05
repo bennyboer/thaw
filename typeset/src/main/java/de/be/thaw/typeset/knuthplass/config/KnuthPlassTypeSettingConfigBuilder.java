@@ -3,12 +3,13 @@ package de.be.thaw.typeset.knuthplass.config;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.GlueConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
+import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.typeset.util.Size;
 
 /**
  * Builder for the line breaking configuration.
  */
-public class LineBreakingConfigBuilder {
+public class KnuthPlassTypeSettingConfigBuilder {
 
     /**
      * The default first line indent.
@@ -19,6 +20,11 @@ public class LineBreakingConfigBuilder {
      * Default size of the de.be.thaw.typeset.page to typeset on (in arbitrary units).
      */
     private static final Size DEFAULT_PAGE_SIZE = new Size(210, 297);
+
+    /**
+     * The default page insets.
+     */
+    private static final Insets DEFAULT_INSETS = new Insets(30);
 
     /**
      * The default badness tolerance.
@@ -59,9 +65,14 @@ public class LineBreakingConfigBuilder {
     private double lineHeight = DEFAULT_LINE_HEIGHT;
 
     /**
-     * Size of the de.be.thaw.typeset.page to typeset on.
+     * Size of the page to typeset on.
      */
     private Size pageSize = DEFAULT_PAGE_SIZE;
+
+    /**
+     * Insets of the pages.
+     */
+    private Insets pageInsets = DEFAULT_INSETS;
 
     /**
      * Tolerance of the badness.
@@ -115,7 +126,7 @@ public class LineBreakingConfigBuilder {
      *
      * @param lineHeight to set
      */
-    public LineBreakingConfigBuilder setLineHeight(double lineHeight) {
+    public KnuthPlassTypeSettingConfigBuilder setLineHeight(double lineHeight) {
         this.lineHeight = lineHeight;
 
         return this;
@@ -135,28 +146,48 @@ public class LineBreakingConfigBuilder {
      *
      * @param firstLineIndent to set
      */
-    public LineBreakingConfigBuilder setFirstLineIndent(double firstLineIndent) {
+    public KnuthPlassTypeSettingConfigBuilder setFirstLineIndent(double firstLineIndent) {
         this.firstLineIndent = firstLineIndent;
 
         return this;
     }
 
     /**
-     * Get the size of the de.be.thaw.typeset.page to typeset on (in mm).
+     * Get the size of the page to typeset on (in mm).
      *
-     * @return size of the de.be.thaw.typeset.page
+     * @return size of the page
      */
     public Size getPageSize() {
         return pageSize;
     }
 
     /**
-     * Set the de.be.thaw.typeset.page size of the de.be.thaw.typeset.page to typeset on (in mm).
+     * Set the page size of the de.be.thaw.typeset.page to typeset on (in mm).
      *
      * @param pageSize to set
      */
-    public LineBreakingConfigBuilder setPageSize(Size pageSize) {
+    public KnuthPlassTypeSettingConfigBuilder setPageSize(Size pageSize) {
         this.pageSize = pageSize;
+
+        return this;
+    }
+
+    /**
+     * Get the page insets.
+     *
+     * @return insets
+     */
+    public Insets getPageInsets() {
+        return pageInsets;
+    }
+
+    /**
+     * Set the page insets to use.
+     *
+     * @param pageInsets to set
+     */
+    public KnuthPlassTypeSettingConfigBuilder setPageInsets(Insets pageInsets) {
+        this.pageInsets = pageInsets;
 
         return this;
     }
@@ -176,7 +207,7 @@ public class LineBreakingConfigBuilder {
      *
      * @param fontDetailsSupplier to set
      */
-    public LineBreakingConfigBuilder setFontDetailsSupplier(FontDetailsSupplier fontDetailsSupplier) {
+    public KnuthPlassTypeSettingConfigBuilder setFontDetailsSupplier(FontDetailsSupplier fontDetailsSupplier) {
         this.fontDetailsSupplier = fontDetailsSupplier;
 
         return this;
@@ -196,7 +227,7 @@ public class LineBreakingConfigBuilder {
      *
      * @param hyphenator to set
      */
-    public LineBreakingConfigBuilder setHyphenator(Hyphenator hyphenator) {
+    public KnuthPlassTypeSettingConfigBuilder setHyphenator(Hyphenator hyphenator) {
         this.hyphenator = hyphenator;
 
         return this;
@@ -216,7 +247,7 @@ public class LineBreakingConfigBuilder {
      *
      * @param glueConfig to set
      */
-    public LineBreakingConfigBuilder setGlueConfig(GlueConfig glueConfig) {
+    public KnuthPlassTypeSettingConfigBuilder setGlueConfig(GlueConfig glueConfig) {
         this.glueConfig = glueConfig;
 
         return this;
@@ -238,7 +269,7 @@ public class LineBreakingConfigBuilder {
      *
      * @param tolerance to set
      */
-    public LineBreakingConfigBuilder setTolerance(double tolerance) {
+    public KnuthPlassTypeSettingConfigBuilder setTolerance(double tolerance) {
         this.tolerance = tolerance;
 
         return this;
@@ -258,7 +289,7 @@ public class LineBreakingConfigBuilder {
      *
      * @param looseness to set
      */
-    public LineBreakingConfigBuilder setLooseness(int looseness) {
+    public KnuthPlassTypeSettingConfigBuilder setLooseness(int looseness) {
         this.looseness = looseness;
 
         return this;
@@ -280,7 +311,7 @@ public class LineBreakingConfigBuilder {
      *
      * @param flaggedDemerit to set
      */
-    public LineBreakingConfigBuilder setFlaggedDemerit(double flaggedDemerit) {
+    public KnuthPlassTypeSettingConfigBuilder setFlaggedDemerit(double flaggedDemerit) {
         this.flaggedDemerit = flaggedDemerit;
 
         return this;
@@ -302,7 +333,7 @@ public class LineBreakingConfigBuilder {
      *
      * @param fitnessDemerit to set
      */
-    public LineBreakingConfigBuilder setFitnessDemerit(double fitnessDemerit) {
+    public KnuthPlassTypeSettingConfigBuilder setFitnessDemerit(double fitnessDemerit) {
         this.fitnessDemerit = fitnessDemerit;
 
         return this;
@@ -313,9 +344,10 @@ public class LineBreakingConfigBuilder {
      *
      * @return the build config
      */
-    public LineBreakingConfig build() {
-        return new LineBreakingConfig(
+    public KnuthPlassTypeSettingConfig build() {
+        return new KnuthPlassTypeSettingConfig(
                 pageSize,
+                pageInsets,
                 lineHeight,
                 firstLineIndent,
                 looseness,

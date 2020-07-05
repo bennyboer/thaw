@@ -3,12 +3,13 @@ package de.be.thaw.typeset.knuthplass.config;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.GlueConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
+import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.typeset.util.Size;
 
 /**
  * Configuration of the Knuth-Plass line breaking algorithm.
  */
-public class LineBreakingConfig {
+public class KnuthPlassTypeSettingConfig {
 
     /**
      * Indent of the text in the first line or a paragraph.
@@ -19,6 +20,11 @@ public class LineBreakingConfig {
      * Size of the de.be.thaw.typeset.page to typeset on (in arbitrary units).
      */
     private final Size pageSize;
+
+    /**
+     * Insets of the pages.
+     */
+    private final Insets pageInsets;
 
     /**
      * Height of a line.
@@ -63,8 +69,9 @@ public class LineBreakingConfig {
      */
     private final GlueConfig glueConfig;
 
-    public LineBreakingConfig(
+    public KnuthPlassTypeSettingConfig(
             Size pageSize,
+            Insets pageInsets,
             double lineHeight,
             double firstLineIndent,
             int looseness,
@@ -88,6 +95,7 @@ public class LineBreakingConfig {
         }
 
         this.pageSize = pageSize;
+        this.pageInsets = pageInsets;
         this.firstLineIndent = firstLineIndent;
         this.lineHeight = lineHeight;
 
@@ -199,12 +207,21 @@ public class LineBreakingConfig {
     }
 
     /**
+     * Get insets for the pages to typeset.
+     *
+     * @return insets
+     */
+    public Insets getPageInsets() {
+        return pageInsets;
+    }
+
+    /**
      * Create a new builder for the line breaking configuration.
      *
      * @return builder
      */
-    public static LineBreakingConfigBuilder newBuilder() {
-        return new LineBreakingConfigBuilder();
+    public static KnuthPlassTypeSettingConfigBuilder newBuilder() {
+        return new KnuthPlassTypeSettingConfigBuilder();
     }
 
 }

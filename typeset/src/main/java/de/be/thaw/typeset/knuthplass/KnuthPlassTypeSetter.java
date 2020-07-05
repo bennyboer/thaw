@@ -3,7 +3,7 @@ package de.be.thaw.typeset.knuthplass;
 import de.be.thaw.core.document.Document;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
-import de.be.thaw.typeset.knuthplass.config.LineBreakingConfig;
+import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
 import de.be.thaw.typeset.knuthplass.converter.KnuthPlassConverter;
 import de.be.thaw.typeset.knuthplass.exception.CouldNotFindFeasibleSolutionException;
 import de.be.thaw.typeset.knuthplass.item.Item;
@@ -33,7 +33,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
     /**
      * Configuration of the
      */
-    private final LineBreakingConfig config;
+    private final KnuthPlassTypeSettingConfig config;
 
     /**
      * Paragraphs to type set.
@@ -50,7 +50,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
      */
     private List<Element> currentPageElements;
 
-    public KnuthPlassTypeSetter(LineBreakingConfig config) {
+    public KnuthPlassTypeSetter(KnuthPlassTypeSettingConfig config) {
         this.config = config;
     }
 
@@ -62,62 +62,27 @@ public class KnuthPlassTypeSetter implements TypeSetter {
         currentPageElements = new ArrayList<>();
 
         // Current x and y offsets
-        double x = 0;
-        double y = 0;
+        double x = config.getPageInsets().getLeft();
+        double y = config.getPageInsets().getTop();
+
+        double availableLineWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight());
 
         for (Paragraph paragraph : paragraphs) {
             LineBreakingResult result;
             try {
-                result = findBreakPoints(paragraph, config.getPageSize().getWidth());
+                result = findBreakPoints(paragraph, availableLineWidth);
             } catch (CouldNotFindFeasibleSolutionException e) {
                 throw new TypeSettingException("Typesetting failed because the line breaking algorithm could not find a feasible solution", e);
             }
 
-            // Split paragraph into lines
-            List<List<Item>> lines = new ArrayList<>();
-            List<Item> currentLine = new ArrayList<>();
-            lines.add(currentLine);
-
-            int nextBreakPointIndex = 0;
-            int len = paragraph.items().size();
-            for (int i = 0; i < len; i++) {
-                Item item = paragraph.items().get(i);
-
-                if (result.getBreakPoints().size() > nextBreakPointIndex
-                        && i == result.getBreakPoints().get(nextBreakPointIndex).getIndex()) {
-                    nextBreakPointIndex++;
-
-                    // Push new line
-                    currentLine = new ArrayList<>();
-                    lines.add(currentLine);
-                } else {
-                    if (item.getType() == ItemType.GLUE) {
-                        // Skip leading, trailing and consecutive glues (except if they indicate explicit line breaks)
-                        if (currentLine.size() > 0) {
-                            Item previous = currentLine.get(currentLine.size() - 1);
-
-                            boolean indicatesExplicitLineBreak = item.getWidth() == 0 && item.getStretchability() > 0;
-                            if (previous.getType() != ItemType.GLUE || indicatesExplicitLineBreak) {
-                                currentLine.add(item);
-                            }
-                        }
-                    } else {
-                        currentLine.add(item);
-                    }
-                }
-            }
-
-            // Remove the last empty line
-            if (lines.get(lines.size() - 1).isEmpty()) {
-                lines.remove(lines.size() - 1);
-            }
+            List<List<Item>> lines = splitParagraphIntoLines(paragraph, result);
 
             for (int i = 0; i < lines.size(); i++) {
                 if (y > config.getPageSize().getHeight()) {
                     // Create next page
-                    pages.add(new Page(pages.size() + 1, currentPageElements));
+                    pages.add(new Page(pages.size() + 1, config.getPageSize(), config.getPageInsets(), currentPageElements));
                     currentPageElements = new ArrayList<>();
-                    y = 0;
+                    y = config.getPageInsets().getTop();
                 }
 
                 double lineWidth = result.getContext().getLineWidth(i + 1);
@@ -173,14 +138,64 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                 }
 
                 y += config.getLineHeight();
-                x = 0;
+                x = config.getPageInsets().getLeft();
             }
         }
 
         // Push last page
-        pages.add(new Page(pages.size() + 1, currentPageElements));
+        pages.add(new Page(pages.size() + 1, config.getPageSize(), config.getPageInsets(), currentPageElements));
 
         return pages;
+    }
+
+    /**
+     * Split the passed paragraph using the given line breaking algorithm result into lines.
+     *
+     * @param paragraph          to split into lines
+     * @param lineBreakingResult to split the paragraph into lines with
+     * @return lines
+     */
+    private List<List<Item>> splitParagraphIntoLines(Paragraph paragraph, LineBreakingResult lineBreakingResult) {
+        List<List<Item>> lines = new ArrayList<>();
+
+        List<Item> currentLine = new ArrayList<>();
+        lines.add(currentLine);
+
+        int nextBreakPointIndex = 0;
+        int len = paragraph.items().size();
+        for (int i = 0; i < len; i++) {
+            Item item = paragraph.items().get(i);
+
+            if (lineBreakingResult.getBreakPoints().size() > nextBreakPointIndex
+                    && i == lineBreakingResult.getBreakPoints().get(nextBreakPointIndex).getIndex()) {
+                nextBreakPointIndex++;
+
+                // Push new line
+                currentLine = new ArrayList<>();
+                lines.add(currentLine);
+            } else {
+                if (item.getType() == ItemType.GLUE) {
+                    // Skip leading, trailing and consecutive glues (except if they indicate explicit line breaks)
+                    if (currentLine.size() > 0) {
+                        Item previous = currentLine.get(currentLine.size() - 1);
+
+                        boolean indicatesExplicitLineBreak = item.getWidth() == 0 && item.getStretchability() > 0;
+                        if (previous.getType() != ItemType.GLUE || indicatesExplicitLineBreak) {
+                            currentLine.add(item);
+                        }
+                    }
+                } else {
+                    currentLine.add(item);
+                }
+            }
+        }
+
+        // Remove the last empty line
+        if (lines.get(lines.size() - 1).isEmpty()) {
+            lines.remove(lines.size() - 1);
+        }
+
+        return lines;
     }
 
     /**

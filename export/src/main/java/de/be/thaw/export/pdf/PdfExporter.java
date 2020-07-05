@@ -3,16 +3,13 @@ package de.be.thaw.export.pdf;
 import de.be.thaw.core.document.Document;
 import de.be.thaw.export.Exporter;
 import de.be.thaw.export.exception.ExportException;
-import de.be.thaw.font.util.FontManager;
-import de.be.thaw.font.util.FontVariant;
-import de.be.thaw.font.util.FontVariantLocator;
-import de.be.thaw.text.model.emphasis.TextEmphasis;
+import de.be.thaw.export.pdf.element.ElementExporter;
+import de.be.thaw.export.pdf.element.ElementExporters;
 import de.be.thaw.text.model.tree.Node;
-import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.KnuthPlassTypeSetter;
-import de.be.thaw.typeset.knuthplass.config.LineBreakingConfig;
+import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.GlueConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWord;
@@ -20,25 +17,17 @@ import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWordPart;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
-import de.be.thaw.typeset.page.impl.TextElement;
+import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.typeset.util.Size;
-import org.apache.fontbox.ttf.TrueTypeCollection;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Exporter exporting documents to PDF.
@@ -46,87 +35,35 @@ import java.util.Set;
 public class PdfExporter implements Exporter {
 
     /**
-     * Cache for already loaded and embedded fonts.
+     * Maximum iterations when trying to typeset properly.
+     * This is needed because the used Knuth-Plass line-breaking algorithm
+     * might not find a feasible solution.
      */
-    private final Map<FontVariantLocator, PDFont> fontCache = new HashMap<>();
-
-    /**
-     * PDF document currently exporting to.
-     */
-    private PDDocument doc;
+    private static final int MAX_TYPESETTING_ITERATIONS = 10;
 
     @Override
     public void export(Document document, Path path) throws ExportException {
-        fontCache.clear();
-
         try (PDDocument doc = new PDDocument()) {
-            this.doc = doc;
+            ExportContext ctx = new ExportContext(doc);
 
+            // TODO Set page size from the document style model (once there is one implemented)
             PDPage page = new PDPage();
             doc.addPage(page);
-
-            float fontSize = 12;
-            float leading = 1.5f * fontSize;
+            ctx.setCurrentPage(page);
 
             PDRectangle box = page.getMediaBox();
-            float margin = 72;
-            float width = box.getWidth() - 2 * margin;
-            float height = box.getHeight() - 2 * margin;
-            float startX = box.getLowerLeftX() + margin;
-            float startY = box.getUpperRightY() - margin;
-            float endX = box.getUpperRightX() - margin;
-            float endY = box.getLowerLeftY() + margin;
 
-            // Type set the document
-            int quality = 0;
+            ctx.setPageSize(new Size(box.getWidth(), box.getHeight()));
+            ctx.setPageInsets(new Insets(box.getWidth() * 0.1));
+
             List<Page> pages;
-            while (true) {
-                TypeSetter typeSetter = createTypeSetter(fontSize, new Size(width, height), leading, quality);
-
-                try {
-                    pages = typeSetter.typeset(document);
-                    break;
-                } catch (TypeSettingException e) {
-                    System.out.println(e.getMessage());
-                    System.out.println(">>> Will decrease type setting quality in order to succeed eventually");
-                    quality++;
-                }
+            try {
+                pages = typeset(document, ctx);
+            } catch (TypeSettingException e) {
+                throw new ExportException(e);
             }
 
-            PDPageContentStream contentStream = new PDPageContentStream(doc, page);
-
-            int pageCounter = 0;
-            for (Page p : pages) {
-                for (Element element : p.getElements()) {
-                    if (element instanceof TextElement) {
-                        TextElement te = (TextElement) element;
-
-                        contentStream.beginText();
-                        contentStream.setFont(getFontForNode(((TextElement) element).getNode()), fontSize); // TODO How to apply font per node?
-
-                        contentStream.newLineAtOffset((float) te.getPosition().getX() + margin, startY - (float) te.getPosition().getY());
-
-                        contentStream.showText(te.getText());
-
-                        contentStream.endText();
-                    } else {
-                        throw new ExportException(String.format(
-                                "Cannot export element of type '%s'",
-                                element.getClass().getSimpleName()
-                        ));
-                    }
-                }
-
-                contentStream.close();
-
-                if (pageCounter < pages.size() - 1) {
-                    page = new PDPage();
-                    doc.addPage(page);
-                    contentStream = new PDPageContentStream(doc, page);
-                }
-
-                pageCounter++;
-            }
+            exportToPages(pages, ctx);
 
             doc.save(path.toFile());
         } catch (IOException e) {
@@ -135,72 +72,92 @@ public class PdfExporter implements Exporter {
     }
 
     /**
-     * Get the correct font for the passed node.
+     * Export the passed pages using the given export context to PDF pages.
      *
-     * @param node to get font for
-     * @return font
+     * @param pages to export to PDF pages
+     * @param ctx   the export context
+     * @throws ExportException in case the page export did not work
      */
-    private PDFont getFontForNode(Node node) {
-        // TODO Get the font family properly using the thaw document model that has that setting set in the style model
-        String familyName = "Cambria"; // Default font family for testing
+    private void exportToPages(List<Page> pages, ExportContext ctx) throws ExportException {
+        try {
+            ctx.setContentStream(new PDPageContentStream(ctx.getDocument(), ctx.getCurrentPage()));
 
-        FontVariant variant = FontVariant.PLAIN;
-        if (node instanceof FormattedNode) {
-            Set<TextEmphasis> emphases = ((FormattedNode) node).getEmphases();
+            int pageCounter = 0;
+            for (Page page : pages) {
+                for (Element element : page.getElements()) {
+                    ElementExporter elementExporter = ElementExporters.getForType(element.getType()).orElseThrow(() -> new ExportException(String.format(
+                            "Elements of type '%s' cannot be exported as there is no suitable exporter",
+                            element.getType().name()
+                    )));
 
-            boolean isBold = emphases.contains(TextEmphasis.BOLD);
-            boolean isItalic = emphases.contains(TextEmphasis.ITALIC);
-
-            if (isBold && isItalic) {
-                variant = FontVariant.BOLD_ITALIC;
-            } else if (isBold) {
-                variant = FontVariant.BOLD;
-            } else if (isItalic) {
-                variant = FontVariant.ITALIC;
-            }
-        }
-
-        FontVariantLocator locator = FontManager.getInstance().getFamily(familyName).orElseThrow().getVariantFont(variant).orElseThrow();
-
-        PDFont font = fontCache.get(locator);
-        if (font == null) {
-            try {
-                if (locator.getFontFile().isCollection()) {
-                    TrueTypeCollection collection = new TrueTypeCollection(new File(locator.getFontFile().getLocation()));
-                    font = PDType0Font.load(doc, collection.getFontByName(locator.getFontName()), false);
-                } else {
-                    font = PDType0Font.load(doc, new FileInputStream(new File(locator.getFontFile().getLocation())), false);
+                    elementExporter.export(element, ctx);
                 }
 
-                fontCache.put(locator, font);
-            } catch (IOException e) {
-                e.printStackTrace();
+                ctx.getContentStream().close();
+
+                if (pageCounter < pages.size() - 1) {
+                    // Create next PDF page
+                    PDPage pdfPage = new PDPage();
+
+                    ctx.getDocument().addPage(pdfPage);
+                    ctx.setCurrentPage(pdfPage);
+                    ctx.setContentStream(new PDPageContentStream(ctx.getDocument(), ctx.getCurrentPage()));
+                }
+
+                pageCounter++;
+            }
+        } catch (IOException e) {
+            throw new ExportException(e);
+        }
+    }
+
+    /**
+     * Try to type set the passed document.
+     *
+     * @param document to type set
+     * @param ctx      the export context to use
+     * @return the typeset pages
+     * @throws TypeSettingException in case the document could not be type set
+     */
+    private List<Page> typeset(Document document, ExportContext ctx) throws TypeSettingException {
+        TypeSettingException lastException = null;
+        for (int quality = 0; quality < MAX_TYPESETTING_ITERATIONS; quality++) {
+            TypeSetter typeSetter = createTypeSetter(ctx, quality);
+
+            try {
+                return typeSetter.typeset(document);
+            } catch (TypeSettingException e) {
+                // TODO Add this to debug logging
+                System.out.println(e.getMessage());
+                System.out.println(">>> Will decrease type setting quality in order to succeed eventually");
             }
         }
 
-        return font;
+        throw new TypeSettingException("Could not typeset the pages properly event after decreasing the quality multiply times", lastException);
     }
 
     /**
      * Create a type setter.
      *
-     * @param fontSize   font size to use
-     * @param docSize    size of the pages
-     * @param lineHeight height of a line
-     * @param quality    the quality (0 is the best, higher get worse)
+     * @param ctx     the export context
+     * @param quality the quality (0 is the best, higher get worse)
      * @return type setter to use
      */
-    private TypeSetter createTypeSetter(float fontSize, Size docSize, double lineHeight, int quality) {
-        return new KnuthPlassTypeSetter(LineBreakingConfig.newBuilder()
-                .setPageSize(docSize)
-                .setLineHeight(lineHeight)
+    private TypeSetter createTypeSetter(ExportContext ctx, int quality) {
+        final double fontSize = 12.0; // TODO Determine per node when having a style model
+        final double lineHeight = 1.5 * fontSize; // TODO Determine per paragraph node when having a style model
+
+        return new KnuthPlassTypeSetter(KnuthPlassTypeSettingConfig.newBuilder()
+                .setPageSize(ctx.getPageSize())
+                .setPageInsets(ctx.getPageInsets())
+                .setLineHeight((float) lineHeight)
                 .setLooseness(1 + quality)
                 .setFirstLineIndent(20)
                 .setFontDetailsSupplier(new FontDetailsSupplier() {
                     @Override
                     public double getCodeWidth(Node node, int code) {
                         try {
-                            return getFontForNode(node).getWidth(code) / 1000 * fontSize;
+                            return ctx.getFontForNode(node).getWidth(code) / 1000 * fontSize;
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -211,7 +168,7 @@ public class PdfExporter implements Exporter {
                     @Override
                     public double getStringWidth(Node node, String str) {
                         try {
-                            return getFontForNode(node).getStringWidth(str) / 1000 * fontSize;
+                            return ctx.getFontForNode(node).getStringWidth(str) / 1000 * fontSize;
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -221,18 +178,18 @@ public class PdfExporter implements Exporter {
 
                     @Override
                     public double getSpaceWidth(Node node) {
-                        return getFontForNode(node).getSpaceWidth() / 1000 * fontSize;
+                        return ctx.getFontForNode(node).getSpaceWidth() / 1000 * fontSize;
                     }
                 })
                 .setGlueConfig(new GlueConfig() {
                     @Override
                     public double getInterWordStretchability(Node node, char lastChar) {
-                        return (getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 2) * (quality + 1);
+                        return (ctx.getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 2) * (quality + 1);
                     }
 
                     @Override
                     public double getInterWordShrinkability(Node node, char lastChar) {
-                        return getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 3;
+                        return ctx.getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 3;
                     }
                 })
                 .setHyphenator(new Hyphenator() {

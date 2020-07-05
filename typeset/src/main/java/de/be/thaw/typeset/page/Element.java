@@ -22,4 +22,11 @@ public interface Element {
      */
     Position getPosition();
 
+    /**
+     * Get the element type.
+     *
+     * @return type
+     */
+    ElementType getType();
+
 }
