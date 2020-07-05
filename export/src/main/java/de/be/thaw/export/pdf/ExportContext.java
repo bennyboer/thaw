@@ -6,6 +6,7 @@ import de.be.thaw.font.util.FontVariantLocator;
 import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
+import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.typeset.util.Size;
 import org.apache.fontbox.ttf.TrueTypeCollection;
@@ -57,6 +58,43 @@ public class ExportContext {
      */
     private PDPageContentStream contentStream;
 
+    /**
+     * The current source page.
+     */
+    private Page currentSourcePage;
+
+    /**
+     * Current index of the source element to export.
+     */
+    private int currentSourceElementIndex;
+
+    /**
+     * Whether the elements are currently underlined.
+     */
+    private boolean currentlyUnderlined = false;
+
+    /**
+     * Descent of the underline.
+     * Set when currentlyUnderlined = true.
+     */
+    private double underlineDescent;
+
+    /**
+     * Line width of the underline.
+     * Set when currentlyUnderlined = true.
+     */
+    private double underlineLineWidth;
+
+    /**
+     * Y position of the last underlined element.
+     */
+    private double underlineY;
+
+    /**
+     * X position of the last underline line end.
+     */
+    private double underlineX;
+
     public ExportContext(PDDocument document) {
         this.document = document;
     }
@@ -100,6 +138,62 @@ public class ExportContext {
 
     public void setContentStream(PDPageContentStream contentStream) {
         this.contentStream = contentStream;
+    }
+
+    public Page getCurrentSourcePage() {
+        return currentSourcePage;
+    }
+
+    public void setCurrentSourcePage(Page currentSourcePage) {
+        this.currentSourcePage = currentSourcePage;
+    }
+
+    public int getCurrentSourceElementIndex() {
+        return currentSourceElementIndex;
+    }
+
+    public void setCurrentSourceElementIndex(int currentSourceElementIndex) {
+        this.currentSourceElementIndex = currentSourceElementIndex;
+    }
+
+    public boolean isCurrentlyUnderlined() {
+        return currentlyUnderlined;
+    }
+
+    public void setCurrentlyUnderlined(boolean currentlyUnderlined) {
+        this.currentlyUnderlined = currentlyUnderlined;
+    }
+
+    public double getUnderlineDescent() {
+        return underlineDescent;
+    }
+
+    public void setUnderlineDescent(double underlineDescent) {
+        this.underlineDescent = underlineDescent;
+    }
+
+    public double getUnderlineLineWidth() {
+        return underlineLineWidth;
+    }
+
+    public void setUnderlineLineWidth(double underlineLineWidth) {
+        this.underlineLineWidth = underlineLineWidth;
+    }
+
+    public double getUnderlineY() {
+        return underlineY;
+    }
+
+    public void setUnderlineY(double underlineY) {
+        this.underlineY = underlineY;
+    }
+
+    public double getUnderlineX() {
+        return underlineX;
+    }
+
+    public void setUnderlineX(double underlineX) {
+        this.underlineX = underlineX;
     }
 
     /**

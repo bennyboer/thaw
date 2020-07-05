@@ -48,22 +48,52 @@ public class TextElementExporter implements ElementExporter {
 
             out.endText();
 
-            if (te.getNode().getType() == NodeType.FORMATTED) {
-                FormattedNode fn = (FormattedNode) te.getNode();
-
-                if (fn.getEmphases().contains(TextEmphasis.UNDERLINED)) {
-                    double descent = font.getFontDescriptor().getDescent() / 1000 * fontSize;
-                    double lineY = y + descent;
-
-                    out.setLineWidth(font.getFontDescriptor().getFontWeight() / 1000);
-                    out.moveTo((float) te.getPosition().getX(), (float) lineY);
-                    out.lineTo((float) (te.getPosition().getX() + te.getSize().getWidth()), (float) lineY);
-                    out.stroke();
-                }
-            }
+            underlineIfNecessary(te, ctx, out, font, fontSize, y);
         } catch (IOException e) {
             throw new ExportException("Text element could not be exported to PDF due to another exception", e);
         }
+    }
+
+    private void underlineIfNecessary(TextElement element, ExportContext ctx, PDPageContentStream out, PDFont font, double fontSize, double y) throws IOException {
+        if (element.getNode().getType() == NodeType.FORMATTED) {
+            FormattedNode fn = (FormattedNode) element.getNode();
+
+            if (fn.getEmphases().contains(TextEmphasis.UNDERLINED)) {
+                double descent = font.getFontDescriptor().getDescent() / 1000 * fontSize;
+                double lineWidth = Math.max(0.5, font.getFontDescriptor().getFontWeight() / 1000 * fontSize / 15);
+
+                double lineStartX = element.getPosition().getX();
+                double lineEndX = element.getPosition().getX() + element.getSize().getWidth();
+
+                // Check if previous element has also been underlined
+                if (ctx.isCurrentlyUnderlined()) {
+                    if (ctx.getUnderlineY() == element.getPosition().getY()) {
+                        // The elements are on the same line
+                        // -> use same descent and line width as before and draw line under white space as well
+                        descent = ctx.getUnderlineDescent();
+                        lineWidth = ctx.getUnderlineLineWidth();
+                        lineStartX = ctx.getUnderlineX();
+                    }
+                }
+
+                ctx.setCurrentlyUnderlined(true);
+                ctx.setUnderlineDescent(descent);
+                ctx.setUnderlineLineWidth(lineWidth);
+                ctx.setUnderlineY(element.getPosition().getY());
+                ctx.setUnderlineX(lineEndX);
+
+                double lineY = y + descent;
+
+                out.setLineWidth((float) lineWidth);
+                out.moveTo((float) lineStartX, (float) lineY);
+                out.lineTo((float) lineEndX, (float) lineY);
+                out.stroke();
+
+                return;
+            }
+        }
+
+        ctx.setCurrentlyUnderlined(false);
     }
 
 }

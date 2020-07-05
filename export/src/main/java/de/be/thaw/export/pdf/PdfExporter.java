@@ -84,7 +84,13 @@ public class PdfExporter implements Exporter {
 
             int pageCounter = 0;
             for (Page page : pages) {
-                for (Element element : page.getElements()) {
+                ctx.setCurrentSourcePage(page);
+
+                int len = page.getElements().size();
+                for (int i = 0; i < len; i++) {
+                    ctx.setCurrentSourceElementIndex(i);
+                    Element element = page.getElements().get(i);
+
                     ElementExporter elementExporter = ElementExporters.getForType(element.getType()).orElseThrow(() -> new ExportException(String.format(
                             "Elements of type '%s' cannot be exported as there is no suitable exporter",
                             element.getType().name()
@@ -144,7 +150,7 @@ public class PdfExporter implements Exporter {
      * @return type setter to use
      */
     private TypeSetter createTypeSetter(ExportContext ctx, int quality) {
-        final double fontSize = 12.0; // TODO Determine per node when having a style model
+        final double fontSize = ctx.getFontSizeForNode(null); // TODO Determine per node when having a style model
         final double lineHeight = 1.5 * fontSize; // TODO Determine per paragraph node when having a style model
 
         return new KnuthPlassTypeSetter(KnuthPlassTypeSettingConfig.newBuilder()
