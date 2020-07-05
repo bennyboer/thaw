@@ -1,5 +1,7 @@
 package de.be.thaw.export.pdf;
 
+import de.be.thaw.export.exception.ExportException;
+import de.be.thaw.font.util.FontFamily;
 import de.be.thaw.font.util.FontManager;
 import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.font.util.FontVariantLocator;
@@ -197,15 +199,12 @@ public class ExportContext {
     }
 
     /**
-     * Get the font for the passed node.
+     * Get the font variant from the passed node.
      *
-     * @param node to get font for
-     * @return font
+     * @param node to get variant from
+     * @return font variant
      */
-    public PDFont getFontForNode(Node node) {
-        String familyName = "Cambria"; // Default font family for testing
-
-        FontVariant variant = FontVariant.PLAIN;
+    private FontVariant getFontVariantFromNode(Node node) {
         if (node instanceof FormattedNode) {
             Set<TextEmphasis> emphases = ((FormattedNode) node).getEmphases();
 
@@ -213,15 +212,38 @@ public class ExportContext {
             boolean isItalic = emphases.contains(TextEmphasis.ITALIC);
 
             if (isBold && isItalic) {
-                variant = FontVariant.BOLD_ITALIC;
+                return FontVariant.BOLD_ITALIC;
             } else if (isBold) {
-                variant = FontVariant.BOLD;
+                return FontVariant.BOLD;
             } else if (isItalic) {
-                variant = FontVariant.ITALIC;
+                return FontVariant.ITALIC;
             }
         }
 
-        FontVariantLocator locator = FontManager.getInstance().getFamily(familyName).orElseThrow().getVariantFont(variant).orElseThrow();
+        return FontVariant.PLAIN;
+    }
+
+    /**
+     * Get the font for the passed node.
+     *
+     * @param node to get font for
+     * @return font
+     */
+    public PDFont getFontForNode(Node node) throws ExportException {
+        String familyName = "Cambria"; // Default font family for testing
+
+        FontVariant variant = getFontVariantFromNode(node);
+
+        FontFamily family = FontManager.getInstance().getFamily(familyName).orElseThrow(() -> new ExportException(String.format(
+                "Could not find font family '%s'",
+                familyName
+        )));
+
+        FontVariantLocator locator = family.getVariantFont(variant).orElseThrow(() -> new ExportException(String.format(
+                "Could not find font variant '%s' in font family '%s'",
+                variant.name(),
+                familyName
+        )));
 
         PDFont font = fontCache.get(locator);
         if (font == null) {

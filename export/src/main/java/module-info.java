@@ -1,6 +1,8 @@
 module de.be.thaw.export {
     requires org.apache.pdfbox;
     requires org.apache.fontbox;
+    requires java.logging;
+
     requires de.be.thaw.typeset;
     requires de.be.thaw.core;
     requires de.be.thaw.text;

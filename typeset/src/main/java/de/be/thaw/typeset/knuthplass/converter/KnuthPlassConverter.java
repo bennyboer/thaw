@@ -2,6 +2,7 @@ package de.be.thaw.typeset.knuthplass.converter;
 
 import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.DocumentConverter;
+import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
@@ -40,7 +41,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
     }
 
     @Override
-    public List<Paragraph> convert(Document document) {
+    public List<Paragraph> convert(Document document) throws DocumentConversionException {
         paragraphs.clear();
 
         initializeForNode(document.getTextModel().getRoot());
@@ -55,7 +56,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
      *
      * @param node to initialize for
      */
-    private void initializeForNode(Node node) {
+    private void initializeForNode(Node node) throws DocumentConversionException {
         switch (node.getType()) {
             case BOX, ENUMERATION -> initializeNewParagraph();
             case TEXT, FORMATTED -> initializeTextualNode(node);
@@ -109,7 +110,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
      *
      * @param node to initialize with
      */
-    private void initializeTextualNode(Node node) {
+    private void initializeTextualNode(Node node) throws DocumentConversionException {
         String value;
         if (node.getType() == NodeType.TEXT) {
             value = ((TextNode) node).getValue();
@@ -130,11 +131,16 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
 
                     // Add inter-word glue (representing a white space)
                     char lastChar = wordBuffer.length() > 0 ? wordBuffer.charAt(wordBuffer.length() - 1) : ' ';
-                    paragraphs.get(paragraphs.size() - 1).addItem(new Glue(
-                            config.getFontDetailsSupplier().getSpaceWidth(node),
-                            config.getGlueConfig().getInterWordStretchability(node, lastChar),
-                            config.getGlueConfig().getInterWordShrinkability(node, lastChar)
-                    ));
+
+                    try {
+                        paragraphs.get(paragraphs.size() - 1).addItem(new Glue(
+                                config.getFontDetailsSupplier().getSpaceWidth(node),
+                                config.getGlueConfig().getInterWordStretchability(node, lastChar),
+                                config.getGlueConfig().getInterWordShrinkability(node, lastChar)
+                        ));
+                    } catch (Exception e) {
+                        throw new DocumentConversionException(e);
+                    }
                 }
                 case '-' -> {
                     wordBuffer.append(c);
@@ -166,7 +172,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
      * @param word to append
      * @param node the word belongs to
      */
-    private void appendWordToParagraph(String word, Node node) {
+    private void appendWordToParagraph(String word, Node node) throws DocumentConversionException {
         if (word.isEmpty()) {
             return;
         }
@@ -177,23 +183,27 @@ public class KnuthPlassConverter implements DocumentConverter<List<Paragraph>> {
         HyphenatedWord hyphenatedWord = config.getHyphenator().hyphenate(word);
         List<HyphenatedWordPart> parts = hyphenatedWord.getParts();
 
-        int len = parts.size();
-        double hyphenWidth = len > 1 ? config.getFontDetailsSupplier().getCodeWidth(node, '-') : 0;
+        try {
+            int len = parts.size();
+            double hyphenWidth = len > 1 ? config.getFontDetailsSupplier().getCodeWidth(node, '-') : 0;
 
-        for (int i = 0; i < len; i++) {
-            HyphenatedWordPart part = parts.get(i);
+            for (int i = 0; i < len; i++) {
+                HyphenatedWordPart part = parts.get(i);
 
-            paragraph.addItem(new TextBox(
-                    part.getPart(),
-                    config.getFontDetailsSupplier().getStringWidth(node, part.getPart()),
-                    node
-            ));
+                paragraph.addItem(new TextBox(
+                        part.getPart(),
+                        config.getFontDetailsSupplier().getStringWidth(node, part.getPart()),
+                        node
+                ));
 
-            boolean isLast = i == len - 1;
-            if (!isLast) {
-                // Add hyphen penalty to represent an optional hyphen
-                paragraph.addItem(new Penalty(part.getPenalty(), hyphenWidth, true));
+                boolean isLast = i == len - 1;
+                if (!isLast) {
+                    // Add hyphen penalty to represent an optional hyphen
+                    paragraph.addItem(new Penalty(part.getPenalty(), hyphenWidth, true));
+                }
             }
+        } catch (Exception e) {
+            throw new DocumentConversionException(e);
         }
     }
 

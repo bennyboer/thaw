@@ -13,8 +13,9 @@ public interface GlueConfig {
      * @param node     the original node the glue is part of
      * @param lastChar of the last word to append glue to
      * @return stretchability
+     * @throws Exception in case the inter word stretchability could not be determined
      */
-    double getInterWordStretchability(Node node, char lastChar);
+    double getInterWordStretchability(Node node, char lastChar) throws Exception;
 
     /**
      * Get the inter-word shrinkability.
@@ -22,7 +23,8 @@ public interface GlueConfig {
      * @param node     the original node the glue is part of
      * @param lastChar of the last word to append glue to
      * @return shrinkability
+     * @throws Exception in case the inter word shrinkability could not be determined
      */
-    double getInterWordShrinkability(Node node, char lastChar);
+    double getInterWordShrinkability(Node node, char lastChar) throws Exception;
 
 }

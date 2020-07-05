@@ -1,6 +1,7 @@
 package de.be.thaw.typeset.knuthplass;
 
 import de.be.thaw.core.document.Document;
+import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
@@ -56,7 +57,11 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
     @Override
     public List<Page> typeset(Document document) throws TypeSettingException {
-        paragraphs = new KnuthPlassConverter(config).convert(document);
+        try {
+            paragraphs = new KnuthPlassConverter(config).convert(document);
+        } catch (DocumentConversionException e) {
+            throw new TypeSettingException("Could not convert the document into the Knuth-Plass algorithm format", e);
+        }
 
         pages = new ArrayList<>();
         currentPageElements = new ArrayList<>();

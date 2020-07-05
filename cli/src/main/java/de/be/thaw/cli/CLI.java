@@ -159,6 +159,7 @@ public class CLI implements Callable<Integer> {
                             "The exception message is: '%s'",
                     e.getMessage()
             ));
+            e.printStackTrace();
             return ErrorResult.EXPORT_ERROR.getCode();
         }
 

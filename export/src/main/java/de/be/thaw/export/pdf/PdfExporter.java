@@ -28,11 +28,18 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Exporter exporting documents to PDF.
  */
 public class PdfExporter implements Exporter {
+
+    /**
+     * Logger for the class.
+     */
+    private static Logger LOGGER = Logger.getLogger(PdfExporter.class.getSimpleName());
 
     /**
      * Maximum iterations when trying to typeset properly.
@@ -133,13 +140,13 @@ public class PdfExporter implements Exporter {
             try {
                 return typeSetter.typeset(document);
             } catch (TypeSettingException e) {
-                // TODO Add this to debug logging
-                System.out.println(e.getMessage());
-                System.out.println(">>> Will decrease type setting quality in order to succeed eventually");
+                lastException = e;
+
+                LOGGER.log(Level.FINER, String.format("%s > Will decrease type setting quality in order to succeed eventually", e.getMessage()));
             }
         }
 
-        throw new TypeSettingException("Could not typeset the pages properly event after decreasing the quality multiply times", lastException);
+        throw new TypeSettingException("Could not typeset the pages properly despite decreasing the quality multiply times", lastException);
     }
 
     /**
@@ -161,40 +168,28 @@ public class PdfExporter implements Exporter {
                 .setFirstLineIndent(20)
                 .setFontDetailsSupplier(new FontDetailsSupplier() {
                     @Override
-                    public double getCodeWidth(Node node, int code) {
-                        try {
-                            return ctx.getFontForNode(node).getWidth(code) / 1000 * fontSize;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        return 0;
+                    public double getCodeWidth(Node node, int code) throws Exception {
+                        return ctx.getFontForNode(node).getWidth(code) / 1000 * fontSize;
                     }
 
                     @Override
-                    public double getStringWidth(Node node, String str) {
-                        try {
-                            return ctx.getFontForNode(node).getStringWidth(str) / 1000 * fontSize;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        return 0;
+                    public double getStringWidth(Node node, String str) throws Exception {
+                        return ctx.getFontForNode(node).getStringWidth(str) / 1000 * fontSize;
                     }
 
                     @Override
-                    public double getSpaceWidth(Node node) {
+                    public double getSpaceWidth(Node node) throws Exception {
                         return ctx.getFontForNode(node).getSpaceWidth() / 1000 * fontSize;
                     }
                 })
                 .setGlueConfig(new GlueConfig() {
                     @Override
-                    public double getInterWordStretchability(Node node, char lastChar) {
+                    public double getInterWordStretchability(Node node, char lastChar) throws Exception {
                         return (ctx.getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 2) * (quality + 1);
                     }
 
                     @Override
-                    public double getInterWordShrinkability(Node node, char lastChar) {
+                    public double getInterWordShrinkability(Node node, char lastChar) throws Exception {
                         return ctx.getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 3;
                     }
                 })
