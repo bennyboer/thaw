@@ -13,13 +13,16 @@ The file extension of the info file format is `*.tdi` which is short for Thaw do
 ### Examples
 
 ```
-// Meta data
-title = My example title
+encoding = UTF-8
+language = de
 
-// Paths to the document source files (text, style and references)
-text = example.tdt
-style = example.tds
-references = example.tdr
-
-// ... (Yet to be defined properly)
+author.name = Benjamin Eder
+author.email = barny.eder@gmail.com
 ```
+
+| Key | Description |
+| --- | --- |
+| `encoding` | The encoding of the text files in the project. Defaults to the Systems standard charset. |
+| `language` | Language code of the language the document is written in. Used for hyphenation. |
+| `author.name` | The author name of the document. |
+| `author.email` | The authors E-mail address. |
