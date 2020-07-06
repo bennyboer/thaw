@@ -52,7 +52,7 @@ public class DefaultHyphenationDictionary implements HyphenationDictionary {
         }
 
         // Prepare the word for the hyphenation algorithm
-        word = '.' + word.toLowerCase() + '.';
+        word = '.' + word + '.';
 
         int[] points = new int[word.length() + 1];
         Arrays.fill(points, 0);
@@ -60,7 +60,7 @@ public class DefaultHyphenationDictionary implements HyphenationDictionary {
         int len = word.length();
         for (int partLength = 1; partLength < len; partLength++) {
             for (int start = 0; start <= word.length() - partLength; start++) {
-                String part = word.substring(start, start + partLength);
+                String part = word.substring(start, start + partLength).toLowerCase();
 
                 int[] curPoints = source.get(part);
                 if (curPoints != null) {
