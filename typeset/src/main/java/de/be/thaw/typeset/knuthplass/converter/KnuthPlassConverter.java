@@ -23,11 +23,17 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * Converter of the thaw document to the internal Knuth-Plass algorithm format.
  */
 public class KnuthPlassConverter implements DocumentConverter<List<List<Paragraph>>> {
+
+    /**
+     * Pattern matching punctuation characters.
+     */
+    private static final Pattern PUNCTUATION_CHARACTER_PATTERN = Pattern.compile("[.,;!?'\"\\u201E\\u201C\\u201D\\u201F\\u201A\\u2019\\u2018\\u00AB\\u00BB]");
 
     /**
      * Configuration of the line breaking algorithm.
@@ -142,7 +148,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
                     wordBuffer.setLength(0); // Reset word buffer
 
                     // Add inter-word glue (representing a white space)
-                    char lastChar = wordBuffer.length() > 0 ? wordBuffer.charAt(wordBuffer.length() - 1) : ' ';
+                    char lastChar = ' ';
 
                     try {
                         currentParagraphList.get(currentParagraphList.size() - 1).addItem(new Glue(
@@ -179,6 +185,42 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
     }
 
     /**
+     * Split the passed word by punctuation characters.
+     *
+     * @param str to split
+     * @return the split word
+     */
+    private List<WordPartSplitByPunctuationCharacter> splitByPunctuationCharacter(String str) {
+        String replaced = PUNCTUATION_CHARACTER_PATTERN.matcher(str).replaceAll(" ");
+
+        List<WordPartSplitByPunctuationCharacter> splitWord = new ArrayList<>();
+
+        int len = replaced.length();
+        StringBuilder buffer = new StringBuilder();
+        for (int i = 0; i < len; i++) {
+            char c = replaced.charAt(i);
+
+            if (c == ' ') {
+                if (buffer.length() > 0) {
+                    splitWord.add(new WordPartSplitByPunctuationCharacter(false, buffer.toString()));
+                    buffer.setLength(0); // Reset buffer
+                }
+
+                // Has been punctuation mark
+                splitWord.add(new WordPartSplitByPunctuationCharacter(true, String.valueOf(str.charAt(i))));
+            } else {
+                buffer.append(c);
+            }
+        }
+
+        if (buffer.length() > 0) {
+            splitWord.add(new WordPartSplitByPunctuationCharacter(false, buffer.toString()));
+        }
+
+        return splitWord;
+    }
+
+    /**
      * Append a word to the current paragraph.
      *
      * @param word to append
@@ -194,27 +236,42 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
             paragraph.addItem(new EmptyBox(config.getFirstLineIndent()));
         }
 
-        // Hyphenate word first
-        HyphenatedWord hyphenatedWord = config.getHyphenator().hyphenate(word);
-        List<HyphenatedWordPart> parts = hyphenatedWord.getParts();
+        // Split by punctuation characters
+        List<WordPartSplitByPunctuationCharacter> splitWord = splitByPunctuationCharacter(word);
 
         try {
-            int len = parts.size();
-            double hyphenWidth = len > 1 ? config.getFontDetailsSupplier().getStringWidth(node, "-") : 0;
+            for (WordPartSplitByPunctuationCharacter splitWordPart : splitWord) {
+                if (splitWordPart.isPunctuationCharacter()) {
+                    paragraph.addItem(new TextBox(
+                            splitWordPart.getPart(),
+                            config.getFontDetailsSupplier().getStringWidth(node, splitWordPart.getPart()),
+                            node
+                    ));
+                } else { // Is an actual word without punctuation characters
+                    // Hyphenate word first
+                    HyphenatedWord hyphenatedWord = config.getHyphenator().hyphenate(splitWordPart.getPart());
+                    List<HyphenatedWordPart> parts = hyphenatedWord.getParts();
 
-            for (int i = 0; i < len; i++) {
-                HyphenatedWordPart part = parts.get(i);
 
-                paragraph.addItem(new TextBox(
-                        part.getPart(),
-                        config.getFontDetailsSupplier().getStringWidth(node, part.getPart()),
-                        node
-                ));
+                    int len = parts.size();
+                    double hyphenWidth = len > 1 ? config.getFontDetailsSupplier().getStringWidth(node, "-") : 0;
 
-                boolean isLast = i == len - 1;
-                if (!isLast) {
-                    // Add hyphen penalty to represent an optional hyphen
-                    paragraph.addItem(new Penalty(part.getPenalty(), hyphenWidth, true, node));
+                    for (int i = 0; i < len; i++) {
+                        HyphenatedWordPart part = parts.get(i);
+
+                        paragraph.addItem(new TextBox(
+                                part.getPart(),
+                                config.getFontDetailsSupplier().getStringWidth(node, part.getPart()),
+                                node
+                        ));
+
+                        boolean isLast = i == len - 1;
+                        if (!isLast) {
+                            // Add hyphen penalty to represent an optional hyphen
+                            paragraph.addItem(new Penalty(part.getPenalty(), hyphenWidth, true, node));
+                        }
+                    }
+
                 }
             }
         } catch (Exception e) {
@@ -309,6 +366,36 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
 
         currentParagraphList = new ArrayList<>();
         initializeNewParagraph();
+    }
+
+    /**
+     * A word part that is split by punctuation character.
+     */
+    private static class WordPartSplitByPunctuationCharacter {
+
+        /**
+         * Whether the contained word part is a punctuation character.
+         */
+        private final boolean isPunctuationCharacter;
+
+        /**
+         * The contained word part that is either a punctuation character or a legal word part.
+         */
+        private final String part;
+
+        public WordPartSplitByPunctuationCharacter(boolean isPunctuationCharacter, String part) {
+            this.isPunctuationCharacter = isPunctuationCharacter;
+            this.part = part;
+        }
+
+        public boolean isPunctuationCharacter() {
+            return isPunctuationCharacter;
+        }
+
+        public String getPart() {
+            return part;
+        }
+
     }
 
 }

@@ -230,7 +230,7 @@ public class ExportContext {
      * @return font
      */
     public PDFont getFontForNode(Node node) throws ExportException {
-        String familyName = "Cambria"; // Default font family for testing
+        String familyName = "Calibri"; // Default font family for testing
 
         FontVariant variant = getFontVariantFromNode(node);
 

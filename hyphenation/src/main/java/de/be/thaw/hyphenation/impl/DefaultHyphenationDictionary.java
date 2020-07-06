@@ -4,8 +4,10 @@ import de.be.thaw.hyphenation.HyphenationDictionary;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * The default hyphenation dictionary.
@@ -45,14 +47,21 @@ public class DefaultHyphenationDictionary implements HyphenationDictionary {
 
     @Override
     public List<String> hyphenate(String word) {
-        // TODO
+        if (word.length() < getLeftHyphenMin() + getRightHyphenMin()) {
+            return Collections.singletonList(word);
+        }
 
         // Make a sequence of possible cut points.
         char[] cutPoints = new char[word.length() + 1];
         Arrays.fill(cutPoints, '0');
 
-        // Add fake periods to represent begin and end.
-        word = "." + word + ".";
+        // Add fake periods to represent begin and end of the word (if there is no period yet).
+        if (word.charAt(0) != '.') {
+            word = '.' + word;
+        }
+        if (word.charAt(word.length() - 1) != '.') {
+            word = word + '.';
+        }
 
         // Find all sub-sequences.
         for (int seqLength = 1; seqLength <= word.length(); seqLength++) {
