@@ -87,7 +87,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
                 double indent = 0; // Indent of the paragraph (if any), set for example for enumerations.
                 for (int i = 0; i < lines.size(); i++) {
-                    if (y > config.getPageSize().getHeight()) {
+                    if (y > config.getPageSize().getHeight() - config.getPageInsets().getTop()) {
                         // Create next page
                         pages.add(new Page(pages.size() + 1, config.getPageSize(), config.getPageInsets(), currentPageElements));
                         currentPageElements = new ArrayList<>();
