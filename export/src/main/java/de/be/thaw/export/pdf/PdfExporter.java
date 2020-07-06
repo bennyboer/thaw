@@ -188,7 +188,7 @@ public class PdfExporter implements Exporter {
 
                     @Override
                     public double getSpaceWidth(Node node) throws Exception {
-                        return ctx.getFontForNode(node).getSpaceWidth() / 1000 * fontSize;
+                        return ctx.getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 2;
                     }
                 })
                 .setGlueConfig(new GlueConfig() {
