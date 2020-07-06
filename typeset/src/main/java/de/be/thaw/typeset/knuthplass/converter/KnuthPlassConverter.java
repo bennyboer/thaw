@@ -252,7 +252,6 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
                     HyphenatedWord hyphenatedWord = config.getHyphenator().hyphenate(splitWordPart.getPart());
                     List<HyphenatedWordPart> parts = hyphenatedWord.getParts();
 
-
                     int len = parts.size();
                     double hyphenWidth = len > 1 ? config.getFontDetailsSupplier().getStringWidth(node, "-") : 0;
 

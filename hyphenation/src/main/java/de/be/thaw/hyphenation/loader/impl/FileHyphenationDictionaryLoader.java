@@ -23,6 +23,11 @@ public class FileHyphenationDictionaryLoader implements HyphenationDictionaryLoa
     private static final Pattern DIGITS_PATTERN = Pattern.compile("[0-9]");
 
     /**
+     * Pattern used to split points.
+     */
+    private static final Pattern POINTS_SPLIT_PATTERN = Pattern.compile("[.a-z]");
+
+    /**
      * States of the loaders parser.
      */
     private enum State {
@@ -42,7 +47,7 @@ public class FileHyphenationDictionaryLoader implements HyphenationDictionaryLoa
         int leftHyphenMin = 2;
         int rightHyphenMin = 2;
 
-        Map<String, String> patterns = new HashMap<>();
+        Map<String, int[]> source = new HashMap<>();
 
         try {
             State state = State.META_DATA;
@@ -63,7 +68,7 @@ public class FileHyphenationDictionaryLoader implements HyphenationDictionaryLoa
                             if (!parts[0].equalsIgnoreCase("utf-8")) {
                                 state = State.DATA;
 
-                                addPattern(patterns, line);
+                                insertPattern(source, line);
                             }
                         } else if (parts.length == 2) {
                             switch (parts[0]) {
@@ -72,60 +77,48 @@ public class FileHyphenationDictionaryLoader implements HyphenationDictionaryLoa
                             }
                         }
                     }
-                    case DATA -> {
-                        addPattern(patterns, line);
-                    }
+                    case DATA -> insertPattern(source, line);
                 }
             }
         } catch (IOException e) {
             throw new HyphenationDictionaryLoadException("Could not load hyphenation dictionary from file", e);
         }
 
-        return new DefaultHyphenationDictionary(patterns, leftHyphenMin, rightHyphenMin);
+        return new DefaultHyphenationDictionary(source, leftHyphenMin, rightHyphenMin);
     }
 
     /**
-     * Add a pattern to the passed map.
+     * Converting the passed pattern string into a string of characters and
+     * a list of points.
+     * <p>
+     * e. g. 'a1bc3d4' into 'abcd' and [0, 1, 0, 3, 4]
      *
-     * @param patterns to add pattern to
-     * @param pattern  to add
+     * @param source  to add pattern to
+     * @param pattern to add
      */
-    private void addPattern(Map<String, String> patterns, String pattern) {
+    private void insertPattern(Map<String, int[]> source, String pattern) {
         String key = DIGITS_PATTERN.matcher(pattern).replaceAll("");
-        String value = transformValue(pattern);
+        int[] points = patternToPoints(pattern);
 
-        patterns.put(key, value);
+        source.put(key, points);
     }
 
-    private String transformValue(String pattern) {
-        StringBuilder builder = new StringBuilder(pattern);
-
-        if (builder.length() > 0) {
-            // Remove leading and trailing dots '.' as they only mean the beginning of words
-            if (builder.charAt(0) == '.') {
-                builder.deleteCharAt(0);
+    /**
+     * Converting a pattern to a points array.
+     * <p>
+     * e. g. 'a1bc3d4' to [0, 1, 0, 3, 4]
+     *
+     * @param pattern to convert
+     * @return the points array
+     */
+    private int[] patternToPoints(String pattern) {
+        return POINTS_SPLIT_PATTERN.splitAsStream(pattern).mapToInt(s -> {
+            if (s.length() == 0) {
+                return 0;
+            } else {
+                return Character.getNumericValue(s.charAt(0));
             }
-
-            if (builder.charAt(builder.length() - 1) == '.') {
-                builder.deleteCharAt(builder.length() - 1);
-            }
-        }
-
-        // Insert missing zeros.
-        for (int i = 0; i <= builder.length(); i += 2) {
-            if (i == builder.length() || !Character.isDigit(builder.charAt(i))) {
-                builder.insert(i, '0');
-            }
-        }
-
-        // Removing all characters
-        for (int i = builder.length() - 1; i >= 0; i--) {
-            if (!Character.isDigit(builder.charAt(i))) {
-                builder.deleteCharAt(i);
-            }
-        }
-
-        return builder.toString();
+        }).toArray();
     }
 
 }

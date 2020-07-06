@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * The default hyphenation dictionary.
@@ -15,9 +14,9 @@ import java.util.regex.Pattern;
 public class DefaultHyphenationDictionary implements HyphenationDictionary {
 
     /**
-     * Patterns used to hyphenate.
+     * Points for the individual hyphenation keys.
      */
-    private final Map<String, String> patterns;
+    private final Map<String, int[]> source;
 
     /**
      * Minimum characters to hyphenate on the left.
@@ -29,8 +28,8 @@ public class DefaultHyphenationDictionary implements HyphenationDictionary {
      */
     private final int rightHyphenMin;
 
-    public DefaultHyphenationDictionary(Map<String, String> patterns, int leftHyphenMin, int rightHyphenMin) {
-        this.patterns = patterns;
+    public DefaultHyphenationDictionary(Map<String, int[]> source, int leftHyphenMin, int rightHyphenMin) {
+        this.source = source;
         this.leftHyphenMin = leftHyphenMin;
         this.rightHyphenMin = rightHyphenMin;
     }
@@ -47,124 +46,62 @@ public class DefaultHyphenationDictionary implements HyphenationDictionary {
 
     @Override
     public List<String> hyphenate(String word) {
-        if (word.length() < getLeftHyphenMin() + getRightHyphenMin()) {
+        // Words that are too short are not to be hyphenated!
+        if (word.length() <= getLeftHyphenMin() + getRightHyphenMin()) {
             return Collections.singletonList(word);
         }
 
-        // Make a sequence of possible cut points.
-        char[] cutPoints = new char[word.length() + 1];
-        Arrays.fill(cutPoints, '0');
+        // Prepare the word for the hyphenation algorithm
+        word = '.' + word.toLowerCase() + '.';
 
-        // Add fake periods to represent begin and end of the word (if there is no period yet).
-        if (word.charAt(0) != '.') {
-            word = '.' + word;
-        }
-        if (word.charAt(word.length() - 1) != '.') {
-            word = word + '.';
-        }
+        int[] points = new int[word.length() + 1];
+        Arrays.fill(points, 0);
 
-        // Find all sub-sequences.
-        for (int seqLength = 1; seqLength <= word.length(); seqLength++) {
-            for (int start = 0; start <= word.length() - seqLength; start++) {
-                String seq = word.substring(start, start + seqLength);
-                String value = patterns.get(seq.toLowerCase());
-                if (value != null) {
-                    // At the beginning of the word we don't count the period.
-                    int offset = seq.startsWith(".") ? 0 : -1;
+        int len = word.length();
+        for (int partLength = 1; partLength < len; partLength++) {
+            for (int start = 0; start <= word.length() - partLength; start++) {
+                String part = word.substring(start, start + partLength);
 
-                    // Find the max of the new hints and the existing ones.
-                    for (int i = 0; i < value.length(); i++) {
-                        char c = value.charAt(i);
-                        if (c > cutPoints[start + i + offset]) {
-                            cutPoints[start + i + offset] = c;
-                        }
+                int[] curPoints = source.get(part);
+                if (curPoints != null) {
+                    for (int p = 0; p < curPoints.length; p++) {
+                        points[start + p] = Math.max(points[start + p], curPoints[p]);
                     }
                 }
             }
         }
 
-        // Prevent hyphenation at start and end of word.
-        for (int i = 0; i < getLeftHyphenMin() && i < cutPoints.length; i++) {
-            cutPoints[i] = 0;
+        // Preventing hyphenation at the leading (leftHyphenMin) and trailing (rightHyphenMin) part of the word
+        for (int i = 0; i < getLeftHyphenMin(); i++) {
+            points[i] = 0;
         }
-        for (int i = 0; i < getRightHyphenMin() && i < cutPoints.length; i++) {
-            cutPoints[cutPoints.length - 1 - i] = 0;
+        for (int i = points.length - 1; i >= points.length - getRightHyphenMin(); i--) {
+            points[i] = 0;
         }
 
-        // Remove fake periods.
+        // Removing periods again
         word = word.substring(1, word.length() - 1);
 
-        // Find odd numbers and splice there.
-        List<String> segments = new ArrayList<>();
-        int lastStart = 0;
-        for (int i = 0; i < cutPoints.length; i++) {
-            if (cutPoints[i] % 2 != 0) {
-                segments.add(word.substring(lastStart, i));
-                lastStart = i;
-            }
-        }
-        if (lastStart < word.length()) {
-            segments.add(word.substring(lastStart));
-        }
+        // Build the list of word parts
+        List<String> parts = new ArrayList<>();
 
-        // Fix up single hyphens.
-        segments = mergeSingleHyphens(segments);
+        int startIndex = 0;
+        for (int i = getLeftHyphenMin(); i < word.length() - getRightHyphenMin() + 1; i++) {
+            int point = points[i + 1];
 
-        // Fix up hyphens on the wrong segment.
-        segments = moveHyphenPrefixes(segments);
-
-        return segments;
-    }
-
-    /**
-     * We once saw a problem with the word "super-confort", where the hyphen ended up
-     * as its own segment. Merge it with the previous segment.
-     */
-    private static List<String> mergeSingleHyphens(List<String> segments) {
-        // Quick exit.
-        if (!segments.contains("-")) {
-            return segments;
-        }
-
-        // Build up a new list.
-        List<String> newSegments = new ArrayList<>(segments.size());
-
-        for (int i = 0; i < segments.size(); i++) {
-            String element = segments.get(i);
-
-            if (i + 1 < segments.size() && segments.get(i + 1).equals("-")) {
-                newSegments.add(element + "-");
-                // Skip the hyphen.
-                i++;
-            } else {
-                newSegments.add(element);
+            boolean isOdd = point % 2 != 0;
+            if (isOdd) {
+                parts.add(word.substring(startIndex, i));
+                startIndex = i;
             }
         }
 
-        return newSegments;
-    }
-
-    /**
-     * We once saw a problem with the word "back-end", which was hyphenated as
-     * "back" and "-end". Move the hyphen to the end of the previous segment.
-     */
-    private static List<String> moveHyphenPrefixes(List<String> segments) {
-        // Build up a new list.
-        List<String> newSegments = new ArrayList<>(segments.size());
-
-        for (int i = 0; i < segments.size(); i++) {
-            String element = segments.get(i);
-
-            if (i + 1 < segments.size() && segments.get(i + 1).startsWith("-")) {
-                newSegments.add(element + "-");
-                newSegments.add(segments.get(i + 1).substring(1));
-                i++;
-            } else {
-                newSegments.add(element);
-            }
+        // Add the rest of the word
+        if (startIndex < word.length()) {
+            parts.add(word.substring(startIndex));
         }
 
-        return newSegments;
+        return parts;
     }
 
 }
