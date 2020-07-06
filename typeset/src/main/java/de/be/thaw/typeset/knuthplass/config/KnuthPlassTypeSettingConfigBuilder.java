@@ -98,6 +98,11 @@ public class KnuthPlassTypeSettingConfigBuilder {
     private double fitnessDemerit = DEFAULT_FITNESS_DEMERIT;
 
     /**
+     * Width of indentation.
+     */
+    private double indentWidth = -1;
+
+    /**
      * Supplier for font details.
      */
     private FontDetailsSupplier fontDetailsSupplier;
@@ -340,23 +345,48 @@ public class KnuthPlassTypeSettingConfigBuilder {
     }
 
     /**
+     * Get the width of indentation.
+     *
+     * @return indentation width
+     */
+    public double getIndentWidth() {
+        if (indentWidth == -1) {
+            return pageSize.getWidth() * 0.05;
+        }
+
+        return indentWidth;
+    }
+
+    /**
+     * Set the width of indentation.
+     *
+     * @param indentWidth to set
+     */
+    public KnuthPlassTypeSettingConfigBuilder setIndentWidth(double indentWidth) {
+        this.indentWidth = indentWidth;
+
+        return this;
+    }
+
+    /**
      * Build the line breaking configuration.
      *
      * @return the build config
      */
     public KnuthPlassTypeSettingConfig build() {
         return new KnuthPlassTypeSettingConfig(
-                pageSize,
-                pageInsets,
-                lineHeight,
-                firstLineIndent,
-                looseness,
-                tolerance,
-                flaggedDemerit,
-                fitnessDemerit,
-                fontDetailsSupplier,
-                hyphenator,
-                glueConfig
+                getPageSize(),
+                getPageInsets(),
+                getLineHeight(),
+                getFirstLineIndent(),
+                getIndentWidth(),
+                getLooseness(),
+                getTolerance(),
+                getFlaggedDemerit(),
+                getFitnessDemerit(),
+                getFontDetailsSupplier(),
+                getHyphenator(),
+                getGlueConfig()
         );
     }
 

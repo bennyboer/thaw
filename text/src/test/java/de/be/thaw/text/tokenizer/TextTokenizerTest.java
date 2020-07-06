@@ -497,6 +497,29 @@ public class TextTokenizerTest {
     }
 
     @Test
+    public void testComplexEnumeration2() throws TokenizeException {
+        String text = "- A\n" +
+                "\t- B\n" +
+                "\t\t- C\n" +
+                "\t\t\t- D\n" +
+                "\t\t\t\t- E\n" +
+                "\t\t\t\t\t- F\n" +
+                "- G";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(14, tokens.size());
+
+        EnumerationItemStartToken token = (EnumerationItemStartToken) tokens.get(10);
+        Assertions.assertEquals(TokenType.ENUMERATION_ITEM_START, token.getType());
+        Assertions.assertEquals(5, token.getIndent());
+
+        token = (EnumerationItemStartToken) tokens.get(12);
+        Assertions.assertEquals(TokenType.ENUMERATION_ITEM_START, token.getType());
+        Assertions.assertEquals(0, token.getIndent());
+    }
+
+    @Test
     public void testNoEnumeration() throws TokenizeException {
         String text = "The following enumeration is no enumeration!\n" +
                 "-A\n" +

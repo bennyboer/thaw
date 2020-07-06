@@ -4,6 +4,7 @@ import de.be.thaw.typeset.knuthplass.item.Item;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.IntToDoubleFunction;
 
 /**
  * A paragraph representation to process using the Knuth-Plass line breaking algorithm.
@@ -14,6 +15,20 @@ public class Paragraph {
      * The items the paragraph consists of (boxes, glues and penalties).
      */
     private final List<Item> items = new ArrayList<>();
+
+    /**
+     * Width of the paragraphs lines.
+     */
+    private final double lineWidth;
+
+    /**
+     * A special line width supplier.
+     */
+    private IntToDoubleFunction lineWidthSupplier;
+
+    public Paragraph(double lineWidth) {
+        this.lineWidth = lineWidth;
+    }
 
     /**
      * Add an item to the paragraph.
@@ -40,6 +55,29 @@ public class Paragraph {
      */
     public boolean isEmpty() {
         return items.isEmpty();
+    }
+
+    /**
+     * Set a special line width supplier.
+     *
+     * @param lineWidthSupplier to set
+     */
+    public void setLineWidthSupplier(IntToDoubleFunction lineWidthSupplier) {
+        this.lineWidthSupplier = lineWidthSupplier;
+    }
+
+    /**
+     * Get the line width for the passed line number.
+     *
+     * @param lineNumber to get line width for
+     * @return line width
+     */
+    public double getLineWidth(int lineNumber) {
+        if (lineWidthSupplier != null) {
+            return lineWidthSupplier.applyAsDouble(lineNumber);
+        }
+
+        return lineWidth;
     }
 
 }

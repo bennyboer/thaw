@@ -1,6 +1,7 @@
 package de.be.thaw.typeset.knuthplass.util;
 
 import de.be.thaw.typeset.knuthplass.item.Item;
+import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,14 +21,9 @@ public class LineBreakingContext {
     private final List<BreakPoint> activeBreakPoints = new LinkedList<>();
 
     /**
-     * Items of the paragraph to process.
+     * The paragraph to find line breaks in.
      */
-    private final List<Item> items;
-
-    /**
-     * The default line width we are trying to fit the paragraph to.
-     */
-    private final double defaultLineWidth;
+    private final Paragraph paragraph;
 
     /**
      * A mapping of line numbers to special line widths that are not the default
@@ -40,9 +36,8 @@ public class LineBreakingContext {
      */
     private final List<CumulativeMetrics> cumulativeMetrics = new ArrayList<>();
 
-    public LineBreakingContext(List<Item> items, double lineWidth) {
-        this.items = items;
-        this.defaultLineWidth = lineWidth;
+    public LineBreakingContext(Paragraph paragraph) {
+        this.paragraph = paragraph;
 
         initializeCumulativeMetrics();
     }
@@ -55,7 +50,7 @@ public class LineBreakingContext {
         double totalStretch = 0;
         double totalShrink = 0;
 
-        for (Item item : items) {
+        for (Item item : paragraph.items()) {
             totalWidth += item.getWidth();
             totalStretch += item.getStretchability();
             totalShrink += item.getShrinkability();
@@ -103,7 +98,7 @@ public class LineBreakingContext {
     }
 
     public List<Item> getItems() {
-        return items;
+        return paragraph.items();
     }
 
     /**
@@ -112,7 +107,7 @@ public class LineBreakingContext {
      * @return required line width
      */
     public double getLineWidth(int lineNumber) {
-        return Objects.requireNonNullElse(specialLineWidths.get(lineNumber), defaultLineWidth);
+        return Objects.requireNonNullElse(specialLineWidths.get(lineNumber), paragraph.getLineWidth(lineNumber));
     }
 
     /**
@@ -122,7 +117,7 @@ public class LineBreakingContext {
      * @param width      to set
      */
     public void setSpecialLineWidth(int lineNumber, double width) {
-        if (width != defaultLineWidth) {
+        if (width != paragraph.getLineWidth(lineNumber)) {
             specialLineWidths.put(lineNumber, width);
         }
     }

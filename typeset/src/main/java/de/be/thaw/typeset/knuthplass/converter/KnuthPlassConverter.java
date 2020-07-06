@@ -6,6 +6,7 @@ import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
+import de.be.thaw.text.model.tree.impl.EnumerationNode;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
@@ -15,6 +16,7 @@ import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWordPart;
 import de.be.thaw.typeset.knuthplass.item.impl.Glue;
 import de.be.thaw.typeset.knuthplass.item.impl.Penalty;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EmptyBox;
+import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 
@@ -69,7 +71,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
      */
     private void initializeForNode(Node node) throws DocumentConversionException {
         switch (node.getType()) {
-            case BOX, ENUMERATION -> initializeNewParagraph();
+            case BOX -> initializeNewParagraph();
             case TEXT, FORMATTED -> initializeTextualNode(node);
             case ENUMERATION_ITEM -> initializeEnumerationItem((EnumerationItemNode) node);
             case THINGY -> initializeThingy((ThingyNode) node);
@@ -110,8 +112,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
             }
         }
 
-        Paragraph paragraph = new Paragraph();
-        paragraph.addItem(new EmptyBox(config.getFirstLineIndent()));
+        Paragraph paragraph = new Paragraph(config.getPageSize().getWidth() - config.getPageInsets().getLeft() - config.getPageInsets().getRight());
 
         currentParagraphList.add(paragraph);
     }
@@ -189,6 +190,9 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         }
 
         Paragraph paragraph = currentParagraphList.get(currentParagraphList.size() - 1);
+        if (paragraph.isEmpty()) {
+            paragraph.addItem(new EmptyBox(config.getFirstLineIndent()));
+        }
 
         // Hyphenate word first
         HyphenatedWord hyphenatedWord = config.getHyphenator().hyphenate(word);
@@ -223,8 +227,36 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
      *
      * @param node to initialize with
      */
-    private void initializeEnumerationItem(EnumerationItemNode node) {
-        // TODO Special handling for an enumeration item where an explicit line break is added at the end and an enumeration item at the beginning
+    private void initializeEnumerationItem(EnumerationItemNode node) throws DocumentConversionException {
+        assert node.getParent() != null;
+        int level = ((EnumerationNode) node.getParent()).getLevel();
+
+        double indent = level * config.getIndentWidth();
+
+        String symbol = "\u2022 "; // TODO Get list item symbol from the node style (when the style model has been implemented)
+        double symbolWidth;
+        try {
+            symbolWidth = config.getFontDetailsSupplier().getStringWidth(node, symbol);
+        } catch (Exception e) {
+            throw new DocumentConversionException(e);
+        }
+
+        initializeNewParagraph(); // Each enumeration item is a individual paragraph!
+
+        Paragraph paragraph = currentParagraphList.get(currentParagraphList.size() - 1);
+
+        final double defaultLineWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight());
+        final double firstLineWidth = defaultLineWidth - indent + symbolWidth;
+        final double otherLineWidth = defaultLineWidth - indent;
+        paragraph.setLineWidthSupplier(lineNumber -> {
+            if (lineNumber == 1) {
+                return firstLineWidth;
+            } else {
+                return otherLineWidth;
+            }
+        });
+
+        paragraph.addItem(new EnumerationItemStartBox(symbol, symbolWidth, node, indent)); // Adding item symbol
     }
 
     /**

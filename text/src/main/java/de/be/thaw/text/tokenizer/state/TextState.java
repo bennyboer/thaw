@@ -46,6 +46,12 @@ public class TextState implements State {
                 yield this;
             }
             case '\\' -> new EscapedState(this);
+            case '\t' -> {
+                ctx.getBuffer().append(' ');
+                ctx.getBuffer().append(' ');
+
+                yield this;
+            }
             default -> {
                 ctx.getBuffer().append(c);
 

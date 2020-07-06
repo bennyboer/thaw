@@ -11,6 +11,7 @@ import de.be.thaw.typeset.knuthplass.item.Item;
 import de.be.thaw.typeset.knuthplass.item.ItemType;
 import de.be.thaw.typeset.knuthplass.item.impl.Glue;
 import de.be.thaw.typeset.knuthplass.item.impl.Penalty;
+import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.util.BreakPoint;
@@ -67,10 +68,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
         currentPageElements = new ArrayList<>();
 
         // Current x and y offsets
-        double x = config.getPageInsets().getLeft();
         double y = config.getPageInsets().getTop();
-
-        double availableLineWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight());
 
         for (int consecutiveParagraphsIndex = 0; consecutiveParagraphsIndex < paragraphs.size(); consecutiveParagraphsIndex++) {
             List<Paragraph> consecutiveParagraphs = paragraphs.get(consecutiveParagraphsIndex);
@@ -78,13 +76,16 @@ public class KnuthPlassTypeSetter implements TypeSetter {
             for (Paragraph paragraph : consecutiveParagraphs) {
                 LineBreakingResult result;
                 try {
-                    result = findBreakPoints(paragraph, availableLineWidth);
+                    result = findBreakPoints(paragraph);
                 } catch (CouldNotFindFeasibleSolutionException e) {
                     throw new TypeSettingException("Typesetting failed because the line breaking algorithm could not find a feasible solution", e);
                 }
 
                 List<List<Item>> lines = splitParagraphIntoLines(paragraph, result);
 
+                double x = config.getPageInsets().getLeft();
+
+                double indent = 0; // Indent of the paragraph (if any), set for example for enumerations.
                 for (int i = 0; i < lines.size(); i++) {
                     if (y > config.getPageSize().getHeight()) {
                         // Create next page
@@ -115,8 +116,12 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
                     double spaceWidth = getJustifiedLineSpaceWidth(lineMetrics, lineWidth);
 
-                    for (int a = 0; a < line.size(); a++) {
-                        Item item = line.get(a);
+                    for (Item item : line) {
+                        // Check if the item indicates an enumeration item start
+                        if (item instanceof EnumerationItemStartBox) {
+                            indent = ((EnumerationItemStartBox) item).getIndent();
+                            x += indent - item.getWidth();
+                        }
 
                         if (item instanceof TextBox) {
                             currentPageElements.add(new TextElement(
@@ -148,7 +153,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                     }
 
                     y += config.getLineHeight();
-                    x = config.getPageInsets().getLeft();
+                    x = config.getPageInsets().getLeft() + indent;
                 }
             }
 
@@ -262,12 +267,11 @@ public class KnuthPlassTypeSetter implements TypeSetter {
      * Find break points for the given paragraph.
      *
      * @param paragraph to find break points for
-     * @param lineWidth the line width to try to fit the paragraphs text to
      * @return the found break points
      * @throws CouldNotFindFeasibleSolutionException in case the algorithm could not find a feasible solution
      */
-    private LineBreakingResult findBreakPoints(Paragraph paragraph, double lineWidth) throws CouldNotFindFeasibleSolutionException {
-        LineBreakingContext ctx = new LineBreakingContext(paragraph.items(), lineWidth);
+    private LineBreakingResult findBreakPoints(Paragraph paragraph) throws CouldNotFindFeasibleSolutionException {
+        LineBreakingContext ctx = new LineBreakingContext(paragraph);
 
         // Adding initial active break point representing the beginning of the paragraph
         ctx.getActiveBreakPoints().add(new BreakPoint(0));

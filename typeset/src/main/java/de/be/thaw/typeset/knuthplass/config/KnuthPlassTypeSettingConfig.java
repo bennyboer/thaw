@@ -17,6 +17,11 @@ public class KnuthPlassTypeSettingConfig {
     private final double firstLineIndent;
 
     /**
+     * Width of indentation.
+     */
+    private final double indentWidth;
+
+    /**
      * Size of the de.be.thaw.typeset.page to typeset on (in arbitrary units).
      */
     private final Size pageSize;
@@ -74,6 +79,7 @@ public class KnuthPlassTypeSettingConfig {
             Insets pageInsets,
             double lineHeight,
             double firstLineIndent,
+            double indentWidth,
             int looseness,
             double tolerance,
             double flaggedDemerit,
@@ -96,8 +102,10 @@ public class KnuthPlassTypeSettingConfig {
 
         this.pageSize = pageSize;
         this.pageInsets = pageInsets;
-        this.firstLineIndent = firstLineIndent;
+
         this.lineHeight = lineHeight;
+        this.firstLineIndent = firstLineIndent;
+        this.indentWidth = indentWidth;
 
         this.looseness = looseness;
         this.tolerance = tolerance;
@@ -213,6 +221,15 @@ public class KnuthPlassTypeSettingConfig {
      */
     public Insets getPageInsets() {
         return pageInsets;
+    }
+
+    /**
+     * Get the width of indentation.
+     *
+     * @return indentation width
+     */
+    public double getIndentWidth() {
+        return indentWidth;
     }
 
     /**
