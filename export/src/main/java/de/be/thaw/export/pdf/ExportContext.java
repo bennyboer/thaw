@@ -208,6 +208,11 @@ public class ExportContext {
      * @return font variant
      */
     private FontVariant getFontVariantFromNode(DocumentNode node) {
+        FontVariant variant = node.getStyle().getStyleAttribute(
+                StyleType.FONT,
+                style -> Optional.ofNullable(((FontStyle) style).getVariant())
+        ).orElse(FontVariant.PLAIN);
+
         if (node.getTextNode() instanceof FormattedNode) {
             Set<TextEmphasis> emphases = ((FormattedNode) node.getTextNode()).getEmphases();
 
@@ -223,7 +228,7 @@ public class ExportContext {
             }
         }
 
-        return FontVariant.PLAIN;
+        return variant;
     }
 
     /**

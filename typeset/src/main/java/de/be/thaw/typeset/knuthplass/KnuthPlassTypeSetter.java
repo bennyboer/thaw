@@ -6,7 +6,8 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.impl.LineHeightStyle;
+import de.be.thaw.style.model.style.impl.TextStyle;
+import de.be.thaw.style.model.style.text.TextAlignment;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
@@ -89,13 +90,26 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
                 List<List<Item>> lines = splitParagraphIntoLines(paragraph, result);
 
+                // Fetch some paragraph styles
                 final double lineHeight = getLineHeightForNode(paragraph.getNode());
+                final InsetsStyle insetsStyle = paragraph.getNode().getStyle().getStyleAttribute(
+                        StyleType.INSETS,
+                        style -> Optional.ofNullable((InsetsStyle) style)
+                ).orElseThrow();
+                final TextAlignment alignment = paragraph.getNode().getStyle().getStyleAttribute(
+                        StyleType.TEXT,
+                        style -> Optional.ofNullable(((TextStyle) style).getAlignment())
+                ).orElse(TextAlignment.LEFT);
+                final boolean justify = paragraph.getNode().getStyle().getStyleAttribute(
+                        StyleType.TEXT,
+                        style -> Optional.ofNullable(((TextStyle) style).getJustify())
+                ).orElse(true);
 
-                final InsetsStyle insetsStyle = paragraph.getNode().getStyle().getStyleAttribute(StyleType.INSETS, style -> Optional.ofNullable((InsetsStyle) style)).orElseThrow();
+                // Set up the initial position of the paragraph
                 y += insetsStyle.getTop();
-
                 double x = config.getPageInsets().getLeft();
 
+                // Lay out the individual lines
                 double indent = 0; // Indent of the paragraph (if any), set for example for enumerations.
                 for (int i = 0; i < lines.size(); i++) {
                     if (y > config.getPageSize().getHeight() - config.getPageInsets().getTop()) {
@@ -116,16 +130,33 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                         continue;
                     }
 
-                    // TODO Configuration whether justifying and what alignment needs to be applied here!
-
                     // Last item is glue with width 0 -> indicates explicit line break
                     Item last = line.get(line.size() - 1);
                     boolean isExplicitLineBreakInLine = last.getType() == ItemType.GLUE && last.getWidth() == 0 && last.getStretchability() > 0;
 
                     boolean isLastLine = i == lines.size() - 1;
-                    boolean justifyLine = !isExplicitLineBreakInLine && !isLastLine;
+                    boolean justifyLine = justify && !isExplicitLineBreakInLine && !isLastLine;
 
-                    double spaceWidth = getJustifiedLineSpaceWidth(lineMetrics, lineWidth);
+                    // Determine the space width
+                    double spaceWidth;
+                    try {
+                        spaceWidth = justifyLine
+                                ? getJustifiedLineSpaceWidth(lineMetrics, lineWidth)
+                                : config.getFontDetailsSupplier().getSpaceWidth(paragraph.getNode());
+                    } catch (Exception e) {
+                        throw new TypeSettingException("Could not determine space character width", e);
+                    }
+
+                    // Deal with text alignments other than left (the default).
+                    if (!justifyLine) {
+                        double restWidth = lineWidth - lineMetrics.getMinWidth() - lineMetrics.getWhiteSpaces() * spaceWidth;
+
+                        if (alignment == TextAlignment.RIGHT) {
+                            x += restWidth;
+                        } else if (alignment == TextAlignment.CENTER) {
+                            x += restWidth / 2;
+                        }
+                    }
 
                     for (Item item : line) {
                         // Check if the item indicates an enumeration item start
@@ -156,7 +187,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                             }
                         } else if (item instanceof Glue) {
                             if (item.getWidth() > 0) {
-                                x += justifyLine ? spaceWidth : item.getWidth();
+                                x += spaceWidth;
                             }
                         } else {
                             x += item.getWidth();
@@ -190,12 +221,12 @@ public class KnuthPlassTypeSetter implements TypeSetter {
      */
     private double getLineHeightForNode(DocumentNode node) {
         return node.getStyle().getStyleAttribute(
-                StyleType.LINE_HEIGHT,
-                style -> Optional.of(((LineHeightStyle) style).getLineHeight())
+                StyleType.TEXT,
+                style -> Optional.ofNullable(((TextStyle) style).getLineHeight())
         ).orElse(node.getStyle().getStyleAttribute(
                 StyleType.FONT,
-                style -> Optional.of(((FontStyle) style).getSize() * 1.5)
-        ).orElse(11.0 * 1.5));
+                style -> Optional.ofNullable(((FontStyle) style).getSize())
+        ).orElseThrow());
     }
 
     /**

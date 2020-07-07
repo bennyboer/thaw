@@ -11,28 +11,28 @@ public class InsetsStyle implements Style {
     /**
      * Inset from top.
      */
-    private final double top;
+    private final Double top;
 
     /**
      * Inset from left.
      */
-    private final double left;
+    private final Double left;
 
     /**
      * Inset from bottom.
      */
-    private final double bottom;
+    private final Double bottom;
 
     /**
      * Inset from right;
      */
-    private final double right;
+    private final Double right;
 
     public InsetsStyle(
-            double top,
-            double left,
-            double bottom,
-            double right
+            Double top,
+            Double left,
+            Double bottom,
+            Double right
     ) {
         this.top = top;
         this.left = left;
@@ -45,19 +45,35 @@ public class InsetsStyle implements Style {
         return StyleType.INSETS;
     }
 
-    public double getTop() {
+    @Override
+    public Style merge(Style style) {
+        if (style == null) {
+            return this;
+        }
+
+        InsetsStyle other = (InsetsStyle) style;
+
+        return new InsetsStyle(
+                top != null ? top : other.getTop(),
+                left != null ? left : other.getLeft(),
+                bottom != null ? bottom : other.getBottom(),
+                right != null ? right : other.getRight()
+        );
+    }
+
+    public Double getTop() {
         return top;
     }
 
-    public double getLeft() {
+    public Double getLeft() {
         return left;
     }
 
-    public double getBottom() {
+    public Double getBottom() {
         return bottom;
     }
 
-    public double getRight() {
+    public Double getRight() {
         return right;
     }
 

@@ -9,6 +9,9 @@ import de.be.thaw.export.pdf.element.ElementExporters;
 import de.be.thaw.hyphenation.HyphenationDictionaries;
 import de.be.thaw.hyphenation.HyphenationDictionary;
 import de.be.thaw.info.model.language.Language;
+import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.impl.InsetsStyle;
+import de.be.thaw.style.model.style.impl.SizeStyle;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.KnuthPlassTypeSetter;
@@ -30,6 +33,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -45,6 +49,16 @@ public class PdfExporter implements Exporter {
     private static final Logger LOGGER = Logger.getLogger(PdfExporter.class.getSimpleName());
 
     /**
+     * Printer points per inch.
+     */
+    private static final float POINTS_PER_INCH = 72;
+
+    /**
+     * Printer points per millimeter.
+     */
+    private static final double POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
+
+    /**
      * Maximum iterations when trying to typeset properly.
      * This is needed because the used Knuth-Plass line-breaking algorithm
      * might not find a feasible solution.
@@ -56,15 +70,25 @@ public class PdfExporter implements Exporter {
         try (PDDocument doc = new PDDocument()) {
             ExportContext ctx = new ExportContext(doc);
 
-            // TODO Set page size from the document style model (once there is one implemented)
-            PDPage page = new PDPage();
-            doc.addPage(page);
-            ctx.setCurrentPage(page);
+            SizeStyle sizeStyle = document.getRoot().getStyle().getStyleAttribute(
+                    StyleType.SIZE,
+                    style -> Optional.ofNullable(((SizeStyle) style))
+            ).orElseThrow();
+            ctx.setPageSize(new Size(
+                    sizeStyle.getWidth() * POINTS_PER_MM,
+                    sizeStyle.getHeight() * POINTS_PER_MM
+            ));
 
-            PDRectangle box = page.getMediaBox();
-
-            ctx.setPageSize(new Size(box.getWidth(), box.getHeight()));
-            ctx.setPageInsets(new Insets(box.getWidth() * 0.1));
+            InsetsStyle insetsStyle = document.getRoot().getStyle().getStyleAttribute(
+                    StyleType.INSETS,
+                    style -> Optional.ofNullable(((InsetsStyle) style))
+            ).orElseThrow();
+            ctx.setPageInsets(new Insets(
+                    insetsStyle.getTop() * POINTS_PER_MM,
+                    insetsStyle.getLeft() * POINTS_PER_MM,
+                    insetsStyle.getBottom() * POINTS_PER_MM,
+                    insetsStyle.getRight() * POINTS_PER_MM
+            ));
 
             List<Page> pages;
             try {
@@ -89,7 +113,16 @@ public class PdfExporter implements Exporter {
      * @throws ExportException in case the page export did not work
      */
     private void exportToPages(List<Page> pages, ExportContext ctx) throws ExportException {
+        PDRectangle pageRect = new PDRectangle(
+                (float) ctx.getPageSize().getWidth(),
+                (float) ctx.getPageSize().getHeight()
+        );
+
         try {
+            // Create initial page
+            PDPage pdfPage = new PDPage(pageRect);
+            ctx.getDocument().addPage(pdfPage);
+            ctx.setCurrentPage(pdfPage);
             ctx.setContentStream(new PDPageContentStream(ctx.getDocument(), ctx.getCurrentPage()));
 
             int pageCounter = 0;
@@ -113,8 +146,7 @@ public class PdfExporter implements Exporter {
 
                 if (pageCounter < pages.size() - 1) {
                     // Create next PDF page
-                    PDPage pdfPage = new PDPage();
-
+                    pdfPage = new PDPage(pageRect);
                     ctx.getDocument().addPage(pdfPage);
                     ctx.setCurrentPage(pdfPage);
                     ctx.setContentStream(new PDPageContentStream(ctx.getDocument(), ctx.getCurrentPage()));

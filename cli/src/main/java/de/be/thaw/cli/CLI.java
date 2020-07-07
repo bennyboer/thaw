@@ -23,7 +23,6 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 
@@ -206,7 +205,7 @@ public class CLI implements Callable<Integer> {
                 return ErrorResult.STYLE_FILE_PARSING_ERROR.getCode();
             }
         } else {
-            styleModel = new StyleModel(new HashMap<>()); // Empty style model
+            styleModel = StyleModel.defaultModel();
         }
 
         System.out.println(textModel.getRoot().toString());

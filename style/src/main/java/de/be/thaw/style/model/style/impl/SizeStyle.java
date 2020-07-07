@@ -11,16 +11,16 @@ public class SizeStyle implements Style {
     /**
      * Width value.
      */
-    private final double width;
+    private final Double width;
 
     /**
      * Height value.
      */
-    private final double height;
+    private final Double height;
 
     public SizeStyle(
-            double width,
-            double height
+            Double width,
+            Double height
     ) {
         this.width = width;
         this.height = height;
@@ -31,11 +31,25 @@ public class SizeStyle implements Style {
         return StyleType.SIZE;
     }
 
-    public double getWidth() {
+    @Override
+    public Style merge(Style style) {
+        if (style == null) {
+            return this;
+        }
+
+        SizeStyle other = (SizeStyle) style;
+
+        return new SizeStyle(
+                width != null ? width : other.getWidth(),
+                height != null ? height : other.getHeight()
+        );
+    }
+
+    public Double getWidth() {
         return width;
     }
 
-    public double getHeight() {
+    public Double getHeight() {
         return height;
     }
 

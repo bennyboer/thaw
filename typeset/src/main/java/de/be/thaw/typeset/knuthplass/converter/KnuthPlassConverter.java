@@ -5,7 +5,7 @@ import de.be.thaw.core.document.convert.DocumentConverter;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.FirstLineIndentStyle;
+import de.be.thaw.style.model.style.impl.TextStyle;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
@@ -237,8 +237,8 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         Paragraph paragraph = currentParagraphList.get(currentParagraphList.size() - 1);
         if (paragraph.isEmpty()) {
             double firstLineIndent = node.getStyle().getStyleAttribute(
-                    StyleType.FIRST_LINE_INDENT,
-                    style -> Optional.of(((FirstLineIndentStyle) style).getIndent())
+                    StyleType.TEXT,
+                    style -> Optional.of(((TextStyle) style).getFirstLineIndent())
             ).orElse(0.0);
 
             paragraph.addItem(new EmptyBox(firstLineIndent));

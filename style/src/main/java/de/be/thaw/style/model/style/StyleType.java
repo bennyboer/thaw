@@ -13,8 +13,7 @@ public enum StyleType {
     INSETS("insets"),
     BACKGROUND("background"),
     COLOR("color"),
-    FIRST_LINE_INDENT("firstlineindent"),
-    LINE_HEIGHT("lineheight");
+    TEXT("text");
 
     /**
      * Lookup of style types by their key.

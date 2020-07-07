@@ -24,6 +24,17 @@ public class BackgroundStyle implements Style {
         return StyleType.BACKGROUND;
     }
 
+    @Override
+    public Style merge(Style style) {
+        if (style == null) {
+            return this;
+        }
+
+        BackgroundStyle other = (BackgroundStyle) style;
+
+        return new BackgroundStyle((ColorStyle) getColor().merge(other.getColor()));
+    }
+
     public ColorStyle getColor() {
         return color;
     }

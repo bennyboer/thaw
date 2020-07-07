@@ -11,28 +11,28 @@ public class ColorStyle implements Style {
     /**
      * Red share.
      */
-    private final double red;
+    private final Double red;
 
     /**
      * Green share.
      */
-    private final double green;
+    private final Double green;
 
     /**
      * Blue share.
      */
-    private final double blue;
+    private final Double blue;
 
     /**
      * Alpha share.
      */
-    private final double alpha;
+    private final Double alpha;
 
     public ColorStyle(
-            double red,
-            double green,
-            double blue,
-            double alpha
+            Double red,
+            Double green,
+            Double blue,
+            Double alpha
     ) {
         this.red = red;
         this.green = green;
@@ -45,19 +45,35 @@ public class ColorStyle implements Style {
         return StyleType.COLOR;
     }
 
-    public double getRed() {
+    @Override
+    public Style merge(Style style) {
+        if (style == null) {
+            return this;
+        }
+
+        ColorStyle other = (ColorStyle) style;
+
+        return new ColorStyle(
+                red != null ? red : other.getRed(),
+                green != null ? green : other.getGreen(),
+                blue != null ? blue : other.getBlue(),
+                alpha != null ? alpha : other.getAlpha()
+        );
+    }
+
+    public Double getRed() {
         return red;
     }
 
-    public double getGreen() {
+    public Double getGreen() {
         return green;
     }
 
-    public double getBlue() {
+    public Double getBlue() {
         return blue;
     }
 
-    public double getAlpha() {
+    public Double getAlpha() {
         return alpha;
     }
 

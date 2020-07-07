@@ -46,6 +46,22 @@ public class FontStyle implements Style {
         return StyleType.FONT;
     }
 
+    @Override
+    public Style merge(Style style) {
+        if (style == null) {
+            return this;
+        }
+
+        FontStyle other = (FontStyle) style;
+
+        return new FontStyle(
+                family != null ? family : other.getFamily(),
+                variant != null ? variant : other.getVariant(),
+                size != null ? size : other.getSize(),
+                color != null ? color : other.getColor()
+        );
+    }
+
     public String getFamily() {
         return family;
     }

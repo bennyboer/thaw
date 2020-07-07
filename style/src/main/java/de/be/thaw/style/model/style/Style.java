@@ -12,4 +12,12 @@ public interface Style {
      */
     StyleType getType();
 
+    /**
+     * Merge with another style of the same type.
+     *
+     * @param style to merge with
+     * @return the merged style
+     */
+    Style merge(Style style);
+
 }

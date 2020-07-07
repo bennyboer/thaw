@@ -3,6 +3,7 @@ module de.be.thaw.style {
     exports de.be.thaw.style.model.style;
     exports de.be.thaw.style.model.block;
     exports de.be.thaw.style.model.style.impl;
+    exports de.be.thaw.style.model.style.text;
     exports de.be.thaw.style.parser;
     exports de.be.thaw.style.parser.impl;
     exports de.be.thaw.style.parser.exception;

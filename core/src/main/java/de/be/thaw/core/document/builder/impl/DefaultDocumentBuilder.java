@@ -12,10 +12,11 @@ import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.BackgroundStyle;
 import de.be.thaw.style.model.style.impl.ColorStyle;
-import de.be.thaw.style.model.style.impl.FirstLineIndentStyle;
 import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
+import de.be.thaw.style.model.style.impl.TextStyle;
+import de.be.thaw.style.model.style.text.TextAlignment;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
@@ -49,7 +50,7 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
     private DocumentNode toRootNode(TextModel textModel, StyleModel styleModel) {
         return processRootNode(
                 textModel.getRoot(),
-                new DocumentNodeStyle(null, styleModel.getBlock("DOCUMENT").orElseGet(this::getDefaultDocumentStyleBlock).getStyles()),
+                new DocumentNodeStyle(null, styleModel.getBlock("DOCUMENT").orElseThrow().getStyles()),
                 styleModel
         );
     }
@@ -84,12 +85,12 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
     private DocumentNode processBoxNode(BoxNode node, DocumentNodeStyle parentStyleNode, StyleModel styleModel) {
         // Find child node that may be a thingy node -> in that case we can apply special styles from the style model
         Optional<ThingyNode> optionalThingyNode = getFirstThingyNodeInBox(node);
-        String blockName = "PARAGRAPH";
+        String blockName = null;
         if (optionalThingyNode.isPresent()) {
             blockName = optionalThingyNode.get().getName();
         }
 
-        StyleBlock styleBlock = styleModel.getBlock(blockName).orElse(getDefaultParagraphStyleBlock(styleModel));
+        StyleBlock styleBlock = getStyleBlock("PARAGRAPH", blockName, styleModel);
 
         DocumentNodeStyle styleNode = new DocumentNodeStyle(parentStyleNode, styleBlock.getStyles());
 
@@ -143,39 +144,29 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
     }
 
     /**
-     * Get the default document style block.
+     * Get a style block.
      *
-     * @return document style block
+     * @param defaultBlockName the name of the default styles block name
+     * @param blockName        the specific block name (if any)
+     * @return style block
      */
-    private StyleBlock getDefaultDocumentStyleBlock() {
+    private StyleBlock getStyleBlock(String defaultBlockName, String blockName, StyleModel styleModel) {
         Map<StyleType, Style> styles = new HashMap<>();
 
-        styles.put(StyleType.SIZE, new SizeStyle(210, 297));
-        styles.put(StyleType.INSETS, new InsetsStyle(20, 25, 20, 25));
-        styles.put(StyleType.BACKGROUND, new BackgroundStyle(new ColorStyle(1.0, 1.0, 1.0, 1.0)));
-        styles.put(StyleType.FONT, new FontStyle("Cambria", FontVariant.PLAIN, 12.0, new ColorStyle(0, 0, 0, 1.0)));
-        styles.put(StyleType.FIRST_LINE_INDENT, new FirstLineIndentStyle(8));
-
-        return new StyleBlock("DOCUMENT", styles);
-    }
-
-    /**
-     * Get the default paragraph style block.
-     *
-     * @return paragraph style block
-     */
-    private StyleBlock getDefaultParagraphStyleBlock(StyleModel styleModel) {
-        Map<StyleType, Style> styles = new HashMap<>();
-
-        styles.put(StyleType.INSETS, new InsetsStyle(0, 0, 2, 0));
-
-        styleModel.getBlock("PARAGRAPH").ifPresent(styleBlock -> {
+        // Apply default styles
+        styleModel.getBlock(defaultBlockName).ifPresent(styleBlock -> {
             for (Map.Entry<StyleType, Style> styleEntry : styleBlock.getStyles().entrySet()) {
                 styles.put(styleEntry.getKey(), styleEntry.getValue());
             }
         });
 
-        return new StyleBlock("PARAGRAPH", styles);
+        styleModel.getBlock(blockName).ifPresent(styleBlock -> {
+            for (Map.Entry<StyleType, Style> styleEntry : styleBlock.getStyles().entrySet()) {
+                styles.put(styleEntry.getKey(), styleEntry.getValue());
+            }
+        });
+
+        return new StyleBlock(blockName, styles);
     }
 
 }
