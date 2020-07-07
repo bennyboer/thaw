@@ -172,11 +172,6 @@ public class PdfExporter implements Exporter {
                 .setLooseness(1 + quality)
                 .setFontDetailsSupplier(new FontDetailsSupplier() {
                     @Override
-                    public double getCodeWidth(DocumentNode node, int code) throws Exception {
-                        return ctx.getFontForNode(node).getWidth(code) / 1000 * ctx.getFontSizeForNode(node);
-                    }
-
-                    @Override
                     public double getStringWidth(DocumentNode node, String str) throws Exception {
                         return ctx.getFontForNode(node).getStringWidth(str) / 1000 * ctx.getFontSizeForNode(node);
                     }
@@ -184,12 +179,6 @@ public class PdfExporter implements Exporter {
                     @Override
                     public double getSpaceWidth(DocumentNode node) throws Exception {
                         return ctx.getFontForNode(node).getSpaceWidth() / 1000 * ctx.getFontSizeForNode(node) / 2;
-                    }
-
-                    @Override
-                    public double getLineHeight(DocumentNode node) throws Exception {
-                        // TODO This is not quite correct.. find out how to get the line proper line height
-                        return (ctx.getFontForNode(node).getFontDescriptor().getAscent() - ctx.getFontForNode(node).getFontDescriptor().getDescent()) / 1000 * ctx.getFontSizeForNode(node);
                     }
                 })
                 .setGlueConfig(new GlueConfig() {

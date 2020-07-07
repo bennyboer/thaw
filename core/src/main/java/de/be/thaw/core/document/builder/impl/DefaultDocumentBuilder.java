@@ -15,7 +15,6 @@ import de.be.thaw.style.model.style.impl.ColorStyle;
 import de.be.thaw.style.model.style.impl.FirstLineIndentStyle;
 import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.impl.LineHeightStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.model.tree.Node;
@@ -156,7 +155,6 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
         styles.put(StyleType.BACKGROUND, new BackgroundStyle(new ColorStyle(1.0, 1.0, 1.0, 1.0)));
         styles.put(StyleType.FONT, new FontStyle("Cambria", FontVariant.PLAIN, 12.0, new ColorStyle(0, 0, 0, 1.0)));
         styles.put(StyleType.FIRST_LINE_INDENT, new FirstLineIndentStyle(8));
-        styles.put(StyleType.LINE_HEIGHT, new LineHeightStyle(1.5));
 
         return new StyleBlock("DOCUMENT", styles);
     }

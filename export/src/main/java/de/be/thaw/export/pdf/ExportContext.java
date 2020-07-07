@@ -256,9 +256,9 @@ public class ExportContext {
             try {
                 if (locator.getFontFile().isCollection()) {
                     TrueTypeCollection collection = new TrueTypeCollection(new File(locator.getFontFile().getLocation()));
-                    font = PDType0Font.load(getDocument(), collection.getFontByName(locator.getFontName()), false);
+                    font = PDType0Font.load(getDocument(), collection.getFontByName(locator.getFontName()), true);
                 } else {
-                    font = PDType0Font.load(getDocument(), new FileInputStream(new File(locator.getFontFile().getLocation())), false);
+                    font = PDType0Font.load(getDocument(), new FileInputStream(new File(locator.getFontFile().getLocation())), true);
                 }
 
                 fontCache.put(locator, font);

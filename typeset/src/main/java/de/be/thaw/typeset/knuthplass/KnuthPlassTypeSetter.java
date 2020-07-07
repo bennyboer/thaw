@@ -4,6 +4,7 @@ import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.LineHeightStyle;
 import de.be.thaw.typeset.TypeSetter;
@@ -187,17 +188,14 @@ public class KnuthPlassTypeSetter implements TypeSetter {
      * @param node to get font size for
      * @return font size
      */
-    private double getLineHeightForNode(DocumentNode node) throws TypeSettingException {
-        final double lineHeight = node.getStyle().getStyleAttribute(
+    private double getLineHeightForNode(DocumentNode node) {
+        return node.getStyle().getStyleAttribute(
                 StyleType.LINE_HEIGHT,
                 style -> Optional.of(((LineHeightStyle) style).getLineHeight())
-        ).orElse(1.0);
-
-        try {
-            return lineHeight * config.getFontDetailsSupplier().getLineHeight(node);
-        } catch (Exception e) {
-            throw new TypeSettingException("Could not determine line height for node", e);
-        }
+        ).orElse(node.getStyle().getStyleAttribute(
+                StyleType.FONT,
+                style -> Optional.of(((FontStyle) style).getSize() * 1.5)
+        ).orElse(11.0 * 1.5));
     }
 
     /**
