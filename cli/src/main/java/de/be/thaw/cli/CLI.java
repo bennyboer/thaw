@@ -208,8 +208,6 @@ public class CLI implements Callable<Integer> {
             styleModel = StyleModel.defaultModel();
         }
 
-        System.out.println(textModel.getRoot().toString());
-
         Document document = new DefaultDocumentBuilder().build(new DocumentBuildSource(
                 info,
                 textModel,
