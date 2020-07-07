@@ -1,6 +1,7 @@
 package de.be.thaw.export.pdf;
 
 import de.be.thaw.core.document.Document;
+import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.export.Exporter;
 import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.element.ElementExporter;
@@ -8,7 +9,6 @@ import de.be.thaw.export.pdf.element.ElementExporters;
 import de.be.thaw.hyphenation.HyphenationDictionaries;
 import de.be.thaw.hyphenation.HyphenationDictionary;
 import de.be.thaw.info.model.language.Language;
-import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.KnuthPlassTypeSetter;
@@ -42,7 +42,7 @@ public class PdfExporter implements Exporter {
     /**
      * Logger for the class.
      */
-    private static Logger LOGGER = Logger.getLogger(PdfExporter.class.getSimpleName());
+    private static final Logger LOGGER = Logger.getLogger(PdfExporter.class.getSimpleName());
 
     /**
      * Maximum iterations when trying to typeset properly.
@@ -161,9 +161,6 @@ public class PdfExporter implements Exporter {
      * @return type setter to use
      */
     private TypeSetter createTypeSetter(ExportContext ctx, Language language, int quality) throws TypeSettingException {
-        final double fontSize = ctx.getFontSizeForNode(null); // TODO Determine per node when having a style model
-        final double lineHeight = 1.5 * fontSize; // TODO Determine per paragraph node when having a style model
-
         HyphenationDictionary hyphenationDictionary = HyphenationDictionaries.getDictionary(language).orElseThrow(() -> new TypeSettingException(String.format(
                 "Could not find the hyphenation dictionary for language '%s'",
                 language.name()
@@ -172,34 +169,38 @@ public class PdfExporter implements Exporter {
         return new KnuthPlassTypeSetter(KnuthPlassTypeSettingConfig.newBuilder()
                 .setPageSize(ctx.getPageSize())
                 .setPageInsets(ctx.getPageInsets())
-                .setLineHeight((float) lineHeight)
                 .setLooseness(1 + quality)
-                .setFirstLineIndent(20)
                 .setFontDetailsSupplier(new FontDetailsSupplier() {
                     @Override
-                    public double getCodeWidth(Node node, int code) throws Exception {
-                        return ctx.getFontForNode(node).getWidth(code) / 1000 * fontSize;
+                    public double getCodeWidth(DocumentNode node, int code) throws Exception {
+                        return ctx.getFontForNode(node).getWidth(code) / 1000 * ctx.getFontSizeForNode(node);
                     }
 
                     @Override
-                    public double getStringWidth(Node node, String str) throws Exception {
-                        return ctx.getFontForNode(node).getStringWidth(str) / 1000 * fontSize;
+                    public double getStringWidth(DocumentNode node, String str) throws Exception {
+                        return ctx.getFontForNode(node).getStringWidth(str) / 1000 * ctx.getFontSizeForNode(node);
                     }
 
                     @Override
-                    public double getSpaceWidth(Node node) throws Exception {
-                        return ctx.getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 2;
+                    public double getSpaceWidth(DocumentNode node) throws Exception {
+                        return ctx.getFontForNode(node).getSpaceWidth() / 1000 * ctx.getFontSizeForNode(node) / 2;
+                    }
+
+                    @Override
+                    public double getLineHeight(DocumentNode node) throws Exception {
+                        // TODO This is not quite correct.. find out how to get the line proper line height
+                        return (ctx.getFontForNode(node).getFontDescriptor().getAscent() - ctx.getFontForNode(node).getFontDescriptor().getDescent()) / 1000 * ctx.getFontSizeForNode(node);
                     }
                 })
                 .setGlueConfig(new GlueConfig() {
                     @Override
-                    public double getInterWordStretchability(Node node, char lastChar) throws Exception {
-                        return (ctx.getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 2) * (quality + 1);
+                    public double getInterWordStretchability(DocumentNode node, char lastChar) throws Exception {
+                        return (ctx.getFontForNode(node).getSpaceWidth() / 1000 * ctx.getFontSizeForNode(node) / 2) * (quality + 1);
                     }
 
                     @Override
-                    public double getInterWordShrinkability(Node node, char lastChar) throws Exception {
-                        return ctx.getFontForNode(node).getSpaceWidth() / 1000 * fontSize / 3;
+                    public double getInterWordShrinkability(DocumentNode node, char lastChar) throws Exception {
+                        return ctx.getFontForNode(node).getSpaceWidth() / 1000 * ctx.getFontSizeForNode(node) / 3;
                     }
                 })
                 .setHyphenator(new Hyphenator() {

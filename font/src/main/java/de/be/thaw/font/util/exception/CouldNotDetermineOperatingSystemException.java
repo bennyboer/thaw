@@ -1,4 +1,4 @@
-package de.be.thaw.core.util.exception;
+package de.be.thaw.font.util.exception;
 
 /**
  * Exception thrown when the current operating system could not be determined.

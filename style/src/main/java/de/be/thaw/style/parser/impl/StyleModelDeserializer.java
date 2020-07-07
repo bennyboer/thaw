@@ -13,8 +13,10 @@ import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.BackgroundStyle;
 import de.be.thaw.style.model.style.impl.ColorStyle;
+import de.be.thaw.style.model.style.impl.FirstLineIndentStyle;
 import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
+import de.be.thaw.style.model.style.impl.LineHeightStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
 
 import java.io.IOException;
@@ -135,6 +137,8 @@ public class StyleModelDeserializer extends StdDeserializer<StyleModel> {
                         color
                 );
             }
+            case FIRST_LINE_INDENT -> new FirstLineIndentStyle(node.asDouble());
+            case LINE_HEIGHT -> new LineHeightStyle(node.asDouble());
         };
     }
 

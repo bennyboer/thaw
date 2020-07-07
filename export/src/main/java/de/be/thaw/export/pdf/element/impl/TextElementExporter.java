@@ -55,8 +55,8 @@ public class TextElementExporter implements ElementExporter {
     }
 
     private void underlineIfNecessary(TextElement element, ExportContext ctx, PDPageContentStream out, PDFont font, double fontSize, double y) throws IOException {
-        if (element.getNode().getType() == NodeType.FORMATTED) {
-            FormattedNode fn = (FormattedNode) element.getNode();
+        if (element.getNode().getTextNode().getType() == NodeType.FORMATTED) {
+            FormattedNode fn = (FormattedNode) element.getNode().getTextNode();
 
             if (fn.getEmphases().contains(TextEmphasis.UNDERLINED)) {
                 double descent = font.getFontDescriptor().getDescent() / 1000 * fontSize;

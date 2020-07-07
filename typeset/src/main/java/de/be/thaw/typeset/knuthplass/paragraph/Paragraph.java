@@ -1,5 +1,6 @@
 package de.be.thaw.typeset.knuthplass.paragraph;
 
+import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.typeset.knuthplass.item.Item;
 
 import java.util.ArrayList;
@@ -22,12 +23,18 @@ public class Paragraph {
     private final double lineWidth;
 
     /**
+     * Document node representing the paragraph in the underlying document.
+     */
+    private final DocumentNode node;
+
+    /**
      * A special line width supplier.
      */
     private IntToDoubleFunction lineWidthSupplier;
 
-    public Paragraph(double lineWidth) {
+    public Paragraph(double lineWidth, DocumentNode node) {
         this.lineWidth = lineWidth;
+        this.node = node;
     }
 
     /**
@@ -78,6 +85,15 @@ public class Paragraph {
         }
 
         return lineWidth;
+    }
+
+    /**
+     * Node representing the paragraph in the underlying document.
+     *
+     * @return node
+     */
+    public DocumentNode getNode() {
+        return node;
     }
 
 }

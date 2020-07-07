@@ -1,5 +1,6 @@
 package de.be.thaw.typeset.knuthplass.item.impl.box;
 
+import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
 
 /**
@@ -12,7 +13,7 @@ public class EnumerationItemStartBox extends TextBox {
      */
     private final double indent;
 
-    public EnumerationItemStartBox(String text, double width, EnumerationItemNode node, double indent) {
+    public EnumerationItemStartBox(String text, double width, DocumentNode node, double indent) {
         super(text, width, node);
 
         this.indent = indent;

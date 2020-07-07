@@ -12,11 +12,6 @@ import de.be.thaw.typeset.util.Size;
 public class KnuthPlassTypeSettingConfigBuilder {
 
     /**
-     * The default first line indent.
-     */
-    private static final double DEFAULT_FIRST_LINE_INDENT = 0;
-
-    /**
      * Default size of the de.be.thaw.typeset.page to typeset on (in arbitrary units).
      */
     private static final Size DEFAULT_PAGE_SIZE = new Size(210, 297);
@@ -48,21 +43,6 @@ public class KnuthPlassTypeSettingConfigBuilder {
      * fitness classes.
      */
     private static final double DEFAULT_FITNESS_DEMERIT = 100;
-
-    /**
-     * The default line height.
-     */
-    private static final double DEFAULT_LINE_HEIGHT = 10;
-
-    /**
-     * Indent of the text in the first line.
-     */
-    private double firstLineIndent = DEFAULT_FIRST_LINE_INDENT;
-
-    /**
-     * The height of a line.
-     */
-    private double lineHeight = DEFAULT_LINE_HEIGHT;
 
     /**
      * Size of the page to typeset on.
@@ -116,46 +96,6 @@ public class KnuthPlassTypeSettingConfigBuilder {
      * Configuration for the used glue.
      */
     private GlueConfig glueConfig;
-
-    /**
-     * Get the height of a line.
-     *
-     * @return line height
-     */
-    public double getLineHeight() {
-        return lineHeight;
-    }
-
-    /**
-     * Set the height of a line.
-     *
-     * @param lineHeight to set
-     */
-    public KnuthPlassTypeSettingConfigBuilder setLineHeight(double lineHeight) {
-        this.lineHeight = lineHeight;
-
-        return this;
-    }
-
-    /**
-     * Get the indent of the first line of a paragraph.
-     *
-     * @return indent
-     */
-    public double getFirstLineIndent() {
-        return firstLineIndent;
-    }
-
-    /**
-     * Set the indent of the first line of a paragraph.
-     *
-     * @param firstLineIndent to set
-     */
-    public KnuthPlassTypeSettingConfigBuilder setFirstLineIndent(double firstLineIndent) {
-        this.firstLineIndent = firstLineIndent;
-
-        return this;
-    }
 
     /**
      * Get the size of the page to typeset on (in mm).
@@ -377,8 +317,6 @@ public class KnuthPlassTypeSettingConfigBuilder {
         return new KnuthPlassTypeSettingConfig(
                 getPageSize(),
                 getPageInsets(),
-                getLineHeight(),
-                getFirstLineIndent(),
                 getIndentWidth(),
                 getLooseness(),
                 getTolerance(),

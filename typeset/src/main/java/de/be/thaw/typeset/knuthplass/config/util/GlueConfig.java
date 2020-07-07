@@ -1,6 +1,6 @@
 package de.be.thaw.typeset.knuthplass.config.util;
 
-import de.be.thaw.text.model.tree.Node;
+import de.be.thaw.core.document.node.DocumentNode;
 
 /**
  * Configuration for the used glue.
@@ -15,7 +15,7 @@ public interface GlueConfig {
      * @return stretchability
      * @throws Exception in case the inter word stretchability could not be determined
      */
-    double getInterWordStretchability(Node node, char lastChar) throws Exception;
+    double getInterWordStretchability(DocumentNode node, char lastChar) throws Exception;
 
     /**
      * Get the inter-word shrinkability.
@@ -25,6 +25,6 @@ public interface GlueConfig {
      * @return shrinkability
      * @throws Exception in case the inter word shrinkability could not be determined
      */
-    double getInterWordShrinkability(Node node, char lastChar) throws Exception;
+    double getInterWordShrinkability(DocumentNode node, char lastChar) throws Exception;
 
 }

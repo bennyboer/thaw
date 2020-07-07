@@ -49,7 +49,8 @@ You can style predefined elements like the document layout with something like:
 				"green": 0.9,
 				"blue": 0.9
 			}
-		}
+		},
+        "firstLineIndent": 10
 	}
 }
 ```

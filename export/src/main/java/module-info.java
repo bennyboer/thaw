@@ -9,6 +9,7 @@ module de.be.thaw.export {
     requires de.be.thaw.font;
     requires de.be.thaw.info;
     requires de.be.thaw.hyphenation;
+    requires de.be.thaw.style;
 
     exports de.be.thaw.export;
     exports de.be.thaw.export.pdf;

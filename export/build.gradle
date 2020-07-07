@@ -5,6 +5,7 @@ dependencies {
     implementation project(':font')
     implementation project(':hyphenation')
     implementation project(':info')
+    implementation project(':style')
 
     // Library used to create PDF documents
     implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.20'

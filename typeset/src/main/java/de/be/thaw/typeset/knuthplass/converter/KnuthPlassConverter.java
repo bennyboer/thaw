@@ -3,6 +3,9 @@ package de.be.thaw.typeset.knuthplass.converter;
 import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.DocumentConverter;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
+import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.impl.FirstLineIndentStyle;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
@@ -59,7 +62,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         paragraphs.clear();
         currentParagraphList = new ArrayList<>();
 
-        initializeForNode(document.getTextModel().getRoot());
+        initializeForNode(document.getRoot());
 
         finalizeParagraph(); // Finalize the last paragraph
 
@@ -75,17 +78,17 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
      *
      * @param node to initialize for
      */
-    private void initializeForNode(Node node) throws DocumentConversionException {
-        switch (node.getType()) {
-            case BOX -> initializeNewParagraph();
+    private void initializeForNode(DocumentNode node) throws DocumentConversionException {
+        switch (node.getTextNode().getType()) {
+            case BOX -> initializeNewParagraph(node);
             case TEXT, FORMATTED -> initializeTextualNode(node);
-            case ENUMERATION_ITEM -> initializeEnumerationItem((EnumerationItemNode) node);
-            case THINGY -> initializeThingy((ThingyNode) node);
+            case ENUMERATION_ITEM -> initializeEnumerationItem(node);
+            case THINGY -> initializeThingy(node);
         }
 
         // Process child nodes (if any)
         if (node.hasChildren()) {
-            for (Node child : node.children()) {
+            for (DocumentNode child : node.getChildren()) {
                 initializeForNode(child);
             }
         }
@@ -110,15 +113,18 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
 
     /**
      * Initialize a new paragraph.
+     *
+     * @param node representing the paragraph
      */
-    private void initializeNewParagraph() {
+    private void initializeNewParagraph(DocumentNode node) {
         if (!currentParagraphList.isEmpty()) {
             if (!currentParagraphList.get(currentParagraphList.size() - 1).isEmpty()) {
                 finalizeParagraph();
             }
         }
 
-        Paragraph paragraph = new Paragraph(config.getPageSize().getWidth() - config.getPageInsets().getLeft() - config.getPageInsets().getRight());
+        double lineWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight());
+        Paragraph paragraph = new Paragraph(lineWidth, node);
 
         currentParagraphList.add(paragraph);
     }
@@ -126,9 +132,11 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
     /**
      * Initialize using a node that contains textual content.
      *
-     * @param node to initialize with
+     * @param documentNode to initialize with
      */
-    private void initializeTextualNode(Node node) throws DocumentConversionException {
+    private void initializeTextualNode(DocumentNode documentNode) throws DocumentConversionException {
+        Node node = documentNode.getTextNode();
+
         String value;
         if (node.getType() == NodeType.TEXT) {
             value = ((TextNode) node).getValue();
@@ -144,7 +152,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
 
             switch (c) {
                 case ' ' -> {
-                    appendWordToParagraph(wordBuffer.toString(), node);
+                    appendWordToParagraph(wordBuffer.toString(), documentNode);
                     wordBuffer.setLength(0); // Reset word buffer
 
                     // Add inter-word glue (representing a white space)
@@ -152,9 +160,9 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
 
                     try {
                         currentParagraphList.get(currentParagraphList.size() - 1).addItem(new Glue(
-                                config.getFontDetailsSupplier().getSpaceWidth(node),
-                                config.getGlueConfig().getInterWordStretchability(node, lastChar),
-                                config.getGlueConfig().getInterWordShrinkability(node, lastChar)
+                                config.getFontDetailsSupplier().getSpaceWidth(documentNode),
+                                config.getGlueConfig().getInterWordStretchability(documentNode, lastChar),
+                                config.getGlueConfig().getInterWordShrinkability(documentNode, lastChar)
                         ));
                     } catch (Exception e) {
                         throw new DocumentConversionException(e);
@@ -164,7 +172,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
                     wordBuffer.append(c);
 
                     // Add as word
-                    appendWordToParagraph(wordBuffer.toString(), node);
+                    appendWordToParagraph(wordBuffer.toString(), documentNode);
                     wordBuffer.setLength(0); // Reset word buffer
 
                     // Add explicit hyphen to the paragraph
@@ -180,7 +188,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
 
         // Add final item
         if (wordBuffer.length() > 0) {
-            appendWordToParagraph(wordBuffer.toString(), node);
+            appendWordToParagraph(wordBuffer.toString(), documentNode);
         }
     }
 
@@ -221,23 +229,39 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
     }
 
     /**
+     * Append an empty box to represent a first line indent to the current paragraph.
+     *
+     * @param node of the paragraph
+     */
+    private void appendEmptyBoxToParagraph(DocumentNode node) {
+        Paragraph paragraph = currentParagraphList.get(currentParagraphList.size() - 1);
+        if (paragraph.isEmpty()) {
+            double firstLineIndent = node.getStyle().getStyleAttribute(
+                    StyleType.FIRST_LINE_INDENT,
+                    style -> Optional.of(((FirstLineIndentStyle) style).getIndent())
+            ).orElse(0.0);
+
+            paragraph.addItem(new EmptyBox(firstLineIndent));
+        }
+    }
+
+    /**
      * Append a word to the current paragraph.
      *
      * @param word to append
      * @param node the word belongs to
      */
-    private void appendWordToParagraph(String word, Node node) throws DocumentConversionException {
+    private void appendWordToParagraph(String word, DocumentNode node) throws DocumentConversionException {
         if (word.isEmpty()) {
             return;
         }
 
-        Paragraph paragraph = currentParagraphList.get(currentParagraphList.size() - 1);
-        if (paragraph.isEmpty()) {
-            paragraph.addItem(new EmptyBox(config.getFirstLineIndent()));
-        }
+        appendEmptyBoxToParagraph(node);
 
         // Split by punctuation characters
         List<WordPartSplitByPunctuationCharacter> splitWord = splitByPunctuationCharacter(word);
+
+        Paragraph paragraph = currentParagraphList.get(currentParagraphList.size() - 1);
 
         try {
             for (WordPartSplitByPunctuationCharacter splitWordPart : splitWord) {
@@ -281,9 +305,11 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
     /**
      * Initialize an enumeration item.
      *
-     * @param node to initialize with
+     * @param documentNode to initialize with
      */
-    private void initializeEnumerationItem(EnumerationItemNode node) throws DocumentConversionException {
+    private void initializeEnumerationItem(DocumentNode documentNode) throws DocumentConversionException {
+        EnumerationItemNode node = (EnumerationItemNode) documentNode.getTextNode();
+
         assert node.getParent() != null;
         int level = ((EnumerationNode) node.getParent()).getLevel();
 
@@ -292,12 +318,12 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         String symbol = "\u2022 "; // TODO Get list item symbol from the node style (when the style model has been implemented)
         double symbolWidth;
         try {
-            symbolWidth = config.getFontDetailsSupplier().getStringWidth(node, symbol);
+            symbolWidth = config.getFontDetailsSupplier().getStringWidth(documentNode, symbol);
         } catch (Exception e) {
             throw new DocumentConversionException(e);
         }
 
-        initializeNewParagraph(); // Each enumeration item is a individual paragraph!
+        initializeNewParagraph(documentNode); // Each enumeration item is a individual paragraph!
 
         Paragraph paragraph = currentParagraphList.get(currentParagraphList.size() - 1);
 
@@ -312,15 +338,17 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
             }
         });
 
-        paragraph.addItem(new EnumerationItemStartBox(symbol, symbolWidth, node, indent)); // Adding item symbol
+        paragraph.addItem(new EnumerationItemStartBox(symbol, symbolWidth, documentNode, indent)); // Adding item symbol
     }
 
     /**
      * Initialize using a thingy node.
      *
-     * @param node to initialize with
+     * @param documentNode to initialize with
      */
-    private void initializeThingy(ThingyNode node) {
+    private void initializeThingy(DocumentNode documentNode) {
+        ThingyNode node = (ThingyNode) documentNode.getTextNode();
+
         // Checking for explicit line or page breaks
         if (node.getName().equalsIgnoreCase("BREAK")) {
             boolean isPageBreak = Optional.ofNullable(node.getOptions().get("type"))
@@ -363,8 +391,9 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
             paragraphs.add(currentParagraphList);
         }
 
+        Paragraph lastParagraph = currentParagraphList.get(currentParagraphList.size() - 1);
         currentParagraphList = new ArrayList<>();
-        initializeNewParagraph();
+        initializeNewParagraph(lastParagraph.getNode());
     }
 
     /**

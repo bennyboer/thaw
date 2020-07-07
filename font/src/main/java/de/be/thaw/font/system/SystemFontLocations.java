@@ -1,6 +1,6 @@
 package de.be.thaw.font.system;
 
-import de.be.thaw.core.util.OperatingSystem;
+import de.be.thaw.font.util.OperatingSystem;
 
 import java.nio.file.Path;
 import java.util.Collections;

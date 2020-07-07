@@ -12,11 +12,6 @@ import de.be.thaw.typeset.util.Size;
 public class KnuthPlassTypeSettingConfig {
 
     /**
-     * Indent of the text in the first line or a paragraph.
-     */
-    private final double firstLineIndent;
-
-    /**
      * Width of indentation.
      */
     private final double indentWidth;
@@ -30,11 +25,6 @@ public class KnuthPlassTypeSettingConfig {
      * Insets of the pages.
      */
     private final Insets pageInsets;
-
-    /**
-     * Height of a line.
-     */
-    private final double lineHeight;
 
     /**
      * Defines how many lines more than the optimum value are allowed.
@@ -77,8 +67,6 @@ public class KnuthPlassTypeSettingConfig {
     public KnuthPlassTypeSettingConfig(
             Size pageSize,
             Insets pageInsets,
-            double lineHeight,
-            double firstLineIndent,
             double indentWidth,
             int looseness,
             double tolerance,
@@ -103,8 +91,6 @@ public class KnuthPlassTypeSettingConfig {
         this.pageSize = pageSize;
         this.pageInsets = pageInsets;
 
-        this.lineHeight = lineHeight;
-        this.firstLineIndent = firstLineIndent;
         this.indentWidth = indentWidth;
 
         this.looseness = looseness;
@@ -118,24 +104,6 @@ public class KnuthPlassTypeSettingConfig {
         this.hyphenator = hyphenator;
 
         this.glueConfig = glueConfig;
-    }
-
-    /**
-     * Get the height of a line.
-     *
-     * @return line height
-     */
-    public double getLineHeight() {
-        return lineHeight;
-    }
-
-    /**
-     * Get the first line indentation of a paragraph.
-     *
-     * @return first line indentation
-     */
-    public double getFirstLineIndent() {
-        return firstLineIndent;
     }
 
     /**

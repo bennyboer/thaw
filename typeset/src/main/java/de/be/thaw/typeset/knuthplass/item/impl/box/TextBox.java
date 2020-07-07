@@ -1,5 +1,6 @@
 package de.be.thaw.typeset.knuthplass.item.impl.box;
 
+import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.typeset.knuthplass.item.impl.Box;
 
@@ -21,9 +22,9 @@ public class TextBox extends Box {
     /**
      * The original node representing this text box in the thaw document model.
      */
-    private final Node node;
+    private final DocumentNode node;
 
-    public TextBox(String text, double width, Node node) {
+    public TextBox(String text, double width, DocumentNode node) {
         this.text = text;
         this.width = width;
         this.node = node;
@@ -48,7 +49,7 @@ public class TextBox extends Box {
      *
      * @return node
      */
-    public Node getNode() {
+    public DocumentNode getNode() {
         return node;
     }
 

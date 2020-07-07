@@ -11,7 +11,9 @@ public enum ErrorResult {
     TEXT_FILE_PARSING_ERROR(3),
     EXPORT_ERROR(4),
     MORE_THAN_ONE_INFO_FILE(5),
-    INFO_FILE_PARSING_ERROR(6);
+    INFO_FILE_PARSING_ERROR(6),
+    MORE_THAN_ONE_STYLE_FILE(7),
+    STYLE_FILE_PARSING_ERROR(8);
 
     /**
      * Code of the error.

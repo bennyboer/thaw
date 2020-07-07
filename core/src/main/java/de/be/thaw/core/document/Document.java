@@ -1,7 +1,7 @@
 package de.be.thaw.core.document;
 
+import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.info.ThawInfo;
-import de.be.thaw.text.model.TextModel;
 
 /**
  * Representation of the thaw document.
@@ -14,14 +14,13 @@ public class Document {
     private final ThawInfo info;
 
     /**
-     * Text model defining the structure and content of the document.
-     * For example headings, paragraphs, images, ...
+     * The root document node.
      */
-    private final TextModel textModel;
+    private final DocumentNode root;
 
-    public Document(ThawInfo info, TextModel textModel) {
+    public Document(ThawInfo info, DocumentNode root) {
         this.info = info;
-        this.textModel = textModel;
+        this.root = root;
     }
 
     /**
@@ -34,12 +33,12 @@ public class Document {
     }
 
     /**
-     * Get the text model.
+     * Get the root document node.
      *
-     * @return text model
+     * @return root node
      */
-    public TextModel getTextModel() {
-        return textModel;
+    public DocumentNode getRoot() {
+        return root;
     }
 
 }

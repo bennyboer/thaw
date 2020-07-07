@@ -1,6 +1,6 @@
 package de.be.thaw.typeset.page.impl;
 
-import de.be.thaw.text.model.tree.Node;
+import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.typeset.page.AbstractElement;
 import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.util.Position;
@@ -21,9 +21,9 @@ public class TextElement extends AbstractElement {
      * The original node the text belongs to in the thaw document.
      * Can be used to derive the used font, style, etc.
      */
-    private final Node node;
+    private final DocumentNode node;
 
-    public TextElement(String text, Node node, Size size, Position position) {
+    public TextElement(String text, DocumentNode node, Size size, Position position) {
         super(size, position);
 
         this.text = text;
@@ -44,7 +44,7 @@ public class TextElement extends AbstractElement {
      *
      * @return node
      */
-    public Node getNode() {
+    public DocumentNode getNode() {
         return node;
     }
 

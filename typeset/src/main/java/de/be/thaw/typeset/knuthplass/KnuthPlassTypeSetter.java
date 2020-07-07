@@ -2,6 +2,10 @@ package de.be.thaw.typeset.knuthplass;
 
 import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
+import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.impl.InsetsStyle;
+import de.be.thaw.style.model.style.impl.LineHeightStyle;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
@@ -26,6 +30,7 @@ import de.be.thaw.typeset.util.Size;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Implementation of the Knuth-Plass line breaking algorithm.
@@ -83,6 +88,11 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
                 List<List<Item>> lines = splitParagraphIntoLines(paragraph, result);
 
+                final double lineHeight = getLineHeightForNode(paragraph.getNode());
+
+                final InsetsStyle insetsStyle = paragraph.getNode().getStyle().getStyleAttribute(StyleType.INSETS, style -> Optional.ofNullable((InsetsStyle) style)).orElseThrow();
+                y += insetsStyle.getTop();
+
                 double x = config.getPageInsets().getLeft();
 
                 double indent = 0; // Indent of the paragraph (if any), set for example for enumerations.
@@ -127,7 +137,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                             currentPageElements.add(new TextElement(
                                     ((TextBox) item).getText(),
                                     ((TextBox) item).getNode(),
-                                    new Size(item.getWidth(), config.getLineHeight()),
+                                    new Size(item.getWidth(), lineHeight),
                                     new Position(x, y)
                             ));
 
@@ -137,7 +147,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                                 currentPageElements.add(new TextElement(
                                         "-",
                                         ((Penalty) item).getNode(),
-                                        new Size(item.getWidth(), config.getLineHeight()),
+                                        new Size(item.getWidth(), lineHeight),
                                         new Position(x, y)
                                 ));
 
@@ -152,9 +162,11 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                         }
                     }
 
-                    y += config.getLineHeight();
+                    y += lineHeight;
                     x = config.getPageInsets().getLeft() + indent;
                 }
+
+                y += insetsStyle.getBottom();
             }
 
             // Push the current page.
@@ -167,6 +179,25 @@ public class KnuthPlassTypeSetter implements TypeSetter {
             }
         }
         return pages;
+    }
+
+    /**
+     * Get the font size for the passed node.
+     *
+     * @param node to get font size for
+     * @return font size
+     */
+    private double getLineHeightForNode(DocumentNode node) throws TypeSettingException {
+        final double lineHeight = node.getStyle().getStyleAttribute(
+                StyleType.LINE_HEIGHT,
+                style -> Optional.of(((LineHeightStyle) style).getLineHeight())
+        ).orElse(1.0);
+
+        try {
+            return lineHeight * config.getFontDetailsSupplier().getLineHeight(node);
+        } catch (Exception e) {
+            throw new TypeSettingException("Could not determine line height for node", e);
+        }
     }
 
     /**

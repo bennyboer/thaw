@@ -1,12 +1,14 @@
 package de.be.thaw.export.pdf;
 
+import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.font.util.FontFamily;
 import de.be.thaw.font.util.FontManager;
 import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.font.util.FontVariantLocator;
+import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.text.model.emphasis.TextEmphasis;
-import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
@@ -23,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -204,9 +207,9 @@ public class ExportContext {
      * @param node to get variant from
      * @return font variant
      */
-    private FontVariant getFontVariantFromNode(Node node) {
-        if (node instanceof FormattedNode) {
-            Set<TextEmphasis> emphases = ((FormattedNode) node).getEmphases();
+    private FontVariant getFontVariantFromNode(DocumentNode node) {
+        if (node.getTextNode() instanceof FormattedNode) {
+            Set<TextEmphasis> emphases = ((FormattedNode) node.getTextNode()).getEmphases();
 
             boolean isBold = emphases.contains(TextEmphasis.BOLD);
             boolean isItalic = emphases.contains(TextEmphasis.ITALIC);
@@ -229,8 +232,11 @@ public class ExportContext {
      * @param node to get font for
      * @return font
      */
-    public PDFont getFontForNode(Node node) throws ExportException {
-        String familyName = "Cambria"; // Default font family for testing
+    public PDFont getFontForNode(DocumentNode node) throws ExportException {
+        String familyName = node.getStyle().getStyleAttribute(
+                StyleType.FONT,
+                style -> Optional.ofNullable(((FontStyle) style).getFamily())
+        ).orElseThrow();
 
         FontVariant variant = getFontVariantFromNode(node);
 
@@ -270,8 +276,8 @@ public class ExportContext {
      * @param node to get font size for
      * @return font size
      */
-    public double getFontSizeForNode(Node node) {
-        return 12.0; // TODO Get font size from document model properly when having a style model
+    public double getFontSizeForNode(DocumentNode node) {
+        return node.getStyle().getStyleAttribute(StyleType.FONT, style -> Optional.ofNullable(((FontStyle) style).getSize())).orElse(11.0);
     }
 
 }

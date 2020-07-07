@@ -1,6 +1,6 @@
-package de.be.thaw.core.util;
+package de.be.thaw.font.util;
 
-import de.be.thaw.core.util.exception.CouldNotDetermineOperatingSystemException;
+import de.be.thaw.font.util.exception.CouldNotDetermineOperatingSystemException;
 
 /**
  * Enumeration of supported operating systems.

@@ -1,12 +1,17 @@
 package de.be.thaw.cli;
 
 import de.be.thaw.core.document.Document;
+import de.be.thaw.core.document.builder.impl.DefaultDocumentBuilder;
+import de.be.thaw.core.document.builder.impl.source.DocumentBuildSource;
 import de.be.thaw.export.Exporter;
 import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.PdfExporter;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.info.parser.InfoParser;
 import de.be.thaw.info.parser.impl.DefaultInfoParser;
+import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.parser.StyleParser;
+import de.be.thaw.style.parser.impl.DefaultStyleParser;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.parser.TextParser;
 import de.be.thaw.text.parser.exception.ParseException;
@@ -18,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 
@@ -175,9 +181,41 @@ public class CLI implements Callable<Integer> {
             return ErrorResult.TEXT_FILE_PARSING_ERROR.getCode();
         }
 
-        System.out.println(textModel.getRoot().toString()); // TODO Remove (only for testing)
+        String[] styleFiles = root.list((dir, name) -> name.endsWith(".tds"));
 
-        Document document = new Document(info, textModel);
+        StyleModel styleModel;
+        if (styleFiles.length > 1) {
+            System.err.println(String.format("There are more than one Thaw style file (ending with *.tds) in the folder at '%s'", root.getAbsolutePath()));
+            return ErrorResult.MORE_THAN_ONE_STYLE_FILE.getCode();
+        } else if (styleFiles.length == 1) {
+            System.out.println(String.format("Processing Thaw style file '%s'...", textFiles[0]));
+
+            File styleFile = new File(root, styleFiles[0]);
+
+            StyleParser styleParser = new DefaultStyleParser();
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(styleFile), info.getEncoding()))) {
+                styleModel = styleParser.parse(br);
+            } catch (de.be.thaw.style.parser.exception.ParseException e) {
+                System.err.println(String.format(
+                        "An exception occurred while trying to parse the provided style file at '%s'.\n" +
+                                "The exception message is: '%s'",
+                        styleFile.getAbsolutePath(),
+                        e.getMessage()
+                ));
+
+                return ErrorResult.STYLE_FILE_PARSING_ERROR.getCode();
+            }
+        } else {
+            styleModel = new StyleModel(new HashMap<>()); // Empty style model
+        }
+
+        System.out.println(textModel.getRoot().toString());
+
+        Document document = new DefaultDocumentBuilder().build(new DocumentBuildSource(
+                info,
+                textModel,
+                styleModel
+        ));
 
         Exporter exporter = new PdfExporter();
         try {

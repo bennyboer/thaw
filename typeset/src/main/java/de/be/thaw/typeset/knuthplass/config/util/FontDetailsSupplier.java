@@ -1,6 +1,6 @@
 package de.be.thaw.typeset.knuthplass.config.util;
 
-import de.be.thaw.text.model.tree.Node;
+import de.be.thaw.core.document.node.DocumentNode;
 
 /**
  * Supplier for font details needed to properly typeset text.
@@ -14,7 +14,7 @@ public interface FontDetailsSupplier {
      * @param code to get width for
      * @throws Exception in case the code width could not be determined
      */
-    double getCodeWidth(Node node, int code) throws Exception;
+    double getCodeWidth(DocumentNode node, int code) throws Exception;
 
     /**
      * Get the width of the passed string.
@@ -24,7 +24,7 @@ public interface FontDetailsSupplier {
      * @return width
      * @throws Exception in case the string width could not be determined
      */
-    double getStringWidth(Node node, String str) throws Exception;
+    double getStringWidth(DocumentNode node, String str) throws Exception;
 
     /**
      * Get the space width that applies to the passed node.
@@ -33,6 +33,15 @@ public interface FontDetailsSupplier {
      * @return width of a space
      * @throws Exception in case the space width could not be determined
      */
-    double getSpaceWidth(Node node) throws Exception;
+    double getSpaceWidth(DocumentNode node) throws Exception;
+
+    /**
+     * Get the leading for the font of the passed node.
+     *
+     * @param node to get leading
+     * @return leading
+     * @throws Exception in case the leading
+     */
+    double getLineHeight(DocumentNode node) throws Exception;
 
 }
