@@ -285,7 +285,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                     if (imageParagraph.isFloating() && imageParagraph.getAlignment() != TextAlignment.CENTER) {
                         floatUntilY += y + height + insetsStyle.getBottom();
                         floatWidth = width + insetsStyle.getLeft() + insetsStyle.getRight();
-                        floatIndent = imageParagraph.getAlignment() == TextAlignment.LEFT ? width : 0;
+                        floatIndent = imageParagraph.getAlignment() == TextAlignment.LEFT ? floatWidth : 0;
                     } else {
                         y += height + insetsStyle.getBottom();
                     }
