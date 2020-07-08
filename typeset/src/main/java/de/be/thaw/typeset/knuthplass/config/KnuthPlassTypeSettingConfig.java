@@ -3,6 +3,7 @@ package de.be.thaw.typeset.knuthplass.config;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.GlueConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
+import de.be.thaw.typeset.knuthplass.config.util.image.ImageSourceSupplier;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.typeset.util.Size;
 
@@ -64,6 +65,11 @@ public class KnuthPlassTypeSettingConfig {
      */
     private final GlueConfig glueConfig;
 
+    /**
+     * Supplier for image sources.
+     */
+    private final ImageSourceSupplier imageSourceSupplier;
+
     public KnuthPlassTypeSettingConfig(
             Size pageSize,
             Insets pageInsets,
@@ -74,7 +80,8 @@ public class KnuthPlassTypeSettingConfig {
             double fitnessDemerit,
             FontDetailsSupplier fontDetailsSupplier,
             Hyphenator hyphenator,
-            GlueConfig glueConfig
+            GlueConfig glueConfig,
+            ImageSourceSupplier imageSourceSupplier
     ) {
         if (fontDetailsSupplier == null) {
             throw new NullPointerException("Cannot build line breaking configuration as the font details supplier is null which is required to properly typeset");
@@ -104,6 +111,8 @@ public class KnuthPlassTypeSettingConfig {
         this.hyphenator = hyphenator;
 
         this.glueConfig = glueConfig;
+
+        this.imageSourceSupplier = imageSourceSupplier;
     }
 
     /**
@@ -198,6 +207,15 @@ public class KnuthPlassTypeSettingConfig {
      */
     public double getIndentWidth() {
         return indentWidth;
+    }
+
+    /**
+     * Get the image source supplier.
+     *
+     * @return image source supplier
+     */
+    public ImageSourceSupplier getImageSourceSupplier() {
+        return imageSourceSupplier;
     }
 
     /**

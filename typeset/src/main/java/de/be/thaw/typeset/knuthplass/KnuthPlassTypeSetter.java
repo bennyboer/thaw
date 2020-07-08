@@ -20,11 +20,14 @@ import de.be.thaw.typeset.knuthplass.item.impl.Penalty;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
+import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
+import de.be.thaw.typeset.knuthplass.paragraph.impl.image.ImageParagraph;
 import de.be.thaw.typeset.knuthplass.util.BreakPoint;
 import de.be.thaw.typeset.knuthplass.util.LineBreakingContext;
 import de.be.thaw.typeset.knuthplass.util.LineFit;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
+import de.be.thaw.typeset.page.impl.ImageElement;
 import de.be.thaw.typeset.page.impl.TextElement;
 import de.be.thaw.typeset.util.Position;
 import de.be.thaw.typeset.util.Size;
@@ -81,124 +84,145 @@ public class KnuthPlassTypeSetter implements TypeSetter {
             List<Paragraph> consecutiveParagraphs = paragraphs.get(consecutiveParagraphsIndex);
 
             for (Paragraph paragraph : consecutiveParagraphs) {
-                LineBreakingResult result;
-                try {
-                    result = findBreakPoints(paragraph);
-                } catch (CouldNotFindFeasibleSolutionException e) {
-                    throw new TypeSettingException("Typesetting failed because the line breaking algorithm could not find a feasible solution", e);
-                }
+                // TODO Typesetting handler for each paragraph type!
+                if (paragraph instanceof TextParagraph) {
+                    TextParagraph textParagraph = (TextParagraph) paragraph;
 
-                List<List<Item>> lines = splitParagraphIntoLines(paragraph, result);
-
-                // Fetch some paragraph styles
-                final double lineHeight = getLineHeightForNode(paragraph.getNode());
-                final InsetsStyle insetsStyle = paragraph.getNode().getStyle().getStyleAttribute(
-                        StyleType.INSETS,
-                        style -> Optional.ofNullable((InsetsStyle) style)
-                ).orElseThrow();
-                final TextAlignment alignment = paragraph.getNode().getStyle().getStyleAttribute(
-                        StyleType.TEXT,
-                        style -> Optional.ofNullable(((TextStyle) style).getAlignment())
-                ).orElse(TextAlignment.LEFT);
-                final boolean justify = paragraph.getNode().getStyle().getStyleAttribute(
-                        StyleType.TEXT,
-                        style -> Optional.ofNullable(((TextStyle) style).getJustify())
-                ).orElse(true);
-
-                // Set up the initial position of the paragraph
-                y += insetsStyle.getTop();
-                double x = config.getPageInsets().getLeft();
-
-                // Lay out the individual lines
-                double indent = 0; // Indent of the paragraph (if any), set for example for enumerations.
-                for (int i = 0; i < lines.size(); i++) {
-                    if (y > config.getPageSize().getHeight() - config.getPageInsets().getTop()) {
-                        // Create next page
-                        pages.add(new Page(pages.size() + 1, config.getPageSize(), config.getPageInsets(), currentPageElements));
-                        currentPageElements = new ArrayList<>();
-                        y = config.getPageInsets().getTop();
-                    }
-
-                    double lineWidth = result.getContext().getLineWidth(i + 1);
-                    List<Item> line = lines.get(i);
-                    LineMetrics lineMetrics = calculateLineMetrics(line);
-
-                    if (lineMetrics.getMinWidth() == 0) {
-                        // No need to lay it out.
-                        // Might happen when breaking right before the paragraphs end glue with
-                        // zero width and infinite stretchability.
-                        continue;
-                    }
-
-                    // Last item is glue with width 0 -> indicates explicit line break
-                    Item last = line.get(line.size() - 1);
-                    boolean isExplicitLineBreakInLine = last.getType() == ItemType.GLUE && last.getWidth() == 0 && last.getStretchability() > 0;
-
-                    boolean isLastLine = i == lines.size() - 1;
-                    boolean justifyLine = justify && !isExplicitLineBreakInLine && !isLastLine;
-
-                    // Determine the space width
-                    double spaceWidth;
+                    LineBreakingResult result;
                     try {
-                        spaceWidth = justifyLine
-                                ? getJustifiedLineSpaceWidth(lineMetrics, lineWidth)
-                                : config.getFontDetailsSupplier().getSpaceWidth(paragraph.getNode());
-                    } catch (Exception e) {
-                        throw new TypeSettingException("Could not determine space character width", e);
+                        result = findBreakPoints(textParagraph);
+                    } catch (CouldNotFindFeasibleSolutionException e) {
+                        throw new TypeSettingException("Typesetting failed because the line breaking algorithm could not find a feasible solution", e);
                     }
 
-                    // Deal with text alignments other than left (the default).
-                    if (!justifyLine) {
-                        double restWidth = lineWidth - lineMetrics.getMinWidth() - lineMetrics.getWhiteSpaces() * spaceWidth;
+                    List<List<Item>> lines = splitParagraphIntoLines(textParagraph, result);
 
-                        if (alignment == TextAlignment.RIGHT) {
-                            x += restWidth;
-                        } else if (alignment == TextAlignment.CENTER) {
-                            x += restWidth / 2;
+                    // Fetch some paragraph styles
+                    final double lineHeight = getLineHeightForNode(paragraph.getNode());
+                    final InsetsStyle insetsStyle = paragraph.getNode().getStyle().getStyleAttribute(
+                            StyleType.INSETS,
+                            style -> Optional.ofNullable((InsetsStyle) style)
+                    ).orElseThrow();
+                    final TextAlignment alignment = paragraph.getNode().getStyle().getStyleAttribute(
+                            StyleType.TEXT,
+                            style -> Optional.ofNullable(((TextStyle) style).getAlignment())
+                    ).orElse(TextAlignment.LEFT);
+                    final boolean justify = paragraph.getNode().getStyle().getStyleAttribute(
+                            StyleType.TEXT,
+                            style -> Optional.ofNullable(((TextStyle) style).getJustify())
+                    ).orElse(true);
+
+                    // Set up the initial position of the paragraph
+                    y += insetsStyle.getTop();
+                    double x = config.getPageInsets().getLeft();
+
+                    // Lay out the individual lines
+                    double indent = 0; // Indent of the paragraph (if any), set for example for enumerations.
+                    for (int i = 0; i < lines.size(); i++) {
+                        if (y > config.getPageSize().getHeight() - config.getPageInsets().getTop()) {
+                            // Create next page
+                            pages.add(new Page(pages.size() + 1, config.getPageSize(), config.getPageInsets(), currentPageElements));
+                            currentPageElements = new ArrayList<>();
+                            y = config.getPageInsets().getTop();
                         }
-                    }
 
-                    for (Item item : line) {
-                        // Check if the item indicates an enumeration item start
-                        if (item instanceof EnumerationItemStartBox) {
-                            indent = ((EnumerationItemStartBox) item).getIndent();
-                            x += indent - item.getWidth();
+                        double lineWidth = result.getContext().getLineWidth(i + 1);
+                        List<Item> line = lines.get(i);
+                        LineMetrics lineMetrics = calculateLineMetrics(line);
+
+                        if (lineMetrics.getMinWidth() == 0) {
+                            // No need to lay it out.
+                            // Might happen when breaking right before the paragraphs end glue with
+                            // zero width and infinite stretchability.
+                            continue;
                         }
 
-                        if (item instanceof TextBox) {
-                            currentPageElements.add(new TextElement(
-                                    ((TextBox) item).getText(),
-                                    ((TextBox) item).getNode(),
-                                    new Size(item.getWidth(), lineHeight),
-                                    new Position(x, y)
-                            ));
+                        // Last item is glue with width 0 -> indicates explicit line break
+                        Item last = line.get(line.size() - 1);
+                        boolean isExplicitLineBreakInLine = last.getType() == ItemType.GLUE && last.getWidth() == 0 && last.getStretchability() > 0;
 
-                            x += item.getWidth();
-                        } else if (item instanceof Penalty) {
-                            if (item.isFlagged() && item.getWidth() > 0) {
+                        boolean isLastLine = i == lines.size() - 1;
+                        boolean justifyLine = justify && !isExplicitLineBreakInLine && !isLastLine;
+
+                        // Determine the space width
+                        double spaceWidth;
+                        try {
+                            spaceWidth = justifyLine
+                                    ? getJustifiedLineSpaceWidth(lineMetrics, lineWidth)
+                                    : config.getFontDetailsSupplier().getSpaceWidth(paragraph.getNode());
+                        } catch (Exception e) {
+                            throw new TypeSettingException("Could not determine space character width", e);
+                        }
+
+                        // Deal with text alignments other than left (the default).
+                        if (!justifyLine) {
+                            double restWidth = lineWidth - lineMetrics.getMinWidth() - lineMetrics.getWhiteSpaces() * spaceWidth;
+
+                            if (alignment == TextAlignment.RIGHT) {
+                                x += restWidth;
+                            } else if (alignment == TextAlignment.CENTER) {
+                                x += restWidth / 2;
+                            }
+                        }
+
+                        for (Item item : line) {
+                            // Check if the item indicates an enumeration item start
+                            if (item instanceof EnumerationItemStartBox) {
+                                indent = ((EnumerationItemStartBox) item).getIndent();
+                                x += indent - item.getWidth();
+                            }
+
+                            if (item instanceof TextBox) {
                                 currentPageElements.add(new TextElement(
-                                        "-",
-                                        ((Penalty) item).getNode(),
+                                        ((TextBox) item).getText(),
+                                        ((TextBox) item).getNode(),
                                         new Size(item.getWidth(), lineHeight),
                                         new Position(x, y)
                                 ));
 
                                 x += item.getWidth();
+                            } else if (item instanceof Penalty) {
+                                if (item.isFlagged() && item.getWidth() > 0) {
+                                    currentPageElements.add(new TextElement(
+                                            "-",
+                                            ((Penalty) item).getNode(),
+                                            new Size(item.getWidth(), lineHeight),
+                                            new Position(x, y)
+                                    ));
+
+                                    x += item.getWidth();
+                                }
+                            } else if (item instanceof Glue) {
+                                if (item.getWidth() > 0) {
+                                    x += spaceWidth;
+                                }
+                            } else {
+                                x += item.getWidth();
                             }
-                        } else if (item instanceof Glue) {
-                            if (item.getWidth() > 0) {
-                                x += spaceWidth;
-                            }
-                        } else {
-                            x += item.getWidth();
                         }
+
+                        y += lineHeight;
+                        x = config.getPageInsets().getLeft() + indent;
                     }
 
-                    y += lineHeight;
-                    x = config.getPageInsets().getLeft() + indent;
-                }
+                    y += insetsStyle.getBottom();
+                } else if (paragraph instanceof ImageParagraph) {
+                    ImageParagraph imageParagraph = (ImageParagraph) paragraph;
 
-                y += insetsStyle.getBottom();
+                    double maxWidth = imageParagraph.getLineWidth(1);
+
+                    double ratio = imageParagraph.getSrc().getSize().getWidth() / imageParagraph.getSrc().getSize().getHeight();
+                    double height = maxWidth / ratio;
+
+                    currentPageElements.add(new ImageElement(
+                            imageParagraph.getSrc(),
+                            imageParagraph.getNode(),
+                            new Size(maxWidth, height),
+                            new Position(config.getPageInsets().getLeft(), y)
+                    ));
+
+                    y += height;
+                }
             }
 
             // Push the current page.
@@ -236,7 +260,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
      * @param lineBreakingResult to split the paragraph into lines with
      * @return lines
      */
-    private List<List<Item>> splitParagraphIntoLines(Paragraph paragraph, LineBreakingResult lineBreakingResult) {
+    private List<List<Item>> splitParagraphIntoLines(TextParagraph paragraph, LineBreakingResult lineBreakingResult) {
         List<List<Item>> lines = new ArrayList<>();
 
         List<Item> currentLine = new ArrayList<>();
@@ -330,7 +354,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
      * @return the found break points
      * @throws CouldNotFindFeasibleSolutionException in case the algorithm could not find a feasible solution
      */
-    private LineBreakingResult findBreakPoints(Paragraph paragraph) throws CouldNotFindFeasibleSolutionException {
+    private LineBreakingResult findBreakPoints(TextParagraph paragraph) throws CouldNotFindFeasibleSolutionException {
         LineBreakingContext ctx = new LineBreakingContext(paragraph);
 
         // Adding initial active break point representing the beginning of the paragraph

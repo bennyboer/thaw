@@ -7,6 +7,7 @@ module de.be.thaw.typeset {
     exports de.be.thaw.typeset.knuthplass.config;
     exports de.be.thaw.typeset.knuthplass.config.util;
     exports de.be.thaw.typeset.knuthplass.config.util.hyphen;
+    exports de.be.thaw.typeset.knuthplass.config.util.image;
     exports de.be.thaw.typeset.page.impl;
 
     requires de.be.thaw.core;

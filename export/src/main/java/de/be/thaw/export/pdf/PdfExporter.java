@@ -6,6 +6,7 @@ import de.be.thaw.export.Exporter;
 import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.element.ElementExporter;
 import de.be.thaw.export.pdf.element.ElementExporters;
+import de.be.thaw.export.pdf.util.PdfImageSource;
 import de.be.thaw.hyphenation.HyphenationDictionaries;
 import de.be.thaw.hyphenation.HyphenationDictionary;
 import de.be.thaw.info.model.language.Language;
@@ -29,6 +30,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -238,6 +240,7 @@ public class PdfExporter implements Exporter {
                         return HyphenatedWordPart.DEFAULT_PENALTY;
                     }
                 })
+                .setImageSourceSupplier(src -> new PdfImageSource(PDImageXObject.createFromFile(src, ctx.getDocument())))
                 .build());
     }
 

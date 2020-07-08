@@ -1,7 +1,7 @@
 package de.be.thaw.typeset.knuthplass.util;
 
 import de.be.thaw.typeset.knuthplass.item.Item;
-import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
+import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +23,7 @@ public class LineBreakingContext {
     /**
      * The paragraph to find line breaks in.
      */
-    private final Paragraph paragraph;
+    private final TextParagraph paragraph;
 
     /**
      * A mapping of line numbers to special line widths that are not the default
@@ -36,7 +36,7 @@ public class LineBreakingContext {
      */
     private final List<CumulativeMetrics> cumulativeMetrics = new ArrayList<>();
 
-    public LineBreakingContext(Paragraph paragraph) {
+    public LineBreakingContext(TextParagraph paragraph) {
         this.paragraph = paragraph;
 
         initializeCumulativeMetrics();

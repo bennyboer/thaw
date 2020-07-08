@@ -22,7 +22,11 @@ import de.be.thaw.typeset.knuthplass.item.impl.box.EmptyBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
+import de.be.thaw.typeset.knuthplass.paragraph.floating.Floating;
+import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
+import de.be.thaw.typeset.knuthplass.paragraph.impl.image.ImageParagraph;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -104,11 +108,15 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
 
         Paragraph current = currentParagraphList.get(currentParagraphList.size() - 1);
 
-        // Add glue as stretchable space to fill the last line
-        current.addItem(new Glue(0, Double.POSITIVE_INFINITY, 0));
+        if (current instanceof TextParagraph) {
+            TextParagraph textParagraph = (TextParagraph) current;
 
-        // Add explicit line break
-        current.addItem(new Penalty(Double.NEGATIVE_INFINITY, 0, true));
+            // Add glue as stretchable space to fill the last line
+            textParagraph.addItem(new Glue(0, Double.POSITIVE_INFINITY, 0));
+
+            // Add explicit line break
+            textParagraph.addItem(new Penalty(Double.NEGATIVE_INFINITY, 0, true));
+        }
     }
 
     /**
@@ -118,13 +126,15 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
      */
     private void initializeNewParagraph(DocumentNode node) {
         if (!currentParagraphList.isEmpty()) {
-            if (!currentParagraphList.get(currentParagraphList.size() - 1).isEmpty()) {
+            Paragraph current = currentParagraphList.get(currentParagraphList.size() - 1);
+
+            if (!(current instanceof TextParagraph) || !((TextParagraph) current).isEmpty()) {
                 finalizeParagraph();
             }
         }
 
         double lineWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight());
-        Paragraph paragraph = new Paragraph(lineWidth, node);
+        TextParagraph paragraph = new TextParagraph(lineWidth, node);
 
         currentParagraphList.add(paragraph);
     }
@@ -159,7 +169,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
                     char lastChar = ' ';
 
                     try {
-                        currentParagraphList.get(currentParagraphList.size() - 1).addItem(new Glue(
+                        ((TextParagraph) currentParagraphList.get(currentParagraphList.size() - 1)).addItem(new Glue(
                                 config.getFontDetailsSupplier().getSpaceWidth(documentNode),
                                 config.getGlueConfig().getInterWordStretchability(documentNode, lastChar),
                                 config.getGlueConfig().getInterWordShrinkability(documentNode, lastChar)
@@ -176,7 +186,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
                     wordBuffer.setLength(0); // Reset word buffer
 
                     // Add explicit hyphen to the paragraph
-                    currentParagraphList.get(currentParagraphList.size() - 1).addItem(new Penalty(
+                    ((TextParagraph) currentParagraphList.get(currentParagraphList.size() - 1)).addItem(new Penalty(
                             config.getHyphenator().getExplicitHyphenPenalty(),
                             0,
                             true
@@ -231,10 +241,10 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
     /**
      * Append an empty box to represent a first line indent to the current paragraph.
      *
-     * @param node of the paragraph
+     * @param node      of the paragraph
+     * @param paragraph to append empty box to
      */
-    private void appendEmptyBoxToParagraph(DocumentNode node) {
-        Paragraph paragraph = currentParagraphList.get(currentParagraphList.size() - 1);
+    private void appendEmptyBoxToParagraph(DocumentNode node, TextParagraph paragraph) {
         if (paragraph.isEmpty()) {
             double firstLineIndent = node.getStyle().getStyleAttribute(
                     StyleType.TEXT,
@@ -256,12 +266,12 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
             return;
         }
 
-        appendEmptyBoxToParagraph(node);
+        TextParagraph paragraph = (TextParagraph) currentParagraphList.get(currentParagraphList.size() - 1);
+
+        appendEmptyBoxToParagraph(node, paragraph);
 
         // Split by punctuation characters
         List<WordPartSplitByPunctuationCharacter> splitWord = splitByPunctuationCharacter(word);
-
-        Paragraph paragraph = currentParagraphList.get(currentParagraphList.size() - 1);
 
         try {
             for (WordPartSplitByPunctuationCharacter splitWordPart : splitWord) {
@@ -325,7 +335,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
 
         initializeNewParagraph(documentNode); // Each enumeration item is a individual paragraph!
 
-        Paragraph paragraph = currentParagraphList.get(currentParagraphList.size() - 1);
+        TextParagraph paragraph = (TextParagraph) currentParagraphList.get(currentParagraphList.size() - 1);
 
         final double defaultLineWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight());
         final double firstLineWidth = defaultLineWidth - indent + symbolWidth;
@@ -346,8 +356,10 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
      *
      * @param documentNode to initialize with
      */
-    private void initializeThingy(DocumentNode documentNode) {
+    private void initializeThingy(DocumentNode documentNode) throws DocumentConversionException {
         ThingyNode node = (ThingyNode) documentNode.getTextNode();
+
+        // TODO Thingy handling using map instead of if-else
 
         // Checking for explicit line or page breaks
         if (node.getName().equalsIgnoreCase("BREAK")) {
@@ -360,6 +372,24 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
             } else {
                 onLineBreak();
             }
+        } else if (node.getName().equalsIgnoreCase("IMAGE")) {
+            TextParagraph textParagraph = (TextParagraph) currentParagraphList.get(currentParagraphList.size() - 1);
+            if (!textParagraph.isEmpty()) {
+                finalizeParagraph();
+            } else {
+                currentParagraphList.remove(currentParagraphList.size() - 1);
+            }
+
+            // TODO Line width from thingy options (image width)
+            double lineWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight());
+            Floating floating = Floating.NONE; // TODO Floating from thingy options
+
+            try {
+                ImageParagraph imageParagraph = new ImageParagraph(lineWidth, documentNode, config.getImageSourceSupplier().load(node.getOptions().get("src")), floating);
+                currentParagraphList.add(imageParagraph);
+            } catch (IOException e) {
+                throw new DocumentConversionException(e);
+            }
         }
     }
 
@@ -367,7 +397,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
      * Called on an explicit line break.
      */
     private void onLineBreak() {
-        Paragraph current = currentParagraphList.get(currentParagraphList.size() - 1);
+        TextParagraph current = (TextParagraph) currentParagraphList.get(currentParagraphList.size() - 1);
 
         // Add glue as stretchable space to fill the last line
         current.addItem(new Glue(0, config.getPageSize().getWidth(), 0));
@@ -382,7 +412,9 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
     private void onPageBreak() {
         // Create a new consecutive paragraph list after finalizing the current paragraph
         if (!currentParagraphList.isEmpty()) {
-            if (!currentParagraphList.get(currentParagraphList.size() - 1).isEmpty()) {
+            Paragraph current = currentParagraphList.get(currentParagraphList.size() - 1);
+
+            if (!(current instanceof TextParagraph) || !((TextParagraph) current).isEmpty()) {
                 finalizeParagraph();
             }
         }
@@ -391,7 +423,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
             paragraphs.add(currentParagraphList);
         }
 
-        Paragraph lastParagraph = currentParagraphList.get(currentParagraphList.size() - 1);
+        TextParagraph lastParagraph = (TextParagraph) currentParagraphList.get(currentParagraphList.size() - 1);
         currentParagraphList = new ArrayList<>();
         initializeNewParagraph(lastParagraph.getNode());
     }

@@ -3,6 +3,7 @@ package de.be.thaw.typeset.knuthplass.config;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.GlueConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
+import de.be.thaw.typeset.knuthplass.config.util.image.ImageSourceSupplier;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.typeset.util.Size;
 
@@ -96,6 +97,11 @@ public class KnuthPlassTypeSettingConfigBuilder {
      * Configuration for the used glue.
      */
     private GlueConfig glueConfig;
+
+    /**
+     * The image source supplier to use.
+     */
+    private ImageSourceSupplier imageSourceSupplier;
 
     /**
      * Get the size of the page to typeset on (in mm).
@@ -309,6 +315,26 @@ public class KnuthPlassTypeSettingConfigBuilder {
     }
 
     /**
+     * Get the image source supplier.
+     *
+     * @return image source supplier
+     */
+    public ImageSourceSupplier getImageSourceSupplier() {
+        return imageSourceSupplier;
+    }
+
+    /**
+     * Get the image source supplier.
+     *
+     * @param imageSourceSupplier to set
+     */
+    public KnuthPlassTypeSettingConfigBuilder setImageSourceSupplier(ImageSourceSupplier imageSourceSupplier) {
+        this.imageSourceSupplier = imageSourceSupplier;
+
+        return this;
+    }
+
+    /**
      * Build the line breaking configuration.
      *
      * @return the build config
@@ -324,7 +350,8 @@ public class KnuthPlassTypeSettingConfigBuilder {
                 getFitnessDemerit(),
                 getFontDetailsSupplier(),
                 getHyphenator(),
-                getGlueConfig()
+                getGlueConfig(),
+                getImageSourceSupplier()
         );
     }
 
