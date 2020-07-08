@@ -8,7 +8,13 @@ import de.be.thaw.font.util.file.FontFile;
 import de.be.thaw.font.util.file.SingleFontFile;
 
 import java.awt.Font;
+import java.awt.RenderingHints;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -22,6 +28,11 @@ public class FontManager {
      * Mapping of font families to their font files.
      */
     private final Map<String, FontFamily> families = new HashMap<>();
+
+    /**
+     * Mapping of font variants to families that support that variant.
+     */
+    private final Map<FontVariant, List<FontFamily>> variantSupport = new HashMap<>();
 
     /**
      * Get the current instance of the font manager.
@@ -56,6 +67,21 @@ public class FontManager {
     }
 
     /**
+     * Get all families that support the passed variant.
+     *
+     * @param variant to check supporting families for
+     * @return supporting families
+     */
+    public List<FontFamily> getFamiliesSupportingVariant(FontVariant variant) {
+        List<FontFamily> families = variantSupport.get(variant);
+        if (families == null) {
+            return Collections.emptyList();
+        }
+
+        return families;
+    }
+
+    /**
      * Initialize the available font families.
      */
     private void initFamilies() {
@@ -82,7 +108,13 @@ public class FontManager {
         }
 
         for (Map.Entry<String, Map<FontVariant, FontVariantLocator>> entry : familyMapping.entrySet()) {
-            families.put(entry.getKey(), new FontFamily(entry.getValue()));
+            FontFamily family = new FontFamily(entry.getKey(), entry.getValue());
+
+            families.put(entry.getKey(), family);
+
+            for (FontVariant variant : entry.getValue().keySet()) {
+                variantSupport.computeIfAbsent(variant, k -> new ArrayList<>()).add(family);
+            }
         }
     }
 
@@ -110,6 +142,21 @@ public class FontManager {
     }
 
     /**
+     * Check if the passed font is monospaced.
+     *
+     * @param font to check
+     * @return whether monospaced
+     */
+    private boolean isMonospaced(Font font) {
+        FontRenderContext frc = new FontRenderContext(null, RenderingHints.VALUE_TEXT_ANTIALIAS_DEFAULT, RenderingHints.VALUE_FRACTIONALMETRICS_DEFAULT);
+
+        Rectangle2D iBounds = font.getStringBounds("i", frc);
+        Rectangle2D mBounds = font.getStringBounds("m", frc);
+
+        return iBounds.getWidth() == mBounds.getWidth();
+    }
+
+    /**
      * Get the font variant for the passed font.
      *
      * @param font to get variant for
@@ -123,8 +170,10 @@ public class FontManager {
             name = name.substring(font.getFamily().length());
         }
 
+        boolean isMonospaced = isMonospaced(font);
+
         if (name.isBlank()) {
-            return FontVariant.PLAIN;
+            return isMonospaced ? FontVariant.MONOSPACE : FontVariant.PLAIN;
         }
 
         String originalFontVariant = name.trim();

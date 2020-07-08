@@ -8,4 +8,5 @@ public enum FontVariant {
     BOLD,
     BOLD_ITALIC,
     ITALIC,
+    MONOSPACE
 }

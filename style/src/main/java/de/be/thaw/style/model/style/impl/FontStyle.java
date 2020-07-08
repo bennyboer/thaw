@@ -29,16 +29,23 @@ public class FontStyle implements Style {
      */
     private final ColorStyle color;
 
+    /**
+     * Font family used when displaying mono spaced font.
+     */
+    private final String monoSpacedFontFamily;
+
     public FontStyle(
             String family,
             FontVariant variant,
             Double size,
-            ColorStyle color
+            ColorStyle color,
+            String monoSpacedFontFamily
     ) {
         this.family = family;
         this.variant = variant;
         this.size = size;
         this.color = color;
+        this.monoSpacedFontFamily = monoSpacedFontFamily;
     }
 
     @Override
@@ -58,7 +65,8 @@ public class FontStyle implements Style {
                 family != null ? family : other.getFamily(),
                 variant != null ? variant : other.getVariant(),
                 size != null ? size : other.getSize(),
-                color != null ? color : other.getColor()
+                color != null ? color : other.getColor(),
+                monoSpacedFontFamily != null ? monoSpacedFontFamily : other.getMonoSpacedFontFamily()
         );
     }
 
@@ -76,6 +84,10 @@ public class FontStyle implements Style {
 
     public ColorStyle getColor() {
         return color;
+    }
+
+    public String getMonoSpacedFontFamily() {
+        return monoSpacedFontFamily;
     }
 
 }

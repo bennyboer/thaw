@@ -1,6 +1,8 @@
 package de.be.thaw.style.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.be.thaw.font.util.FontFamily;
+import de.be.thaw.font.util.FontManager;
 import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.style.Style;
@@ -15,6 +17,7 @@ import de.be.thaw.style.model.style.text.TextAlignment;
 import de.be.thaw.style.parser.impl.StyleModelDeserializer;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -84,8 +87,10 @@ public class StyleModel {
         documentStyles.put(StyleType.SIZE, new SizeStyle(210.0, 297.0));
         documentStyles.put(StyleType.INSETS, new InsetsStyle(20.0, 25.0, 20.0, 25.0));
         documentStyles.put(StyleType.BACKGROUND, new BackgroundStyle(new ColorStyle(1.0, 1.0, 1.0, 1.0)));
-        documentStyles.put(StyleType.FONT, new FontStyle("Cambria", FontVariant.PLAIN, 12.0, new ColorStyle(0.0, 0.0, 0.0, 1.0)));
         documentStyles.put(StyleType.TEXT, new TextStyle(10.0, null, TextAlignment.LEFT, Boolean.TRUE));
+
+        List<FontFamily> families = FontManager.getInstance().getFamiliesSupportingVariant(FontVariant.MONOSPACE);
+        documentStyles.put(StyleType.FONT, new FontStyle("Cambria", FontVariant.PLAIN, 12.0, new ColorStyle(0.0, 0.0, 0.0, 1.0), families.isEmpty() ? null : families.get(0).getName()));
 
         StyleBlock documentStyleBlock = new StyleBlock("DOCUMENT", documentStyles);
         model.addBlock(documentStyleBlock.getName(), documentStyleBlock);
@@ -109,7 +114,7 @@ public class StyleModel {
 
             Map<StyleType, Style> headlineStyles = new HashMap<>();
             headlineStyles.put(StyleType.TEXT, new TextStyle(0.0, lineHeight, TextAlignment.LEFT, false));
-            headlineStyles.put(StyleType.FONT, new FontStyle(null, FontVariant.BOLD, fontSize, null));
+            headlineStyles.put(StyleType.FONT, new FontStyle(null, FontVariant.BOLD, fontSize, null, null));
             headlineStyles.put(StyleType.INSETS, new InsetsStyle(insetsTop, 0.0, insetsBottom, 0.0));
 
             StyleBlock headlineStyleBlock = new StyleBlock(name, headlineStyles);

@@ -136,7 +136,8 @@ public class StyleModelDeserializer extends StdDeserializer<StyleModel> {
                         node.has("family") ? node.get("family").asText(null) : null,
                         variant,
                         node.has("size") ? node.get("size").asDouble() : null,
-                        color
+                        color,
+                        node.has("monoSpacedFontFamily") ? node.get("monoSpacedFontFamily").asText() : null
                 ).merge(oldStyle);
             }
             case TEXT -> new TextStyle(

@@ -27,11 +27,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Context used during PDF export.
  */
 public class ExportContext {
+
+    /**
+     * Logger for the class.
+     */
+    private static final Logger LOGGER = Logger.getLogger(PdfExporter.class.getSimpleName());
 
     /**
      * Cache for already loaded and embedded fonts.
@@ -218,6 +224,7 @@ public class ExportContext {
 
             boolean isBold = emphases.contains(TextEmphasis.BOLD);
             boolean isItalic = emphases.contains(TextEmphasis.ITALIC);
+            boolean isMonospace = emphases.contains(TextEmphasis.CODE);
 
             if (isBold && isItalic) {
                 return FontVariant.BOLD_ITALIC;
@@ -225,6 +232,8 @@ public class ExportContext {
                 return FontVariant.BOLD;
             } else if (isItalic) {
                 return FontVariant.ITALIC;
+            } else if (isMonospace) {
+                return FontVariant.MONOSPACE;
             }
         }
 
@@ -250,11 +259,26 @@ public class ExportContext {
                 familyName
         )));
 
-        FontVariantLocator locator = family.getVariantFont(variant).orElseThrow(() -> new ExportException(String.format(
-                "Could not find font variant '%s' in font family '%s'",
-                variant.name(),
-                familyName
-        )));
+        Optional<FontVariantLocator> optionalLocator = family.getVariantFont(variant);
+        FontVariantLocator locator;
+        if (optionalLocator.isPresent()) {
+            locator = optionalLocator.get();
+        } else {
+            if (variant == FontVariant.MONOSPACE) {
+                String defaultMonoSpacedFamily = node.getStyle().getStyleAttribute(
+                        StyleType.FONT,
+                        style -> Optional.ofNullable(((FontStyle) style).getMonoSpacedFontFamily())
+                ).orElseThrow();
+
+                locator = FontManager.getInstance().getFamily(defaultMonoSpacedFamily).orElseThrow().getVariantFont(FontVariant.MONOSPACE).orElseThrow();
+            } else {
+                throw new ExportException(String.format(
+                        "Could not find font variant '%s' in font family '%s'",
+                        variant.name(),
+                        familyName
+                ));
+            }
+        }
 
         PDFont font = fontCache.get(locator);
         if (font == null) {
