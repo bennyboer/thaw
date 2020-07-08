@@ -119,7 +119,8 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                     // Lay out the individual lines
                     double indent = 0; // Indent of the paragraph (if any), set for example for enumerations.
                     for (int i = 0; i < lines.size(); i++) {
-                        if (y > config.getPageSize().getHeight() - config.getPageInsets().getTop()) {
+                        double availableHeight = (config.getPageSize().getHeight() - config.getPageInsets().getBottom()) - y;
+                        if (availableHeight < lineHeight) {
                             // Create next page
                             pages.add(new Page(pages.size() + 1, config.getPageSize(), config.getPageInsets(), currentPageElements));
                             currentPageElements = new ArrayList<>();
@@ -209,6 +210,13 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                 } else if (paragraph instanceof ImageParagraph) {
                     ImageParagraph imageParagraph = (ImageParagraph) paragraph;
 
+                    final InsetsStyle insetsStyle = paragraph.getNode().getStyle().getStyleAttribute(
+                            StyleType.INSETS,
+                            style -> Optional.ofNullable((InsetsStyle) style)
+                    ).orElseThrow();
+
+                    y += insetsStyle.getTop();
+
                     double maxWidth = imageParagraph.getLineWidth(1);
 
                     double ratio = imageParagraph.getSrc().getSize().getWidth() / imageParagraph.getSrc().getSize().getHeight();
@@ -221,7 +229,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                             new Position(config.getPageInsets().getLeft(), y)
                     ));
 
-                    y += height;
+                    y += height + insetsStyle.getBottom();
                 }
             }
 

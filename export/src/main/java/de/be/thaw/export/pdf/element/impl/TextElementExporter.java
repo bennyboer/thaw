@@ -45,7 +45,7 @@ public class TextElementExporter implements ElementExporter {
             PDFont font = ctx.getFontForNode(te.getNode());
             double fontSize = ctx.getFontSizeForNode(te.getNode());
 
-            double y = ctx.getCurrentPage().getMediaBox().getUpperRightY() - te.getPosition().getY();
+            double y = ctx.getCurrentPage().getMediaBox().getUpperRightY() - te.getPosition().getY() - fontSize;
 
             // Apply font and size
             out.setFont(font, (float) fontSize);
