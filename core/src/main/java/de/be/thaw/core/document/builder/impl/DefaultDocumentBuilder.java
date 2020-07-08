@@ -5,18 +5,10 @@ import de.be.thaw.core.document.builder.DocumentBuilder;
 import de.be.thaw.core.document.builder.impl.source.DocumentBuildSource;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.node.style.DocumentNodeStyle;
-import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.BackgroundStyle;
-import de.be.thaw.style.model.style.impl.ColorStyle;
-import de.be.thaw.style.model.style.impl.FontStyle;
-import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.impl.SizeStyle;
-import de.be.thaw.style.model.style.impl.TextStyle;
-import de.be.thaw.style.model.style.text.TextAlignment;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
@@ -162,7 +154,12 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
 
         styleModel.getBlock(blockName).ifPresent(styleBlock -> {
             for (Map.Entry<StyleType, Style> styleEntry : styleBlock.getStyles().entrySet()) {
-                styles.put(styleEntry.getKey(), styleEntry.getValue());
+                Style style = styles.get(styleEntry.getKey());
+                if (style != null) {
+                    styles.put(styleEntry.getKey(), styleEntry.getValue().merge(style));
+                } else {
+                    styles.put(styleEntry.getKey(), styleEntry.getValue());
+                }
             }
         });
 

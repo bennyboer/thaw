@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.IntToDoubleFunction;
 
 /**
  * Implementation of the Knuth-Plass line breaking algorithm.
@@ -62,6 +63,12 @@ public class KnuthPlassTypeSetter implements TypeSetter {
      */
     private List<Element> currentPageElements;
 
+    /**
+     * Quality level used to let the line breaking algorithm succeed eventually when
+     * it cannot find a solution with best quality.
+     */
+    private int lineBreakingQuality = 0;
+
     public KnuthPlassTypeSetter(KnuthPlassTypeSettingConfig config) {
         this.config = config;
     }
@@ -83,19 +90,13 @@ public class KnuthPlassTypeSetter implements TypeSetter {
         for (int consecutiveParagraphsIndex = 0; consecutiveParagraphsIndex < paragraphs.size(); consecutiveParagraphsIndex++) {
             List<Paragraph> consecutiveParagraphs = paragraphs.get(consecutiveParagraphsIndex);
 
+            double floatUntilY = -1; // Until that y coordinate we have a floading element nearby
+            double floatIndent = 0; // Indent due to floating element
+            double floatWidth = 0; // Set when the width of a paragraph is reduced due to floating elements
             for (Paragraph paragraph : consecutiveParagraphs) {
                 // TODO Typesetting handler for each paragraph type!
                 if (paragraph instanceof TextParagraph) {
                     TextParagraph textParagraph = (TextParagraph) paragraph;
-
-                    LineBreakingResult result;
-                    try {
-                        result = findBreakPoints(textParagraph);
-                    } catch (CouldNotFindFeasibleSolutionException e) {
-                        throw new TypeSettingException("Typesetting failed because the line breaking algorithm could not find a feasible solution", e);
-                    }
-
-                    List<List<Item>> lines = splitParagraphIntoLines(textParagraph, result);
 
                     // Fetch some paragraph styles
                     final double lineHeight = getLineHeightForNode(paragraph.getNode());
@@ -115,6 +116,43 @@ public class KnuthPlassTypeSetter implements TypeSetter {
                     // Set up the initial position of the paragraph
                     y += insetsStyle.getTop();
                     double x = config.getPageInsets().getLeft();
+
+                    // Check if we have a floating element nearby
+                    if (floatUntilY > y) {
+                        double diff = floatUntilY - y;
+                        int lineCount = (int) Math.ceil(diff / lineHeight);
+
+                        x += floatIndent;
+
+                        IntToDoubleFunction oldLineWidthSupplier = textParagraph.getLineWidthSupplier();
+
+                        double finalFloatWidth = floatWidth;
+                        textParagraph.setLineWidthSupplier(lineNumber -> {
+                            double oldLineWidth = oldLineWidthSupplier != null ? oldLineWidthSupplier.applyAsDouble(lineNumber) : textParagraph.getDefaultLineWidth();
+                            if (lineNumber <= lineCount) {
+                                return oldLineWidth - finalFloatWidth;
+                            } else {
+                                return oldLineWidth;
+                            }
+                        });
+                    }
+
+                    // Do the line breaking. Try several quality levels in case it does not work.
+                    LineBreakingResult result = null;
+                    for (int quality = 0; quality < 10; quality++) {
+                        lineBreakingQuality = quality;
+
+                        try {
+                            result = findBreakPoints(textParagraph);
+                            break;
+                        } catch (CouldNotFindFeasibleSolutionException e) {
+                            if (quality == 9) {
+                                throw new TypeSettingException("Typesetting failed because the line breaking algorithm could not find a feasible solution", e);
+                            }
+                        }
+                    }
+
+                    List<List<Item>> lines = splitParagraphIntoLines(textParagraph, result);
 
                     // Lay out the individual lines
                     double indent = 0; // Indent of the paragraph (if any), set for example for enumerations.
@@ -204,6 +242,11 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
                         y += lineHeight;
                         x = config.getPageInsets().getLeft() + indent;
+
+                        boolean isFloating = floatUntilY > y;
+                        if (isFloating) {
+                            x += floatIndent;
+                        }
                     }
 
                     y += insetsStyle.getBottom();
@@ -217,19 +260,35 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
                     y += insetsStyle.getTop();
 
-                    double maxWidth = imageParagraph.getLineWidth(1);
+                    double width = imageParagraph.getLineWidth(1);
 
                     double ratio = imageParagraph.getSrc().getSize().getWidth() / imageParagraph.getSrc().getSize().getHeight();
-                    double height = maxWidth / ratio;
+                    double height = width / ratio;
+
+                    double maxWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight()) - (insetsStyle.getLeft() + insetsStyle.getRight());
+                    double x = config.getPageInsets().getLeft();
+                    if (imageParagraph.getAlignment() == TextAlignment.CENTER) {
+                        x += (maxWidth - width) / 2;
+                    } else if (imageParagraph.getAlignment() == TextAlignment.RIGHT) {
+                        x += maxWidth - width;
+                    }
+
+                    x += insetsStyle.getLeft();
 
                     currentPageElements.add(new ImageElement(
                             imageParagraph.getSrc(),
                             imageParagraph.getNode(),
-                            new Size(maxWidth, height),
-                            new Position(config.getPageInsets().getLeft(), y)
+                            new Size(width, height),
+                            new Position(x, y)
                     ));
 
-                    y += height + insetsStyle.getBottom();
+                    if (imageParagraph.isFloating() && imageParagraph.getAlignment() != TextAlignment.CENTER) {
+                        floatUntilY += y + height + insetsStyle.getBottom();
+                        floatWidth = width + insetsStyle.getLeft() + insetsStyle.getRight();
+                        floatIndent = imageParagraph.getAlignment() == TextAlignment.LEFT ? width : 0;
+                    } else {
+                        y += height + insetsStyle.getBottom();
+                    }
                 }
             }
 
@@ -363,7 +422,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
      * @throws CouldNotFindFeasibleSolutionException in case the algorithm could not find a feasible solution
      */
     private LineBreakingResult findBreakPoints(TextParagraph paragraph) throws CouldNotFindFeasibleSolutionException {
-        LineBreakingContext ctx = new LineBreakingContext(paragraph);
+        LineBreakingContext ctx = new LineBreakingContext(paragraph, lineBreakingQuality);
 
         // Adding initial active break point representing the beginning of the paragraph
         ctx.getActiveBreakPoints().add(new BreakPoint(0));
@@ -459,7 +518,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
             for (BreakPoint activeBreakPoint : ctx.getActiveBreakPoints()) {
                 int lineDiff = activeBreakPoint.getLineNumber() - lastBreakPoint.getLineNumber();
 
-                if ((lineDiff >= config.getLooseness() && lineDiff < bestLineDiff)
+                if ((lineDiff >= config.getLooseness() + lineBreakingQuality && lineDiff < bestLineDiff)
                         || (lineDiff > bestLineDiff && lineDiff <= config.getLooseness())) {
                     bestLineDiff = lineDiff;
                     demerits = activeBreakPoint.getDemerits();

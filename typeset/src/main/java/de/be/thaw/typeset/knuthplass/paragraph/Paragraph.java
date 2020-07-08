@@ -1,7 +1,6 @@
 package de.be.thaw.typeset.knuthplass.paragraph;
 
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.typeset.knuthplass.paragraph.floating.Floating;
 
 /**
  * A paragraph.
@@ -13,7 +12,7 @@ public interface Paragraph {
      *
      * @return floating
      */
-    Floating getFloating();
+    boolean isFloating();
 
     /**
      * Get the line width for the passed line number.

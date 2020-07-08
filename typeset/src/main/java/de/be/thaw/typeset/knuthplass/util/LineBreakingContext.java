@@ -36,8 +36,14 @@ public class LineBreakingContext {
      */
     private final List<CumulativeMetrics> cumulativeMetrics = new ArrayList<>();
 
-    public LineBreakingContext(TextParagraph paragraph) {
+    /**
+     * Quality of the line breaking.
+     */
+    private final int lineBreakingQuality;
+
+    public LineBreakingContext(TextParagraph paragraph, int lineBreakingQuality) {
         this.paragraph = paragraph;
+        this.lineBreakingQuality = lineBreakingQuality;
 
         initializeCumulativeMetrics();
     }
@@ -52,7 +58,7 @@ public class LineBreakingContext {
 
         for (Item item : paragraph.items()) {
             totalWidth += item.getWidth();
-            totalStretch += item.getStretchability();
+            totalStretch += item.getStretchability() * Math.pow(2, lineBreakingQuality);
             totalShrink += item.getShrinkability();
 
             cumulativeMetrics.add(new CumulativeMetrics(

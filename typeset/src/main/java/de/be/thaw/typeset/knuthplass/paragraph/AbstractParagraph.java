@@ -1,7 +1,6 @@
 package de.be.thaw.typeset.knuthplass.paragraph;
 
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.typeset.knuthplass.paragraph.floating.Floating;
 
 import java.util.function.IntToDoubleFunction;
 
@@ -28,8 +27,8 @@ public abstract class AbstractParagraph implements Paragraph {
     }
 
     @Override
-    public Floating getFloating() {
-        return Floating.NONE; // Default floating behavior of paragraphs that do not support floating
+    public boolean isFloating() {
+        return false; // Default floating behavior of paragraphs that do not support floating
     }
 
     /**
@@ -39,6 +38,14 @@ public abstract class AbstractParagraph implements Paragraph {
      */
     public void setLineWidthSupplier(IntToDoubleFunction lineWidthSupplier) {
         this.lineWidthSupplier = lineWidthSupplier;
+    }
+
+    public IntToDoubleFunction getLineWidthSupplier() {
+        return lineWidthSupplier;
+    }
+
+    public double getDefaultLineWidth() {
+        return lineWidth;
     }
 
     @Override

@@ -6,6 +6,7 @@ import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.TextStyle;
+import de.be.thaw.style.model.style.text.TextAlignment;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
@@ -22,7 +23,6 @@ import de.be.thaw.typeset.knuthplass.item.impl.box.EmptyBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
-import de.be.thaw.typeset.knuthplass.paragraph.floating.Floating;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.image.ImageParagraph;
 
@@ -380,12 +380,32 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
                 currentParagraphList.remove(currentParagraphList.size() - 1);
             }
 
-            // TODO Line width from thingy options (image width)
-            double lineWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight());
-            Floating floating = Floating.NONE; // TODO Floating from thingy options
+            double imageWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight());
+            String imageWidthStr = node.getOptions().get("width");
+            if (imageWidthStr != null) {
+                try {
+                    imageWidth = Integer.parseInt(imageWidthStr);
+                } catch (NumberFormatException e) {
+                    // Keep the default image width
+                }
+            }
+
+            boolean floating = Boolean.parseBoolean(node.getOptions().get("float"));
+
+            TextAlignment alignment = TextAlignment.CENTER;
+            String alignmentStr = node.getOptions().get("alignment");
+            if (alignmentStr != null) {
+                alignment = TextAlignment.valueOf(alignmentStr.toUpperCase());
+            }
 
             try {
-                ImageParagraph imageParagraph = new ImageParagraph(lineWidth, documentNode, config.getImageSourceSupplier().load(node.getOptions().get("src")), floating);
+                ImageParagraph imageParagraph = new ImageParagraph(
+                        imageWidth,
+                        documentNode,
+                        config.getImageSourceSupplier().load(node.getOptions().get("src")),
+                        floating,
+                        alignment
+                );
                 currentParagraphList.add(imageParagraph);
             } catch (IOException e) {
                 throw new DocumentConversionException(e);

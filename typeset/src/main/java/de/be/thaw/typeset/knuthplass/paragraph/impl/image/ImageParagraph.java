@@ -1,9 +1,9 @@
 package de.be.thaw.typeset.knuthplass.paragraph.impl.image;
 
 import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.style.model.style.text.TextAlignment;
 import de.be.thaw.typeset.knuthplass.config.util.image.ImageSource;
 import de.be.thaw.typeset.knuthplass.paragraph.AbstractParagraph;
-import de.be.thaw.typeset.knuthplass.paragraph.floating.Floating;
 
 /**
  * Paragraph representing an image.
@@ -16,15 +16,21 @@ public class ImageParagraph extends AbstractParagraph {
     private final ImageSource src;
 
     /**
-     * Floating of the paragraph.
+     * Whether the paragraph is floating.
      */
-    private final Floating floating;
+    private final boolean floating;
 
-    public ImageParagraph(double lineWidth, DocumentNode node, ImageSource src, Floating floating) {
+    /**
+     * Alignment of the paragraph.
+     */
+    private final TextAlignment alignment;
+
+    public ImageParagraph(double lineWidth, DocumentNode node, ImageSource src, boolean floating, TextAlignment alignment) {
         super(lineWidth, node);
 
         this.src = src;
         this.floating = floating;
+        this.alignment = alignment;
     }
 
     public ImageSource getSrc() {
@@ -32,8 +38,12 @@ public class ImageParagraph extends AbstractParagraph {
     }
 
     @Override
-    public Floating getFloating() {
+    public boolean isFloating() {
         return floating;
+    }
+
+    public TextAlignment getAlignment() {
+        return alignment;
     }
 
 }

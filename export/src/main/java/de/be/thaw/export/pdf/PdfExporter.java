@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -170,20 +169,9 @@ public class PdfExporter implements Exporter {
      * @throws TypeSettingException in case the document could not be type set
      */
     private List<Page> typeset(Document document, ExportContext ctx) throws TypeSettingException {
-        TypeSettingException lastException = null;
-        for (int quality = 0; quality < MAX_TYPESETTING_ITERATIONS; quality++) {
-            TypeSetter typeSetter = createTypeSetter(ctx, document.getInfo().getLanguage(), quality);
+        TypeSetter typeSetter = createTypeSetter(ctx, document.getInfo().getLanguage());
 
-            try {
-                return typeSetter.typeset(document);
-            } catch (TypeSettingException e) {
-                lastException = e;
-
-                LOGGER.log(Level.FINER, String.format("%s > Will decrease type setting quality in order to succeed eventually", e.getMessage()));
-            }
-        }
-
-        throw new TypeSettingException("Could not typeset the pages properly despite decreasing the quality multiply times", lastException);
+        return typeSetter.typeset(document);
     }
 
     /**
@@ -191,10 +179,9 @@ public class PdfExporter implements Exporter {
      *
      * @param ctx      the export context
      * @param language to use
-     * @param quality  the quality (0 is the best, higher get worse)
      * @return type setter to use
      */
-    private TypeSetter createTypeSetter(ExportContext ctx, Language language, int quality) throws TypeSettingException {
+    private TypeSetter createTypeSetter(ExportContext ctx, Language language) throws TypeSettingException {
         HyphenationDictionary hyphenationDictionary = HyphenationDictionaries.getDictionary(language).orElseThrow(() -> new TypeSettingException(String.format(
                 "Could not find the hyphenation dictionary for language '%s'",
                 language.name()
@@ -203,7 +190,7 @@ public class PdfExporter implements Exporter {
         return new KnuthPlassTypeSetter(KnuthPlassTypeSettingConfig.newBuilder()
                 .setPageSize(ctx.getPageSize())
                 .setPageInsets(ctx.getPageInsets())
-                .setLooseness(1 + quality)
+                .setLooseness(1)
                 .setFontDetailsSupplier(new FontDetailsSupplier() {
                     @Override
                     public double getStringWidth(DocumentNode node, String str) throws Exception {
@@ -218,7 +205,7 @@ public class PdfExporter implements Exporter {
                 .setGlueConfig(new GlueConfig() {
                     @Override
                     public double getInterWordStretchability(DocumentNode node, char lastChar) throws Exception {
-                        return (ctx.getFontForNode(node).getSpaceWidth() / 1000 * ctx.getFontSizeForNode(node) / 2) * (quality + 1);
+                        return (ctx.getFontForNode(node).getSpaceWidth() / 1000 * ctx.getFontSizeForNode(node) / 2);
                     }
 
                     @Override
