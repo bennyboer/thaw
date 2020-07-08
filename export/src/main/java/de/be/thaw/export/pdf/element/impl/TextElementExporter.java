@@ -3,6 +3,9 @@ package de.be.thaw.export.pdf.element.impl;
 import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.ExportContext;
 import de.be.thaw.export.pdf.element.ElementExporter;
+import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.impl.ColorStyle;
+import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
@@ -11,8 +14,11 @@ import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.page.impl.TextElement;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
+import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
 
 public class TextElementExporter implements ElementExporter {
@@ -41,8 +47,19 @@ public class TextElementExporter implements ElementExporter {
 
             double y = ctx.getCurrentPage().getMediaBox().getUpperRightY() - te.getPosition().getY();
 
+            // Apply font and size
             out.setFont(font, (float) fontSize);
             out.newLineAtOffset((float) te.getPosition().getX(), (float) y);
+
+            // Apply font color
+            ColorStyle colorStyle = ((TextElement) element).getNode().getStyle().getStyleAttribute(
+                    StyleType.FONT,
+                    style -> Optional.ofNullable(((FontStyle) style).getColor())
+            ).orElseThrow();
+            out.setNonStrokingColor(new PDColor(
+                    new float[]{colorStyle.getRed().floatValue(), colorStyle.getGreen().floatValue(), colorStyle.getBlue().floatValue()},
+                    PDDeviceRGB.INSTANCE
+            ));
 
             out.showText(te.getText());
 
