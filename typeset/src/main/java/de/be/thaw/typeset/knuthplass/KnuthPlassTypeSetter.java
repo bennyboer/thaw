@@ -75,8 +75,6 @@ public class KnuthPlassTypeSetter implements TypeSetter {
         TypeSettingContext ctx = new TypeSettingContext(config, paragraphs);
 
         for (List<Paragraph> consecutiveParagraphs : paragraphs) {
-            ctx.getFloatConfig().reset();
-
             for (Paragraph paragraph : consecutiveParagraphs) {
                 ParagraphTypesetHandler handler = KnuthPlassTypeSetter.getHandler(paragraph.getType())
                         .orElseThrow(() -> new TypeSettingException(String.format(

@@ -82,6 +82,9 @@ public class TypeSettingContext {
 
         currentPageElements = new ArrayList<>();
         getPositionContext().setY(config.getPageInsets().getTop());
+
+        // Reset the floating configuration
+        getFloatConfig().reset();
     }
 
     /**
