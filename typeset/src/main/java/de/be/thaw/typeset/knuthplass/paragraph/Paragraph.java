@@ -8,6 +8,13 @@ import de.be.thaw.core.document.node.DocumentNode;
 public interface Paragraph {
 
     /**
+     * Get the type of the paragraph.
+     *
+     * @return paragraph type
+     */
+    ParagraphType getType();
+
+    /**
      * Get the floating of the paragraph.
      *
      * @return floating

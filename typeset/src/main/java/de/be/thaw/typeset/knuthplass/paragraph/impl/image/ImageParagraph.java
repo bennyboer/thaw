@@ -4,6 +4,7 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.style.model.style.text.TextAlignment;
 import de.be.thaw.typeset.knuthplass.config.util.image.ImageSource;
 import de.be.thaw.typeset.knuthplass.paragraph.AbstractParagraph;
+import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 
 /**
  * Paragraph representing an image.
@@ -35,6 +36,11 @@ public class ImageParagraph extends AbstractParagraph {
 
     public ImageSource getSrc() {
         return src;
+    }
+
+    @Override
+    public ParagraphType getType() {
+        return ParagraphType.IMAGE;
     }
 
     @Override

@@ -3,6 +3,7 @@ package de.be.thaw.typeset.knuthplass.paragraph.impl;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.typeset.knuthplass.item.Item;
 import de.be.thaw.typeset.knuthplass.paragraph.AbstractParagraph;
+import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,11 @@ public class TextParagraph extends AbstractParagraph {
      */
     public boolean isEmpty() {
         return items.isEmpty();
+    }
+
+    @Override
+    public ParagraphType getType() {
+        return ParagraphType.TEXT;
     }
 
 }
