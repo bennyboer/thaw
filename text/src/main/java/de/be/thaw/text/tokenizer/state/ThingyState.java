@@ -176,9 +176,9 @@ public class ThingyState implements State {
             case ARGUMENTS -> {
                 // This is not an argument but an option -> change internal state!
                 internalState = InternalState.OPTIONS;
-                pendingOptionKey = ctx.readBufferAndReset().trim(); // Save the pending option key
+                pendingOptionKey = ctx.readBufferAndReset().trim().toLowerCase(); // Save the pending option key
             }
-            case OPTIONS -> pendingOptionKey = ctx.readBufferAndReset().trim(); // Save the pending option key
+            case OPTIONS -> pendingOptionKey = ctx.readBufferAndReset().trim().toLowerCase(); // Save the pending option key
         }
 
         return this;

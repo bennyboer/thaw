@@ -5,6 +5,10 @@ package de.be.thaw.core.document.convert.exception;
  */
 public class DocumentConversionException extends Exception {
 
+    public DocumentConversionException(String message) {
+        super(message);
+    }
+
     public DocumentConversionException(Throwable cause) {
         super(cause);
     }
