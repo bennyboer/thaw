@@ -7,6 +7,7 @@ import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.element.ElementExporter;
 import de.be.thaw.export.pdf.element.ElementExporters;
 import de.be.thaw.export.pdf.util.PdfImageSource;
+import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.hyphenation.HyphenationDictionaries;
 import de.be.thaw.hyphenation.HyphenationDictionary;
 import de.be.thaw.info.model.language.Language;
@@ -193,24 +194,27 @@ public class PdfExporter implements Exporter {
                 .setLooseness(1)
                 .setFontDetailsSupplier(new FontDetailsSupplier() {
                     @Override
-                    public double getStringWidth(DocumentNode node, String str) throws Exception {
-                        return ctx.getFontForNode(node).getStringWidth(str) / 1000 * ctx.getFontSizeForNode(node);
+                    public StringMetrics measureString(DocumentNode node, int charBefore, String str) throws Exception {
+                        double fontSize = ctx.getFontSizeForNode(node);
+                        KernedSize size = ctx.getFontForNode(node).getKernedStringSize(charBefore, str, fontSize);
+
+                        return new StringMetrics(size.getWidth(), size.getHeight(), size.getKerningAdjustments(), fontSize);
                     }
 
                     @Override
                     public double getSpaceWidth(DocumentNode node) throws Exception {
-                        return ctx.getFontForNode(node).getSpaceWidth() / 1000 * ctx.getFontSizeForNode(node) / 2;
+                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth();
                     }
                 })
                 .setGlueConfig(new GlueConfig() {
                     @Override
                     public double getInterWordStretchability(DocumentNode node, char lastChar) throws Exception {
-                        return (ctx.getFontForNode(node).getSpaceWidth() / 1000 * ctx.getFontSizeForNode(node) / 2);
+                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() / 2;
                     }
 
                     @Override
                     public double getInterWordShrinkability(DocumentNode node, char lastChar) throws Exception {
-                        return ctx.getFontForNode(node).getSpaceWidth() / 1000 * ctx.getFontSizeForNode(node) / 3;
+                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() / 3;
                     }
                 })
                 .setHyphenator(new Hyphenator() {

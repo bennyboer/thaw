@@ -152,6 +152,8 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                 if (item instanceof TextBox) {
                     ctx.pushPageElement(new TextElement(
                             ((TextBox) item).getText(),
+                            ((TextBox) item).getFontSize(),
+                            ((TextBox) item).getKerningAdjustments(),
                             ((TextBox) item).getNode(),
                             new Size(item.getWidth(), lineHeight),
                             new Position(ctx.getPositionContext().getX(), ctx.getPositionContext().getY())
@@ -163,6 +165,8 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                         // Is a hyphen because the width is bigger than 0 -> add the '-'-character
                         ctx.pushPageElement(new TextElement(
                                 "-",
+                                1.0,
+                                new double[]{0},
                                 ((Penalty) item).getNode(),
                                 new Size(item.getWidth(), lineHeight),
                                 new Position(ctx.getPositionContext().getX(), ctx.getPositionContext().getY())

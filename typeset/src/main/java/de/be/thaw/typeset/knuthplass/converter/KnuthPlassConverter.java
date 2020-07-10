@@ -14,6 +14,7 @@ import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
+import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWord;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWordPart;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
@@ -249,11 +250,16 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         List<WordPartSplitByPunctuationCharacter> splitWord = splitByPunctuationCharacter(word);
 
         try {
+            int lastChar = -1;
             for (WordPartSplitByPunctuationCharacter splitWordPart : splitWord) {
                 if (splitWordPart.isPunctuationCharacter()) {
+                    FontDetailsSupplier.StringMetrics metrics = config.getFontDetailsSupplier().measureString(node, lastChar, splitWordPart.getPart());
+
                     paragraph.addItem(new TextBox(
                             splitWordPart.getPart(),
-                            config.getFontDetailsSupplier().getStringWidth(node, splitWordPart.getPart()),
+                            metrics.getWidth(),
+                            metrics.getFontSize(),
+                            metrics.getKerningAdjustments(),
                             node
                     ));
                 } else { // Is an actual word without punctuation characters
@@ -262,16 +268,21 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
                     List<HyphenatedWordPart> parts = hyphenatedWord.getParts();
 
                     int len = parts.size();
-                    double hyphenWidth = len > 1 ? config.getFontDetailsSupplier().getStringWidth(node, "-") : 0;
+                    double hyphenWidth = len > 1 ? config.getFontDetailsSupplier().measureString(node, lastChar, "-").getWidth() : 0;
 
                     for (int i = 0; i < len; i++) {
                         HyphenatedWordPart part = parts.get(i);
 
+                        FontDetailsSupplier.StringMetrics metrics = config.getFontDetailsSupplier().measureString(node, lastChar, part.getPart());
                         paragraph.addItem(new TextBox(
                                 part.getPart(),
-                                config.getFontDetailsSupplier().getStringWidth(node, part.getPart()),
+                                metrics.getWidth(),
+                                metrics.getFontSize(),
+                                metrics.getKerningAdjustments(),
                                 node
                         ));
+
+                        lastChar = getLastCodePoint(part.getPart());
 
                         boolean isLast = i == len - 1;
                         if (!isLast) {
@@ -279,12 +290,32 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
                             paragraph.addItem(new Penalty(part.getPenalty(), hyphenWidth, true, node));
                         }
                     }
-
                 }
+
+                lastChar = getLastCodePoint(splitWordPart.getPart());
             }
         } catch (Exception e) {
             throw new DocumentConversionException(e);
         }
+    }
+
+    /**
+     * Get the last code point in the given string.
+     *
+     * @param str to get last code point in
+     * @return last code point
+     */
+    private int getLastCodePoint(String str) {
+        final int len = str.length();
+        int codePoint = -1;
+
+        for (int i = 0; i < len; ) {
+            codePoint = str.codePointAt(i);
+
+            i += Character.charCount(codePoint);
+        }
+
+        return codePoint;
     }
 
     /**
@@ -302,9 +333,10 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         double indent = level * config.getIndentWidth();
 
         String symbol = "\u2022 "; // TODO Get list item symbol from the node style (when the style model has been implemented)
-        double symbolWidth;
+
+        FontDetailsSupplier.StringMetrics metrics;
         try {
-            symbolWidth = config.getFontDetailsSupplier().getStringWidth(documentNode, symbol);
+            metrics = config.getFontDetailsSupplier().measureString(documentNode, -1, symbol);
         } catch (Exception e) {
             throw new DocumentConversionException(e);
         }
@@ -312,7 +344,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         TextParagraph paragraph = ctx.initializeNewTextParagraph(documentNode); // Each enumeration item is a individual paragraph!
 
         final double defaultLineWidth = config.getPageSize().getWidth() - (config.getPageInsets().getLeft() + config.getPageInsets().getRight());
-        final double firstLineWidth = defaultLineWidth - indent + symbolWidth;
+        final double firstLineWidth = defaultLineWidth - indent + metrics.getWidth();
         final double otherLineWidth = defaultLineWidth - indent;
         paragraph.setLineWidthSupplier(lineNumber -> {
             if (lineNumber == 1) {
@@ -322,7 +354,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
             }
         });
 
-        paragraph.addItem(new EnumerationItemStartBox(symbol, symbolWidth, documentNode, indent)); // Adding item symbol
+        paragraph.addItem(new EnumerationItemStartBox(symbol, metrics.getWidth(), metrics.getFontSize(), documentNode, indent)); // Adding item symbol
     }
 
     /**

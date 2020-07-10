@@ -1,7 +1,6 @@
 package de.be.thaw.typeset.knuthplass.item.impl.box;
 
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.typeset.knuthplass.item.impl.Box;
 
 /**
@@ -20,13 +19,25 @@ public class TextBox extends Box {
     private final double width;
 
     /**
+     * Font size the box width was calculated with.
+     */
+    private final double fontSize;
+
+    /**
+     * Adjustments due to kerning per character in the text.
+     */
+    private final double[] kerningAdjustments;
+
+    /**
      * The original node representing this text box in the thaw document model.
      */
     private final DocumentNode node;
 
-    public TextBox(String text, double width, DocumentNode node) {
+    public TextBox(String text, double width, double fontSize, double[] kerningAdjustments, DocumentNode node) {
         this.text = text;
         this.width = width;
+        this.fontSize = fontSize;
+        this.kerningAdjustments = kerningAdjustments;
         this.node = node;
     }
 
@@ -51,6 +62,24 @@ public class TextBox extends Box {
      */
     public DocumentNode getNode() {
         return node;
+    }
+
+    /**
+     * Get the kerning adjustments per character.
+     *
+     * @return kerning adjustments
+     */
+    public double[] getKerningAdjustments() {
+        return kerningAdjustments;
+    }
+
+    /**
+     * Get the font size the boxes width was calculated with.
+     *
+     * @return font size
+     */
+    public double getFontSize() {
+        return fontSize;
     }
 
 }

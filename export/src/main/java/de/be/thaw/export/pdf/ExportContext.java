@@ -2,6 +2,9 @@ package de.be.thaw.export.pdf;
 
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.export.exception.ExportException;
+import de.be.thaw.export.pdf.font.ThawPdfFont;
+import de.be.thaw.export.pdf.font.exception.FontParseException;
+import de.be.thaw.font.ThawFont;
 import de.be.thaw.font.util.FontFamily;
 import de.be.thaw.font.util.FontManager;
 import de.be.thaw.font.util.FontVariant;
@@ -13,16 +16,11 @@ import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.typeset.util.Size;
-import org.apache.fontbox.ttf.TrueTypeCollection;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType0Font;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -42,7 +40,7 @@ public class ExportContext {
     /**
      * Cache for already loaded and embedded fonts.
      */
-    private final Map<FontVariantLocator, PDFont> fontCache = new HashMap<>();
+    private final Map<FontVariantLocator, ThawFont> fontCache = new HashMap<>();
 
     /**
      * The document to export to.
@@ -246,7 +244,7 @@ public class ExportContext {
      * @param node to get font for
      * @return font
      */
-    public PDFont getFontForNode(DocumentNode node) throws ExportException {
+    public ThawFont getFontForNode(DocumentNode node) throws ExportException {
         String familyName = node.getStyle().getStyleAttribute(
                 StyleType.FONT,
                 style -> Optional.ofNullable(((FontStyle) style).getFamily())
@@ -280,19 +278,15 @@ public class ExportContext {
             }
         }
 
-        PDFont font = fontCache.get(locator);
+        ThawFont font = fontCache.get(locator);
         if (font == null) {
+            // Load the font
             try {
-                if (locator.getFontFile().isCollection()) {
-                    TrueTypeCollection collection = new TrueTypeCollection(new File(locator.getFontFile().getLocation()));
-                    font = PDType0Font.load(getDocument(), collection.getFontByName(locator.getFontName()), true);
-                } else {
-                    font = PDType0Font.load(getDocument(), new FileInputStream(new File(locator.getFontFile().getLocation())), true);
-                }
+                font = new ThawPdfFont(locator.getFontName(), new File(locator.getFontFile().getLocation()), getDocument());
 
                 fontCache.put(locator, font);
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (FontParseException e) {
+                throw new ExportException(e);
             }
         }
 

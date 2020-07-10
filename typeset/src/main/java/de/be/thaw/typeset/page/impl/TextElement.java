@@ -18,15 +18,27 @@ public class TextElement extends AbstractElement {
     private final String text;
 
     /**
+     * Font size of the text in the text element.
+     */
+    private final double fontSize;
+
+    /**
+     * Adjustments due to kerning for each code point in the text.
+     */
+    private final double[] kerningAdjustments;
+
+    /**
      * The original node the text belongs to in the thaw document.
      * Can be used to derive the used font, style, etc.
      */
     private final DocumentNode node;
 
-    public TextElement(String text, DocumentNode node, Size size, Position position) {
+    public TextElement(String text, double fontSize, double[] kerningAdjustments, DocumentNode node, Size size, Position position) {
         super(size, position);
 
         this.text = text;
+        this.fontSize = fontSize;
+        this.kerningAdjustments = kerningAdjustments;
         this.node = node;
     }
 
@@ -51,6 +63,24 @@ public class TextElement extends AbstractElement {
     @Override
     public ElementType getType() {
         return ElementType.TEXT;
+    }
+
+    /**
+     * Get the adjustments due to kerning.
+     *
+     * @return kerning adjustments
+     */
+    public double[] getKerningAdjustments() {
+        return kerningAdjustments;
+    }
+
+    /**
+     * Get the font size of the text in the element.
+     *
+     * @return font size
+     */
+    public double getFontSize() {
+        return fontSize;
     }
 
 }

@@ -3,6 +3,7 @@ package de.be.thaw.export.pdf.element.impl;
 import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.ExportContext;
 import de.be.thaw.export.pdf.element.ElementExporter;
+import de.be.thaw.export.pdf.font.ThawPdfFont;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.ColorStyle;
 import de.be.thaw.style.model.style.impl.FontStyle;
@@ -18,6 +19,8 @@ import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -42,13 +45,13 @@ public class TextElementExporter implements ElementExporter {
         try {
             out.beginText();
 
-            PDFont font = ctx.getFontForNode(te.getNode());
+            ThawPdfFont font = (ThawPdfFont) ctx.getFontForNode(te.getNode());
             double fontSize = ctx.getFontSizeForNode(te.getNode());
 
             double y = ctx.getCurrentPage().getMediaBox().getUpperRightY() - te.getPosition().getY() - fontSize;
 
             // Apply font and size
-            out.setFont(font, (float) fontSize);
+            out.setFont(font.getPdFont(), (float) fontSize);
             out.newLineAtOffset((float) te.getPosition().getX(), (float) y);
 
             // Apply font color
@@ -61,14 +64,56 @@ public class TextElementExporter implements ElementExporter {
                     PDDeviceRGB.INSTANCE
             ));
 
-            out.showText(te.getText());
+            if (te.getKerningAdjustments() != null) {
+                showTextWithKerning(out, font, te.getText(), te.getKerningAdjustments(), te.getFontSize());
+            } else {
+                out.showText(te.getText());
+            }
 
             out.endText();
 
-            underlineIfNecessary(te, ctx, out, font, fontSize, y);
+            underlineIfNecessary(te, ctx, out, font.getPdFont(), fontSize, y);
         } catch (IOException e) {
             throw new ExportException("Text element could not be exported to PDF due to another exception", e);
         }
+    }
+
+    /**
+     * Show the passed text for the given font with kerning adjustments applied.
+     *
+     * @param out                to write text to
+     * @param font               to use
+     * @param text               to write
+     * @param kerningAdjustments to apply
+     * @param fontSize           of the text
+     */
+    private void showTextWithKerning(PDPageContentStream out, ThawPdfFont font, String text, double[] kerningAdjustments, double fontSize) throws IOException {
+        List<Object> toPrint = new ArrayList<>();
+
+        int codePointIdx = 0;
+        final int len = text.length();
+        StringBuilder buffer = new StringBuilder();
+        for (int i = 0; i < len; ) {
+            int codePoint = text.codePointAt(i);
+            i += Character.charCount(codePoint);
+
+            double kerningAdjustment = kerningAdjustments[codePointIdx];
+            if (kerningAdjustment != 0) {
+                toPrint.add(buffer.toString());
+                buffer.setLength(0);
+
+                double adjustment = kerningAdjustment * 1000 / fontSize;
+                toPrint.add((float) -adjustment);
+            }
+
+            buffer.append(Character.toChars(codePoint));
+
+            codePointIdx++;
+        }
+
+        toPrint.add(buffer.toString());
+
+        out.showTextWithPositioning(toPrint.toArray());
     }
 
     private void underlineIfNecessary(TextElement element, ExportContext ctx, PDPageContentStream out, PDFont font, double fontSize, double y) throws IOException {
