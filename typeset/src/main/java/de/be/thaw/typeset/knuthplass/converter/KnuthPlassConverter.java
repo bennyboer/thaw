@@ -22,6 +22,7 @@ import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.RefHandler;
 import de.be.thaw.typeset.knuthplass.item.impl.Glue;
 import de.be.thaw.typeset.knuthplass.item.impl.Penalty;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
+import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 
@@ -220,6 +221,21 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         ThingyHandler handler = THINGY_HANDLER_MAP.get(node.getName().toLowerCase());
         if (handler != null) {
             handler.handle(node, documentNode, ctx);
+        } else {
+            // Thingies with label act as reference target and must thus be included as box with width 0!
+            String label = node.getOptions().get("label");
+            if (label != null) {
+                Paragraph paragraph = ctx.getCurrentParagraph();
+                if (paragraph instanceof TextParagraph) {
+                    ((TextParagraph) paragraph).addItem(new TextBox(
+                            "",
+                            0,
+                            1.0,
+                            new double[]{0},
+                            documentNode
+                    ));
+                }
+            }
         }
     }
 

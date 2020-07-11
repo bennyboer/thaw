@@ -261,10 +261,7 @@ public class TextElementExporter implements ElementExporter {
             PDPageXYZDestination destination = new PDPageXYZDestination();
             destination.setPage(ctx.getPdDocument().getPage(targetLocator.getPageNumber() - 1));
 
-            double otherY = targetLocator.getElement().getType() == ElementType.TEXT
-                    ? getYOffsetForElement((TextElement) targetLocator.getElement(), ctx)
-                    : ctx.getCurrentPage().getMediaBox().getUpperRightY() - targetLocator.getElement().getPosition().getY();
-
+            double otherY = ctx.getCurrentPage().getMediaBox().getUpperRightY() - targetLocator.getElement().getPosition().getY();
             destination.setTop((int) otherY);
 
             PDActionGoTo action = new PDActionGoTo();
