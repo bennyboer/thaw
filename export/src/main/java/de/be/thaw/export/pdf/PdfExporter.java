@@ -6,6 +6,8 @@ import de.be.thaw.export.Exporter;
 import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.element.ElementExporter;
 import de.be.thaw.export.pdf.element.ElementExporters;
+import de.be.thaw.export.pdf.util.ElementLocator;
+import de.be.thaw.export.pdf.util.ExportContext;
 import de.be.thaw.export.pdf.util.PdfImageSource;
 import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.hyphenation.HyphenationDictionaries;
@@ -35,7 +37,9 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -60,17 +64,10 @@ public class PdfExporter implements Exporter {
      */
     private static final double POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
 
-    /**
-     * Maximum iterations when trying to typeset properly.
-     * This is needed because the used Knuth-Plass line-breaking algorithm
-     * might not find a feasible solution.
-     */
-    private static final int MAX_TYPESETTING_ITERATIONS = 10;
-
     @Override
     public void export(Document document, Path path) throws ExportException {
         try (PDDocument doc = new PDDocument()) {
-            ExportContext ctx = new ExportContext(doc);
+            ExportContext ctx = new ExportContext(doc, document);
 
             SizeStyle sizeStyle = document.getRoot().getStyle().getStyleAttribute(
                     StyleType.SIZE,
@@ -92,6 +89,7 @@ public class PdfExporter implements Exporter {
                     insetsStyle.getRight() * POINTS_PER_MM
             ));
 
+            // Typeset the document to individual pages
             List<Page> pages;
             try {
                 pages = typeset(document, ctx);
@@ -99,12 +97,33 @@ public class PdfExporter implements Exporter {
                 throw new ExportException(e);
             }
 
+            // Build lookup from original DocumentNode ID to the typeset element
+            ctx.setElementLookup(buildElementLookup(pages));
+
             exportToPages(pages, ctx);
 
             doc.save(path.toFile());
         } catch (IOException e) {
             throw new ExportException(e);
         }
+    }
+
+    /**
+     * Build a lookup from the original DocumentNode ID to the typeset element.
+     *
+     * @param pages to get elements for
+     * @return lookup
+     */
+    private Map<String, ElementLocator> buildElementLookup(List<Page> pages) {
+        Map<String, ElementLocator> elementLookup = new HashMap<>();
+
+        for (Page page : pages) {
+            for (Element element : page.getElements()) {
+                element.getNode().ifPresent(node -> elementLookup.put(node.getId(), new ElementLocator(page.getNumber(), element)));
+            }
+        }
+
+        return elementLookup;
     }
 
     /**
@@ -123,10 +142,11 @@ public class PdfExporter implements Exporter {
         try {
             // Create initial page
             PDPage pdfPage = new PDPage(pageRect);
-            ctx.getDocument().addPage(pdfPage);
+            ctx.getPdDocument().addPage(pdfPage);
             ctx.setCurrentPage(pdfPage);
-            ctx.setContentStream(new PDPageContentStream(ctx.getDocument(), ctx.getCurrentPage()));
+            ctx.setContentStream(new PDPageContentStream(ctx.getPdDocument(), ctx.getCurrentPage()));
 
+            // Export all elements from all pages to PDF
             int pageCounter = 0;
             for (Page page : pages) {
                 ctx.setCurrentSourcePage(page);
@@ -149,12 +169,24 @@ public class PdfExporter implements Exporter {
                 if (pageCounter < pages.size() - 1) {
                     // Create next PDF page
                     pdfPage = new PDPage(pageRect);
-                    ctx.getDocument().addPage(pdfPage);
+                    ctx.getPdDocument().addPage(pdfPage);
                     ctx.setCurrentPage(pdfPage);
-                    ctx.setContentStream(new PDPageContentStream(ctx.getDocument(), ctx.getCurrentPage()));
+                    ctx.setContentStream(new PDPageContentStream(ctx.getPdDocument(), ctx.getCurrentPage()));
                 }
 
                 pageCounter++;
+            }
+
+            // Run after export hooks for each element again (for example to create links)
+            for (Page page : pages) {
+                for (Element element : page.getElements()) {
+                    ElementExporter elementExporter = ElementExporters.getForType(element.getType()).orElseThrow(() -> new ExportException(String.format(
+                            "Elements of type '%s' cannot be exported as there is no suitable exporter",
+                            element.getType().name()
+                    )));
+
+                    elementExporter.afterExport(element, ctx);
+                }
             }
         } catch (IOException e) {
             throw new ExportException(e);
@@ -231,7 +263,7 @@ public class PdfExporter implements Exporter {
                         return HyphenatedWordPart.DEFAULT_PENALTY;
                     }
                 })
-                .setImageSourceSupplier(src -> new PdfImageSource(PDImageXObject.createFromFile(src, ctx.getDocument())))
+                .setImageSourceSupplier(src -> new PdfImageSource(PDImageXObject.createFromFile(src, ctx.getPdDocument())))
                 .build());
     }
 

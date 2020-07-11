@@ -32,7 +32,9 @@ public class BackgroundStyle implements Style {
 
         BackgroundStyle other = (BackgroundStyle) style;
 
-        return new BackgroundStyle((ColorStyle) getColor().merge(other.getColor()));
+        return new BackgroundStyle(
+                getColor() != null ? (ColorStyle) getColor().merge(other.getColor()) : other.getColor()
+        );
     }
 
     public ColorStyle getColor() {

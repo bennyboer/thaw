@@ -13,7 +13,8 @@ public enum StyleType {
     INSETS("insets"),
     BACKGROUND("background"),
     COLOR("color"),
-    TEXT("text");
+    TEXT("text"),
+    REFERENCE("reference");
 
     /**
      * Lookup of style types by their key.

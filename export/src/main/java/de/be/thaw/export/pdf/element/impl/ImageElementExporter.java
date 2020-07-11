@@ -1,8 +1,8 @@
 package de.be.thaw.export.pdf.element.impl;
 
 import de.be.thaw.export.exception.ExportException;
-import de.be.thaw.export.pdf.ExportContext;
 import de.be.thaw.export.pdf.element.ElementExporter;
+import de.be.thaw.export.pdf.util.ExportContext;
 import de.be.thaw.export.pdf.util.PdfImageSource;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.ElementType;
@@ -45,6 +45,11 @@ public class ImageElementExporter implements ElementExporter {
         } catch (IOException e) {
             throw new ExportException(e);
         }
+    }
+
+    @Override
+    public void afterExport(Element element, ExportContext ctx) throws ExportException {
+        // Nothing to do after export
     }
 
 }

@@ -54,6 +54,7 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
         ctx.pushPageElement(new ImageElement(
                 imageParagraph.getSrc(),
                 imageParagraph.getNode(),
+                ctx.getCurrentPageNumber(),
                 new Size(width, height),
                 new Position(x, ctx.getPositionContext().getY())
         ));

@@ -61,7 +61,12 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
                 ));
             }
 
-            referenceModel.addReference(new InternalReference(potentialReference.getSourceID(), targetID, potentialReference.getPrefix()));
+            referenceModel.addReference(new InternalReference(
+                    potentialReference.getSourceID(),
+                    targetID,
+                    potentialReference.getCounterName(),
+                    potentialReference.getPrefix()
+            ));
         }
 
         return new Document(source.getInfo(), root, referenceModel);
@@ -195,7 +200,8 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
                 potentialReferences.add(new PotentialInternalReference(
                         documentNode.getId(),
                         targetLabel,
-                        thingyNode.getOptions().get("prefix")
+                        thingyNode.getOptions().get("prefix"),
+                        thingyNode.getOptions().get("counter")
                 ));
             }
             case "href" -> {
@@ -289,10 +295,16 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
          */
         private final String prefix;
 
-        public PotentialInternalReference(String sourceID, String targetLabel, String prefix) {
+        /**
+         * Name of the counter to use.
+         */
+        private final String counterName;
+
+        public PotentialInternalReference(String sourceID, String targetLabel, String prefix, String counterName) {
             this.sourceID = sourceID;
             this.targetLabel = targetLabel;
             this.prefix = prefix;
+            this.counterName = counterName;
         }
 
         public String getSourceID() {
@@ -305,6 +317,10 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
 
         public String getPrefix() {
             return prefix;
+        }
+
+        public String getCounterName() {
+            return counterName;
         }
 
     }

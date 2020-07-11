@@ -1,7 +1,9 @@
-package de.be.thaw.export.pdf;
+package de.be.thaw.export.pdf.util;
 
+import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.export.exception.ExportException;
+import de.be.thaw.export.pdf.PdfExporter;
 import de.be.thaw.export.pdf.font.ThawPdfFont;
 import de.be.thaw.export.pdf.font.exception.FontParseException;
 import de.be.thaw.font.ThawFont;
@@ -43,9 +45,9 @@ public class ExportContext {
     private final Map<FontVariantLocator, ThawFont> fontCache = new HashMap<>();
 
     /**
-     * The document to export to.
+     * The PDF document to export to.
      */
-    private final PDDocument document;
+    private final PDDocument pdDocument;
 
     /**
      * Size of the pages.
@@ -104,7 +106,18 @@ public class ExportContext {
      */
     private double underlineX;
 
-    public ExportContext(PDDocument document) {
+    /**
+     * The source document.
+     */
+    private final Document document;
+
+    /**
+     * Lookup of elements by their original DocumentNode ID.
+     */
+    private Map<String, ElementLocator> elementLookup;
+
+    public ExportContext(PDDocument pdDocument, Document document) {
+        this.pdDocument = pdDocument;
         this.document = document;
     }
 
@@ -113,7 +126,16 @@ public class ExportContext {
      *
      * @return document
      */
-    public PDDocument getDocument() {
+    public PDDocument getPdDocument() {
+        return pdDocument;
+    }
+
+    /**
+     * Get the source document.
+     *
+     * @return source document
+     */
+    public Document getDocument() {
         return document;
     }
 
@@ -282,7 +304,7 @@ public class ExportContext {
         if (font == null) {
             // Load the font
             try {
-                font = new ThawPdfFont(locator.getFontName(), new File(locator.getFontFile().getLocation()), getDocument());
+                font = new ThawPdfFont(locator.getFontName(), new File(locator.getFontFile().getLocation()), getPdDocument());
 
                 fontCache.put(locator, font);
             } catch (FontParseException e) {
@@ -301,6 +323,24 @@ public class ExportContext {
      */
     public double getFontSizeForNode(DocumentNode node) {
         return node.getStyle().getStyleAttribute(StyleType.FONT, style -> Optional.ofNullable(((FontStyle) style).getSize())).orElse(11.0);
+    }
+
+    /**
+     * Get the element lookup by the original DocumentNode ID.
+     *
+     * @return element lookup
+     */
+    public Map<String, ElementLocator> getElementLookup() {
+        return elementLookup;
+    }
+
+    /**
+     * Set the element lookup by the original DocumentNode ID.
+     *
+     * @param elementLookup to set
+     */
+    public void setElementLookup(Map<String, ElementLocator> elementLookup) {
+        this.elementLookup = elementLookup;
     }
 
 }

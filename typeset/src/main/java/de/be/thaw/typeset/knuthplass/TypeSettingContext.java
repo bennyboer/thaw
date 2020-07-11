@@ -97,6 +97,15 @@ public class TypeSettingContext {
     }
 
     /**
+     * Get the current page number.
+     *
+     * @return current page number
+     */
+    public int getCurrentPageNumber() {
+        return pages.size() + 1;
+    }
+
+    /**
      * Float configuration in case we deal with floating paragraphs.
      */
     public static class FloatConfig {

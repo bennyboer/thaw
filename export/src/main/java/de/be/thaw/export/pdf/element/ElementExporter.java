@@ -1,7 +1,7 @@
 package de.be.thaw.export.pdf.element;
 
 import de.be.thaw.export.exception.ExportException;
-import de.be.thaw.export.pdf.ExportContext;
+import de.be.thaw.export.pdf.util.ExportContext;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.ElementType;
 
@@ -28,5 +28,14 @@ public interface ElementExporter {
      * @throws ExportException in case the element could not be exported properly
      */
     void export(Element element, ExportContext ctx) throws ExportException;
+
+    /**
+     * Called after the export of ALL element of all pages finished.
+     *
+     * @param element to export
+     * @param ctx     current exporting context
+     * @throws ExportException in case the element could not be exported properly
+     */
+    void afterExport(Element element, ExportContext ctx) throws ExportException;
 
 }

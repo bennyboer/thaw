@@ -11,6 +11,7 @@ import de.be.thaw.style.model.style.impl.BackgroundStyle;
 import de.be.thaw.style.model.style.impl.ColorStyle;
 import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
+import de.be.thaw.style.model.style.impl.ReferenceStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
 import de.be.thaw.style.model.style.impl.TextStyle;
 import de.be.thaw.style.model.style.text.TextAlignment;
@@ -88,6 +89,20 @@ public class StyleModel {
         documentStyles.put(StyleType.INSETS, new InsetsStyle(20.0, 25.0, 20.0, 25.0));
         documentStyles.put(StyleType.BACKGROUND, new BackgroundStyle(new ColorStyle(1.0, 1.0, 1.0, 1.0)));
         documentStyles.put(StyleType.TEXT, new TextStyle(10.0, null, TextAlignment.LEFT, Boolean.TRUE));
+        documentStyles.put(StyleType.REFERENCE, new ReferenceStyle(
+                new ColorStyle(
+                        0.439,
+                        0.503,
+                        0.565,
+                        1.0
+                ),
+                new ColorStyle(
+                        0.439,
+                        0.503,
+                        0.565,
+                        1.0
+                )
+        ));
 
         List<FontFamily> families = FontManager.getInstance().getFamiliesSupportingVariant(FontVariant.MONOSPACE);
         documentStyles.put(StyleType.FONT, new FontStyle("Cambria", FontVariant.PLAIN, 12.0, new ColorStyle(0.0, 0.0, 0.0, 1.0), families.isEmpty() ? null : families.get(0).getName()));

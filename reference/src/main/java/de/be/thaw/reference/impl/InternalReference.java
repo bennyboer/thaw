@@ -25,14 +25,29 @@ public class InternalReference implements Reference {
      */
     private final String prefix;
 
+    /**
+     * The name of the counter to use.
+     */
+    private final String counterName;
+
     public InternalReference(String sourceID, String targetID) {
         this(sourceID, targetID, null);
     }
 
-    public InternalReference(String sourceID, String targetID, String prefix) {
+    public InternalReference(String sourceID, String targetID, String counterName) {
+        this(sourceID, targetID, counterName, null);
+    }
+
+    public InternalReference(String sourceID, String targetID, String counterName, String prefix) {
         this.sourceID = sourceID;
         this.targetID = targetID;
         this.prefix = prefix;
+
+        if (counterName != null) {
+            this.counterName = counterName;
+        } else {
+            this.counterName = "DEFAULT";
+        }
     }
 
     @Override
@@ -61,6 +76,15 @@ public class InternalReference implements Reference {
      */
     public Optional<String> getPrefix() {
         return Optional.ofNullable(prefix);
+    }
+
+    /**
+     * Get the name of the counter to use.
+     *
+     * @return counter name
+     */
+    public String getCounterName() {
+        return counterName;
     }
 
 }

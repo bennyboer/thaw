@@ -7,6 +7,8 @@ import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.util.Position;
 import de.be.thaw.typeset.util.Size;
 
+import java.util.Optional;
+
 /**
  * An element representing an image.
  */
@@ -22,8 +24,8 @@ public class ImageElement extends AbstractElement {
      */
     private final DocumentNode node;
 
-    public ImageElement(ImageSource src, DocumentNode node, Size size, Position position) {
-        super(size, position);
+    public ImageElement(ImageSource src, DocumentNode node, int pageNumber, Size size, Position position) {
+        super(pageNumber, size, position);
 
         this.src = src;
         this.node = node;
@@ -34,12 +36,18 @@ public class ImageElement extends AbstractElement {
         return ElementType.IMAGE;
     }
 
+    /**
+     * Get the image source.
+     *
+     * @return image source
+     */
     public ImageSource getSrc() {
         return src;
     }
 
-    public DocumentNode getNode() {
-        return node;
+    @Override
+    public Optional<DocumentNode> getNode() {
+        return Optional.of(node);
     }
 
 }

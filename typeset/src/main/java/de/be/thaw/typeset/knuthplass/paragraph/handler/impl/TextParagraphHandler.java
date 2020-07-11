@@ -34,6 +34,11 @@ import java.util.function.IntToDoubleFunction;
  */
 public class TextParagraphHandler implements ParagraphTypesetHandler {
 
+    /**
+     * The worst quality the Knuth-Plass algorithm is allowed to output in.
+     */
+    private static final int WORST_QUALITY = 10;
+
     @Override
     public ParagraphType supportedType() {
         return ParagraphType.TEXT;
@@ -155,6 +160,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                             ((TextBox) item).getFontSize(),
                             ((TextBox) item).getKerningAdjustments(),
                             ((TextBox) item).getNode(),
+                            ctx.getCurrentPageNumber(),
                             new Size(item.getWidth(), lineHeight),
                             new Position(ctx.getPositionContext().getX(), ctx.getPositionContext().getY())
                     ));
@@ -168,6 +174,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                                 1.0,
                                 new double[]{0},
                                 ((Penalty) item).getNode(),
+                                ctx.getCurrentPageNumber(),
                                 new Size(item.getWidth(), lineHeight),
                                 new Position(ctx.getPositionContext().getX(), ctx.getPositionContext().getY())
                         ));
@@ -205,7 +212,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
      */
     private KnuthPlassAlgorithm.LineBreakingResult findBreakPoints(TextParagraph textParagraph, TypeSettingContext ctx) throws TypeSettingException {
         // Do the line breaking. Try several quality levels in case it does not work.
-        for (int quality = 0; quality < 10; quality++) {
+        for (int quality = 0; quality < WORST_QUALITY; quality++) {
             KnuthPlassAlgorithm algorithm = new KnuthPlassAlgorithm(ctx.getConfig(), quality);
 
             try {

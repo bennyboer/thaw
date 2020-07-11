@@ -6,6 +6,8 @@ import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.util.Position;
 import de.be.thaw.typeset.util.Size;
 
+import java.util.Optional;
+
 /**
  * Element containing text.
  * For example a single word.
@@ -33,8 +35,16 @@ public class TextElement extends AbstractElement {
      */
     private final DocumentNode node;
 
-    public TextElement(String text, double fontSize, double[] kerningAdjustments, DocumentNode node, Size size, Position position) {
-        super(size, position);
+    public TextElement(
+            String text,
+            double fontSize,
+            double[] kerningAdjustments,
+            DocumentNode node,
+            int pageNumber,
+            Size size,
+            Position position
+    ) {
+        super(pageNumber, size, position);
 
         this.text = text;
         this.fontSize = fontSize;
@@ -51,13 +61,9 @@ public class TextElement extends AbstractElement {
         return text;
     }
 
-    /**
-     * Get the original node the text belongs to in the thaw document.
-     *
-     * @return node
-     */
-    public DocumentNode getNode() {
-        return node;
+    @Override
+    public Optional<DocumentNode> getNode() {
+        return Optional.of(node);
     }
 
     @Override

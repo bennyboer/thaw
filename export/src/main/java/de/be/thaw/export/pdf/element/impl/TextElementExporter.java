@@ -1,12 +1,19 @@
 package de.be.thaw.export.pdf.element.impl;
 
+import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.export.exception.ExportException;
-import de.be.thaw.export.pdf.ExportContext;
 import de.be.thaw.export.pdf.element.ElementExporter;
 import de.be.thaw.export.pdf.font.ThawPdfFont;
+import de.be.thaw.export.pdf.util.ElementLocator;
+import de.be.thaw.export.pdf.util.ExportContext;
+import de.be.thaw.reference.Reference;
+import de.be.thaw.reference.ReferenceType;
+import de.be.thaw.reference.impl.ExternalReference;
+import de.be.thaw.reference.impl.InternalReference;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.ColorStyle;
 import de.be.thaw.style.model.style.impl.FontStyle;
+import de.be.thaw.style.model.style.impl.ReferenceStyle;
 import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
@@ -14,9 +21,15 @@ import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.page.impl.TextElement;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionGoTo;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionURI;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDBorderStyleDictionary;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageXYZDestination;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,25 +53,27 @@ public class TextElementExporter implements ElementExporter {
     public void export(Element element, ExportContext ctx) throws ExportException {
         TextElement te = (TextElement) element;
 
+        DocumentNode node = te.getNode().orElseThrow();
+
+        // Load reference (if any) from the original document
+        Reference reference = ctx.getDocument().getReferenceModel().getReference(node.getId()).orElse(null);
+
         PDPageContentStream out = ctx.getContentStream();
 
         try {
             out.beginText();
 
-            ThawPdfFont font = (ThawPdfFont) ctx.getFontForNode(te.getNode());
-            double fontSize = ctx.getFontSizeForNode(te.getNode());
+            ThawPdfFont font = (ThawPdfFont) ctx.getFontForNode(node);
+            double fontSize = ctx.getFontSizeForNode(node);
 
-            double y = ctx.getCurrentPage().getMediaBox().getUpperRightY() - te.getPosition().getY() - fontSize;
+            double y = getYOffsetForElement(te, ctx);
 
             // Apply font and size
             out.setFont(font.getPdFont(), (float) fontSize);
             out.newLineAtOffset((float) te.getPosition().getX(), (float) y);
 
             // Apply font color
-            ColorStyle colorStyle = ((TextElement) element).getNode().getStyle().getStyleAttribute(
-                    StyleType.FONT,
-                    style -> Optional.ofNullable(((FontStyle) style).getColor())
-            ).orElseThrow();
+            ColorStyle colorStyle = getFontColor(node, reference);
             out.setNonStrokingColor(new PDColor(
                     new float[]{colorStyle.getRed().floatValue(), colorStyle.getGreen().floatValue(), colorStyle.getBlue().floatValue()},
                     PDDeviceRGB.INSTANCE
@@ -75,6 +90,46 @@ public class TextElementExporter implements ElementExporter {
             underlineIfNecessary(te, ctx, out, font.getPdFont(), fontSize, y);
         } catch (IOException e) {
             throw new ExportException("Text element could not be exported to PDF due to another exception", e);
+        }
+    }
+
+    @Override
+    public void afterExport(Element element, ExportContext ctx) throws ExportException {
+        TextElement te = (TextElement) element;
+
+        DocumentNode node = te.getNode().orElseThrow();
+
+        // Load reference (if any) from the original document
+        Reference reference = ctx.getDocument().getReferenceModel().getReference(node.getId()).orElse(null);
+
+        createLinkIfNecessary(te, ctx, reference);
+    }
+
+    /**
+     * Get the font color for the passed node and reference (if any).
+     *
+     * @param node      to get font color for
+     * @param reference if there is one
+     * @return font color
+     */
+    private ColorStyle getFontColor(DocumentNode node, Reference reference) {
+        if (reference != null) {
+            if (reference.getType() == ReferenceType.INTERNAL) {
+                return node.getStyle().getStyleAttribute(
+                        StyleType.REFERENCE,
+                        style -> Optional.ofNullable(((ReferenceStyle) style).getInternalColor())
+                ).orElseThrow();
+            } else {
+                return node.getStyle().getStyleAttribute(
+                        StyleType.REFERENCE,
+                        style -> Optional.ofNullable(((ReferenceStyle) style).getExternalColor())
+                ).orElseThrow();
+            }
+        } else {
+            return node.getStyle().getStyleAttribute(
+                    StyleType.FONT,
+                    style -> Optional.ofNullable(((FontStyle) style).getColor())
+            ).orElseThrow();
         }
     }
 
@@ -117,8 +172,8 @@ public class TextElementExporter implements ElementExporter {
     }
 
     private void underlineIfNecessary(TextElement element, ExportContext ctx, PDPageContentStream out, PDFont font, double fontSize, double y) throws IOException {
-        if (element.getNode().getTextNode().getType() == NodeType.FORMATTED) {
-            FormattedNode fn = (FormattedNode) element.getNode().getTextNode();
+        if (element.getNode().orElseThrow().getTextNode().getType() == NodeType.FORMATTED) {
+            FormattedNode fn = (FormattedNode) element.getNode().orElseThrow().getTextNode();
 
             if (fn.getEmphases().contains(TextEmphasis.UNDERLINED)) {
                 double descent = font.getFontDescriptor().getDescent() / 1000 * fontSize;
@@ -156,6 +211,80 @@ public class TextElementExporter implements ElementExporter {
         }
 
         ctx.setCurrentlyUnderlined(false);
+    }
+
+    /**
+     * Get the y offset for the passed element.
+     *
+     * @param element to get offset for
+     * @param ctx     to help
+     * @return y-offset
+     */
+    private double getYOffsetForElement(TextElement element, ExportContext ctx) {
+        double fontSize = ctx.getFontSizeForNode(element.getNode().orElseThrow());
+
+        return ctx.getCurrentPage().getMediaBox().getUpperRightY() - element.getPosition().getY() - fontSize;
+    }
+
+    /**
+     * Create a link in the PDF if necessary
+     *
+     * @param element   the text element
+     * @param ctx       the export context
+     * @param reference to create link for
+     */
+    private void createLinkIfNecessary(TextElement element, ExportContext ctx, Reference reference) throws ExportException {
+        if (reference == null) {
+            return; // No link needed
+        }
+
+        PDRectangle rect = new PDRectangle(
+                (float) element.getPosition().getX(),
+                (float) getYOffsetForElement(element, ctx),
+                (float) element.getSize().getWidth(),
+                (float) element.getSize().getHeight()
+        );
+
+        PDBorderStyleDictionary borderStyle = new PDBorderStyleDictionary();
+        borderStyle.setStyle(PDBorderStyleDictionary.STYLE_SOLID);
+        borderStyle.setWidth(0.0f); // Hide border!
+
+        PDAnnotationLink link = new PDAnnotationLink();
+        link.setRectangle(rect);
+        link.setBorderStyle(borderStyle);
+
+        if (reference.getType() == ReferenceType.INTERNAL) {
+            InternalReference internalReference = (InternalReference) reference;
+
+            ElementLocator targetLocator = ctx.getElementLookup().get(internalReference.getTargetID());
+
+            PDPageXYZDestination destination = new PDPageXYZDestination();
+            destination.setPage(ctx.getPdDocument().getPage(targetLocator.getPageNumber() - 1));
+
+            double otherY = targetLocator.getElement().getType() == ElementType.TEXT
+                    ? getYOffsetForElement((TextElement) targetLocator.getElement(), ctx)
+                    : ctx.getCurrentPage().getMediaBox().getUpperRightY() - targetLocator.getElement().getPosition().getY();
+
+            destination.setTop((int) otherY);
+
+            PDActionGoTo action = new PDActionGoTo();
+            action.setDestination(destination);
+
+            link.setAction(action);
+        } else if (reference.getType() == ReferenceType.EXTERNAL) {
+            ExternalReference externalReference = (ExternalReference) reference;
+
+            PDActionURI action = new PDActionURI();
+            action.setURI(externalReference.getTargetUrl());
+
+            link.setAction(action);
+        }
+
+        try {
+            ctx.getPdDocument().getPage(element.getPageNumber() - 1).getAnnotations().add(link);
+        } catch (IOException e) {
+            throw new ExportException("Could not create a link properly", e);
+        }
     }
 
 }

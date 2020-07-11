@@ -15,6 +15,7 @@ import de.be.thaw.style.model.style.impl.BackgroundStyle;
 import de.be.thaw.style.model.style.impl.ColorStyle;
 import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
+import de.be.thaw.style.model.style.impl.ReferenceStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
 import de.be.thaw.style.model.style.impl.TextStyle;
 import de.be.thaw.style.model.style.text.TextAlignment;
@@ -146,6 +147,15 @@ public class StyleModelDeserializer extends StdDeserializer<StyleModel> {
                     node.has("alignment") ? TextAlignment.valueOf(node.get("alignment").asText().toUpperCase()) : null,
                     node.has("justify") ? node.get("justify").asBoolean() : null
             ).merge(oldStyle);
+            case REFERENCE -> {
+                ColorStyle internalColor = node.has("internalColor") ? (ColorStyle) deserializeStyle(StyleType.COLOR, node.get("internalColor"), null) : null;
+                ColorStyle externalColor = node.has("externalColor") ? (ColorStyle) deserializeStyle(StyleType.COLOR, node.get("externalColor"), null) : null;
+
+                yield new ReferenceStyle(
+                        internalColor,
+                        externalColor
+                );
+            }
         };
     }
 

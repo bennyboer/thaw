@@ -4,8 +4,6 @@ import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.DocumentConverter;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.TextStyle;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
@@ -15,36 +13,26 @@ import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
-import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWord;
-import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWordPart;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.ExplicitBreakHandler;
+import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.HyperRefHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.ImageHandler;
+import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.RefHandler;
 import de.be.thaw.typeset.knuthplass.item.impl.Glue;
 import de.be.thaw.typeset.knuthplass.item.impl.Penalty;
-import de.be.thaw.typeset.knuthplass.item.impl.box.EmptyBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
-import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.regex.Pattern;
 
 /**
  * Converter of the thaw document to the internal Knuth-Plass algorithm format.
  */
 public class KnuthPlassConverter implements DocumentConverter<List<List<Paragraph>>> {
-
-    /**
-     * Pattern matching punctuation characters.
-     */
-    private static final Pattern PUNCTUATION_CHARACTER_PATTERN = Pattern.compile("[.,;!?'\"\\u201E\\u201C\\u201D\\u201F\\u201A\\u2019\\u2018\\u00AB\\u00BB]");
 
     /**
      * Lookup of thingy handlers by the thingy name of the thingy they are dealing with.
@@ -54,6 +42,8 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
     static {
         initThingyHandler(new ExplicitBreakHandler());
         initThingyHandler(new ImageHandler());
+        initThingyHandler(new HyperRefHandler());
+        initThingyHandler(new RefHandler());
     }
 
     /**
@@ -76,7 +66,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
 
     @Override
     public List<List<Paragraph>> convert(Document document) throws DocumentConversionException {
-        ConversionContext ctx = new ConversionContext(config);
+        ConversionContext ctx = new ConversionContext(config, document);
 
         initializeForNode(ctx, document.getRoot());
 
@@ -139,7 +129,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
 
             switch (c) {
                 case ' ' -> {
-                    appendWordToParagraph(paragraph, wordBuffer.toString(), documentNode);
+                    ctx.appendWordToParagraph(paragraph, wordBuffer.toString(), documentNode);
                     wordBuffer.setLength(0); // Reset word buffer
 
                     // Add inter-word glue (representing a white space)
@@ -159,7 +149,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
                     wordBuffer.append(c);
 
                     // Add as word
-                    appendWordToParagraph(paragraph, wordBuffer.toString(), documentNode);
+                    ctx.appendWordToParagraph(paragraph, wordBuffer.toString(), documentNode);
                     wordBuffer.setLength(0); // Reset word buffer
 
                     // Add explicit hyphen to the paragraph
@@ -175,147 +165,8 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
 
         // Add final item
         if (wordBuffer.length() > 0) {
-            appendWordToParagraph(paragraph, wordBuffer.toString(), documentNode);
+            ctx.appendWordToParagraph(paragraph, wordBuffer.toString(), documentNode);
         }
-    }
-
-    /**
-     * Split the passed word by punctuation characters.
-     *
-     * @param str to split
-     * @return the split word
-     */
-    private List<WordPartSplitByPunctuationCharacter> splitByPunctuationCharacter(String str) {
-        String replaced = PUNCTUATION_CHARACTER_PATTERN.matcher(str).replaceAll(" ");
-
-        List<WordPartSplitByPunctuationCharacter> splitWord = new ArrayList<>();
-
-        int len = replaced.length();
-        StringBuilder buffer = new StringBuilder();
-        for (int i = 0; i < len; i++) {
-            char c = replaced.charAt(i);
-
-            if (c == ' ') {
-                if (buffer.length() > 0) {
-                    splitWord.add(new WordPartSplitByPunctuationCharacter(false, buffer.toString()));
-                    buffer.setLength(0); // Reset buffer
-                }
-
-                // Has been punctuation mark
-                splitWord.add(new WordPartSplitByPunctuationCharacter(true, String.valueOf(str.charAt(i))));
-            } else {
-                buffer.append(c);
-            }
-        }
-
-        if (buffer.length() > 0) {
-            splitWord.add(new WordPartSplitByPunctuationCharacter(false, buffer.toString()));
-        }
-
-        return splitWord;
-    }
-
-    /**
-     * Append an empty box to represent a first line indent to the current paragraph.
-     *
-     * @param node      of the paragraph
-     * @param paragraph to append empty box to
-     */
-    private void appendEmptyBoxToParagraph(DocumentNode node, TextParagraph paragraph) {
-        double firstLineIndent = node.getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.of(((TextStyle) style).getFirstLineIndent())
-        ).orElse(0.0);
-
-        paragraph.addItem(new EmptyBox(firstLineIndent));
-    }
-
-    /**
-     * Append a word to the current paragraph.
-     *
-     * @param paragraph to add word to
-     * @param word      to append
-     * @param node      the word belongs to
-     */
-    private void appendWordToParagraph(TextParagraph paragraph, String word, DocumentNode node) throws DocumentConversionException {
-        if (word.isEmpty()) {
-            return;
-        }
-
-        if (paragraph.isEmpty()) {
-            appendEmptyBoxToParagraph(node, paragraph);
-        }
-
-        // Split by punctuation characters
-        List<WordPartSplitByPunctuationCharacter> splitWord = splitByPunctuationCharacter(word);
-
-        try {
-            int lastChar = -1;
-            for (WordPartSplitByPunctuationCharacter splitWordPart : splitWord) {
-                if (splitWordPart.isPunctuationCharacter()) {
-                    FontDetailsSupplier.StringMetrics metrics = config.getFontDetailsSupplier().measureString(node, lastChar, splitWordPart.getPart());
-
-                    paragraph.addItem(new TextBox(
-                            splitWordPart.getPart(),
-                            metrics.getWidth(),
-                            metrics.getFontSize(),
-                            metrics.getKerningAdjustments(),
-                            node
-                    ));
-                } else { // Is an actual word without punctuation characters
-                    // Hyphenate word first
-                    HyphenatedWord hyphenatedWord = config.getHyphenator().hyphenate(splitWordPart.getPart());
-                    List<HyphenatedWordPart> parts = hyphenatedWord.getParts();
-
-                    int len = parts.size();
-                    double hyphenWidth = len > 1 ? config.getFontDetailsSupplier().measureString(node, lastChar, "-").getWidth() : 0;
-
-                    for (int i = 0; i < len; i++) {
-                        HyphenatedWordPart part = parts.get(i);
-
-                        FontDetailsSupplier.StringMetrics metrics = config.getFontDetailsSupplier().measureString(node, lastChar, part.getPart());
-                        paragraph.addItem(new TextBox(
-                                part.getPart(),
-                                metrics.getWidth(),
-                                metrics.getFontSize(),
-                                metrics.getKerningAdjustments(),
-                                node
-                        ));
-
-                        lastChar = getLastCodePoint(part.getPart());
-
-                        boolean isLast = i == len - 1;
-                        if (!isLast) {
-                            // Add hyphen penalty to represent an optional hyphen
-                            paragraph.addItem(new Penalty(part.getPenalty(), hyphenWidth, true, node));
-                        }
-                    }
-                }
-
-                lastChar = getLastCodePoint(splitWordPart.getPart());
-            }
-        } catch (Exception e) {
-            throw new DocumentConversionException(e);
-        }
-    }
-
-    /**
-     * Get the last code point in the given string.
-     *
-     * @param str to get last code point in
-     * @return last code point
-     */
-    private int getLastCodePoint(String str) {
-        final int len = str.length();
-        int codePoint = -1;
-
-        for (int i = 0; i < len; ) {
-            codePoint = str.codePointAt(i);
-
-            i += Character.charCount(codePoint);
-        }
-
-        return codePoint;
     }
 
     /**
@@ -370,36 +221,6 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         if (handler != null) {
             handler.handle(node, documentNode, ctx);
         }
-    }
-
-    /**
-     * A word part that is split by punctuation character.
-     */
-    private static class WordPartSplitByPunctuationCharacter {
-
-        /**
-         * Whether the contained word part is a punctuation character.
-         */
-        private final boolean isPunctuationCharacter;
-
-        /**
-         * The contained word part that is either a punctuation character or a legal word part.
-         */
-        private final String part;
-
-        public WordPartSplitByPunctuationCharacter(boolean isPunctuationCharacter, String part) {
-            this.isPunctuationCharacter = isPunctuationCharacter;
-            this.part = part;
-        }
-
-        public boolean isPunctuationCharacter() {
-            return isPunctuationCharacter;
-        }
-
-        public String getPart() {
-            return part;
-        }
-
     }
 
 }

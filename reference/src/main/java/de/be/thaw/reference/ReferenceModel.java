@@ -1,6 +1,7 @@
 package de.be.thaw.reference;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Model holding references (internal and external to a document).
@@ -23,5 +24,13 @@ public interface ReferenceModel {
      * @return references
      */
     List<Reference> getReferences();
+
+    /**
+     * Get the reference for the passed source ID (if any).
+     *
+     * @param sourceID to get reference for
+     * @return reference (or empty optional)
+     */
+    Optional<Reference> getReference(String sourceID);
 
 }

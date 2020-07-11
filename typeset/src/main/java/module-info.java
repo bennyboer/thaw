@@ -19,4 +19,5 @@ module de.be.thaw.typeset {
     requires de.be.thaw.info;
     requires java.desktop;
     requires de.be.thaw.style;
+    requires de.be.thaw.reference;
 }
