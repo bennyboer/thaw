@@ -9,15 +9,18 @@ import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Handler for hyper reference thingies.
  */
 public class RefHandler implements ThingyHandler {
 
+    private static final HeadlineHandler headlineHandler = new HeadlineHandler();
+
     @Override
-    public String getThingyName() {
-        return "REF";
+    public Set<String> getThingyNames() {
+        return Set.of("REF");
     }
 
     @Override
@@ -34,21 +37,39 @@ public class RefHandler implements ThingyHandler {
         // Fetch reference from the documents reference model
         InternalReference reference = (InternalReference) ctx.getDocument().getReferenceModel().getReference(documentNode.getId()).orElseThrow();
 
-        int refNum = ctx.getAndIncrementInternalRefCounter(reference.getCounterName());
+        // Check if target is a headline -> then we use headline numbering as display name of the reference
+        DocumentNode targetNode = ctx.getDocument().getNodeForId(reference.getTargetID()).orElseThrow();
+        ThingyNode thingyNode = (ThingyNode) targetNode.getTextNode();
 
-        String str;
-        Optional<String> optionalPrefix = reference.getPrefix();
-        if (optionalPrefix.isPresent()) {
-            str = String.format("%s %d", optionalPrefix.get(), refNum);
+        String displayString;
+        if (isHeadlineThingyNode(thingyNode)) {
+            displayString = thingyNode.getOptions().get("_numbering");
         } else {
-            str = String.valueOf(refNum);
+            int refNum = ctx.getAndIncrementInternalRefCounter(reference.getCounterName());
+
+            Optional<String> optionalPrefix = reference.getPrefix();
+            if (optionalPrefix.isPresent()) {
+                displayString = String.format("%s %d", optionalPrefix.get(), refNum);
+            } else {
+                displayString = String.valueOf(refNum);
+            }
         }
 
-        ctx.appendWordToParagraph(
+        ctx.appendTextToParagraph(
                 paragraph,
-                str,
+                displayString,
                 documentNode
         );
+    }
+
+    /**
+     * Check whether the passed thingy node is a headline thingy.
+     *
+     * @param node to check
+     * @return whether headline node
+     */
+    private boolean isHeadlineThingyNode(ThingyNode node) {
+        return headlineHandler.getThingyNames().contains(node.getName().toUpperCase());
     }
 
 }

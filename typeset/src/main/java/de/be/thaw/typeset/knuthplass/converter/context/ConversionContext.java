@@ -173,6 +173,63 @@ public class ConversionContext {
     }
 
     /**
+     * Append string that may contain one or more words to the passed text paragraph.
+     *
+     * @param paragraph to add string to
+     * @param str       the string to add
+     * @param node      of the string
+     * @throws DocumentConversionException in case the text could not be appended properly
+     */
+    public void appendTextToParagraph(TextParagraph paragraph, String str, DocumentNode node) throws DocumentConversionException {
+        // Find all words
+        StringBuilder wordBuffer = new StringBuilder();
+        int len = str.length();
+        for (int i = 0; i < len; i++) {
+            char c = str.charAt(i);
+
+            switch (c) {
+                case ' ' -> {
+                    appendWordToParagraph(paragraph, wordBuffer.toString(), node);
+                    wordBuffer.setLength(0); // Reset word buffer
+
+                    // Add inter-word glue (representing a white space)
+                    char lastChar = ' ';
+
+                    try {
+                        paragraph.addItem(new Glue(
+                                config.getFontDetailsSupplier().getSpaceWidth(node),
+                                config.getGlueConfig().getInterWordStretchability(node, lastChar),
+                                config.getGlueConfig().getInterWordShrinkability(node, lastChar)
+                        ));
+                    } catch (Exception e) {
+                        throw new DocumentConversionException(e);
+                    }
+                }
+                case '-' -> {
+                    wordBuffer.append(c);
+
+                    // Add as word
+                    appendWordToParagraph(paragraph, wordBuffer.toString(), node);
+                    wordBuffer.setLength(0); // Reset word buffer
+
+                    // Add explicit hyphen to the paragraph
+                    paragraph.addItem(new Penalty(
+                            config.getHyphenator().getExplicitHyphenPenalty(),
+                            0,
+                            true
+                    ));
+                }
+                default -> wordBuffer.append(c);
+            }
+        }
+
+        // Add final item
+        if (wordBuffer.length() > 0) {
+            appendWordToParagraph(paragraph, wordBuffer.toString(), node);
+        }
+    }
+
+    /**
      * Append a word to the current paragraph.
      *
      * @param paragraph to add word to

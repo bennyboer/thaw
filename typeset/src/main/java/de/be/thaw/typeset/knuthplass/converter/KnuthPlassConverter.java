@@ -16,11 +16,10 @@ import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.ExplicitBreakHandler;
+import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.HeadlineHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.HyperRefHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.ImageHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.RefHandler;
-import de.be.thaw.typeset.knuthplass.item.impl.Glue;
-import de.be.thaw.typeset.knuthplass.item.impl.Penalty;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
@@ -45,6 +44,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         initThingyHandler(new ImageHandler());
         initThingyHandler(new HyperRefHandler());
         initThingyHandler(new RefHandler());
+        initThingyHandler(new HeadlineHandler());
     }
 
     /**
@@ -62,7 +62,9 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
      * @param handler to initialize
      */
     private static void initThingyHandler(ThingyHandler handler) {
-        THINGY_HANDLER_MAP.put(handler.getThingyName().toLowerCase(), handler);
+        for (String name : handler.getThingyNames()) {
+            THINGY_HANDLER_MAP.put(name.toLowerCase(), handler);
+        }
     }
 
     @Override
@@ -122,52 +124,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
             value = ((FormattedNode) node).getValue();
         }
 
-        // Find all words
-        StringBuilder wordBuffer = new StringBuilder();
-        int len = value.length();
-        for (int i = 0; i < len; i++) {
-            char c = value.charAt(i);
-
-            switch (c) {
-                case ' ' -> {
-                    ctx.appendWordToParagraph(paragraph, wordBuffer.toString(), documentNode);
-                    wordBuffer.setLength(0); // Reset word buffer
-
-                    // Add inter-word glue (representing a white space)
-                    char lastChar = ' ';
-
-                    try {
-                        paragraph.addItem(new Glue(
-                                config.getFontDetailsSupplier().getSpaceWidth(documentNode),
-                                config.getGlueConfig().getInterWordStretchability(documentNode, lastChar),
-                                config.getGlueConfig().getInterWordShrinkability(documentNode, lastChar)
-                        ));
-                    } catch (Exception e) {
-                        throw new DocumentConversionException(e);
-                    }
-                }
-                case '-' -> {
-                    wordBuffer.append(c);
-
-                    // Add as word
-                    ctx.appendWordToParagraph(paragraph, wordBuffer.toString(), documentNode);
-                    wordBuffer.setLength(0); // Reset word buffer
-
-                    // Add explicit hyphen to the paragraph
-                    paragraph.addItem(new Penalty(
-                            config.getHyphenator().getExplicitHyphenPenalty(),
-                            0,
-                            true
-                    ));
-                }
-                default -> wordBuffer.append(c);
-            }
-        }
-
-        // Add final item
-        if (wordBuffer.length() > 0) {
-            ctx.appendWordToParagraph(paragraph, wordBuffer.toString(), documentNode);
-        }
+        ctx.appendTextToParagraph(paragraph, value, documentNode);
     }
 
     /**

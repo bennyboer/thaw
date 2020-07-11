@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Builder building a document from the provided source.
@@ -43,6 +44,11 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
      */
     private final Map<String, String> labelToNodeID = new HashMap<>();
 
+    /**
+     * Counter for headline numbering.
+     */
+    private final List<Integer> headlineCounter = new ArrayList<>();
+
     @Override
     public Document build(DocumentBuildSource source) throws DocumentBuildException {
         potentialReferences.clear();
@@ -50,6 +56,8 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
 
         ReferenceModel referenceModel = new DefaultReferenceModel();
         DocumentNode root = toRootNode(source.getTextModel(), source.getStyleModel(), referenceModel);
+
+        Document document = new Document(source.getInfo(), root, referenceModel);
 
         // Add potential targets to reference model if the target has been found, otherwise throw an exception
         for (PotentialInternalReference potentialReference : potentialReferences) {
@@ -61,15 +69,47 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
                 ));
             }
 
+            String counterName = potentialReference.getCounterName();
+            if (counterName == null) {
+                DocumentNode targetNode = document.getNodeForId(targetID).orElseThrow();
+                ThingyNode thingyNode = (ThingyNode) targetNode.getTextNode();
+                counterName = thingyNode.getName();
+            }
+
             referenceModel.addReference(new InternalReference(
                     potentialReference.getSourceID(),
                     targetID,
-                    potentialReference.getCounterName(),
+                    counterName.toLowerCase(),
                     potentialReference.getPrefix()
             ));
         }
 
-        return new Document(source.getInfo(), root, referenceModel);
+        return document;
+    }
+
+    /**
+     * Check whether the passed counter name is a headline counter.
+     *
+     * @param counterName to check
+     * @return whether headline counter name
+     */
+    private boolean isHeadlineThingyName(String counterName) {
+        if (counterName.length() != 2) {
+            return false;
+        }
+
+        if (counterName.charAt(0) != 'H' && counterName.charAt(0) != 'h') {
+            return false;
+        }
+
+        char num = counterName.charAt(1);
+        try {
+            Integer.parseInt(String.valueOf(num));
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -124,6 +164,22 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
         String blockName = null;
         if (optionalThingyNode.isPresent()) {
             blockName = optionalThingyNode.get().getName();
+
+            if (isHeadlineThingyName(blockName)) {
+                int level = Integer.parseInt(String.valueOf(blockName.charAt(1)));
+
+                // Check if counter size is great enough
+                while (headlineCounter.size() < level) {
+                    headlineCounter.add(0);
+                }
+
+                // Increase counter for the level
+                headlineCounter.set(level - 1, headlineCounter.get(level - 1) + 1);
+
+                // Save numbering string for later
+                String numberingString = headlineCounter.stream().map(String::valueOf).collect(Collectors.joining("."));
+                optionalThingyNode.get().getOptions().put("_numbering", numberingString);
+            }
         }
 
         StyleBlock styleBlock = getStyleBlock("PARAGRAPH", blockName, styleModel);

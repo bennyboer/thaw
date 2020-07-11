@@ -8,14 +8,16 @@ import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 
+import java.util.Set;
+
 /**
  * Handler for hyper reference thingies.
  */
 public class HyperRefHandler implements ThingyHandler {
 
     @Override
-    public String getThingyName() {
-        return "HREF";
+    public Set<String> getThingyNames() {
+        return Set.of("HREF");
     }
 
     @Override

@@ -9,6 +9,7 @@ import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.image.ImageParagraph;
 
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * Handler for image thingies.
@@ -16,8 +17,8 @@ import java.io.IOException;
 public class ImageHandler implements ThingyHandler {
 
     @Override
-    public String getThingyName() {
-        return "IMAGE";
+    public Set<String> getThingyNames() {
+        return Set.of("IMAGE");
     }
 
     @Override

@@ -11,6 +11,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Handler dealing with explicit line or page breaks.
@@ -18,8 +19,8 @@ import java.util.Optional;
 public class ExplicitBreakHandler implements ThingyHandler {
 
     @Override
-    public String getThingyName() {
-        return "BREAK";
+    public Set<String> getThingyNames() {
+        return Set.of("BREAK");
     }
 
     @Override

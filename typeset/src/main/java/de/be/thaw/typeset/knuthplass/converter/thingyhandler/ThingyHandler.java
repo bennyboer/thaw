@@ -5,6 +5,8 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 
+import java.util.Set;
+
 /**
  * Handler dealing with thingies in the converter.
  */
@@ -15,7 +17,7 @@ public interface ThingyHandler {
      *
      * @return thingy name
      */
-    String getThingyName();
+    Set<String> getThingyNames();
 
     /**
      * Handle the passed thingy node.
