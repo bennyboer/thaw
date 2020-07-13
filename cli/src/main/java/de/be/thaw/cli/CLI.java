@@ -187,7 +187,7 @@ public class CLI implements Callable<Integer> {
             System.err.println(String.format("There are more than one Thaw style file (ending with *.tds) in the folder at '%s'", root.getAbsolutePath()));
             return ErrorResult.MORE_THAN_ONE_STYLE_FILE.getCode();
         } else if (styleFiles.length == 1) {
-            System.out.println(String.format("Processing Thaw style file '%s'...", textFiles[0]));
+            System.out.println(String.format("Processing Thaw style file '%s'...", styleFiles[0]));
 
             File styleFile = new File(root, styleFiles[0]);
 
