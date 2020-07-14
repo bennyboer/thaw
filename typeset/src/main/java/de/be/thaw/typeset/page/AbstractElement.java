@@ -19,12 +19,12 @@ public abstract class AbstractElement implements Element {
     /**
      * Size of the element.
      */
-    private final Size size;
+    private Size size;
 
     /**
      * Position of the element.
      */
-    private final Position position;
+    private Position position;
 
     public AbstractElement(int pageNumber, Size size, Position position) {
         this.pageNumber = pageNumber;
@@ -45,6 +45,24 @@ public abstract class AbstractElement implements Element {
     @Override
     public Position getPosition() {
         return position;
+    }
+
+    /**
+     * Set the elements size.
+     *
+     * @param size to set
+     */
+    public void setSize(Size size) {
+        this.size = size;
+    }
+
+    /**
+     * Set the elements position.
+     *
+     * @param position to set
+     */
+    public void setPosition(Position position) {
+        this.position = position;
     }
 
     @Override

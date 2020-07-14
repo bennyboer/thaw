@@ -6,6 +6,7 @@ package de.be.thaw.typeset.knuthplass.paragraph;
 public enum ParagraphType {
 
     TEXT,
-    IMAGE
+    IMAGE,
+    TOC_ITEM
 
 }

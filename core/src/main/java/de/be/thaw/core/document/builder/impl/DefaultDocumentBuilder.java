@@ -19,7 +19,9 @@ import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.BoxNode;
+import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.text.model.tree.impl.RootNode;
+import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 
 import java.util.ArrayList;
@@ -166,19 +168,28 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
             blockName = optionalThingyNode.get().getName();
 
             if (isHeadlineThingyName(blockName)) {
-                int level = Integer.parseInt(String.valueOf(blockName.charAt(1)));
+                ThingyNode thingyNode = optionalThingyNode.get();
+                boolean isNumbered = Boolean.parseBoolean(thingyNode.getOptions().getOrDefault("numbered", "true"));
 
-                // Check if counter size is great enough
-                while (headlineCounter.size() < level) {
-                    headlineCounter.add(0);
+                if (isNumbered) {
+                    int level = Integer.parseInt(String.valueOf(blockName.charAt(1)));
+
+                    // Check if counter size is great enough
+                    while (headlineCounter.size() < level) {
+                        headlineCounter.add(0);
+                    }
+
+                    // Increase counter for the level
+                    headlineCounter.set(level - 1, headlineCounter.get(level - 1) + 1);
+
+                    // Save numbering string for later
+                    String numberingString = headlineCounter.stream().map(String::valueOf).collect(Collectors.joining("."));
+                    optionalThingyNode.get().getOptions().put("_numbering", numberingString);
+
+                    // Retrieve and store the headline text for later
+                    String headlineText = getTextContent(node);
+                    optionalThingyNode.get().getOptions().put("_headline", headlineText);
                 }
-
-                // Increase counter for the level
-                headlineCounter.set(level - 1, headlineCounter.get(level - 1) + 1);
-
-                // Save numbering string for later
-                String numberingString = headlineCounter.stream().map(String::valueOf).collect(Collectors.joining("."));
-                optionalThingyNode.get().getOptions().put("_numbering", numberingString);
             }
         }
 
@@ -194,6 +205,42 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
         }
 
         return new DocumentNode(node, styleNode, children);
+    }
+
+    /**
+     * Get only the text content of the passed node.
+     *
+     * @param node to get text content of
+     * @return text content
+     */
+    private String getTextContent(Node node) {
+        StringBuilder buffer = new StringBuilder();
+
+        fillTextContent(buffer, node);
+
+        return buffer.toString();
+    }
+
+    /**
+     * Fill the buffer with the text content of the passed node.
+     *
+     * @param buffer to fill
+     * @param node   node to fill buffer for
+     */
+    private void fillTextContent(StringBuilder buffer, Node node) {
+        if (node.getType() == NodeType.TEXT) {
+            TextNode tn = (TextNode) node;
+            buffer.append(tn.getValue());
+        } else if (node.getType() == NodeType.FORMATTED) {
+            FormattedNode fn = (FormattedNode) node;
+            buffer.append(fn.getValue());
+        }
+
+        if (node.hasChildren()) {
+            for (Node child : node.children()) {
+                fillTextContent(buffer, child);
+            }
+        }
     }
 
     /**

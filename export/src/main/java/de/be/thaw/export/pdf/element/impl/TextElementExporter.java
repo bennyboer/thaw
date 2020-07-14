@@ -6,6 +6,7 @@ import de.be.thaw.export.pdf.element.ElementExporter;
 import de.be.thaw.export.pdf.font.ThawPdfFont;
 import de.be.thaw.export.pdf.util.ElementLocator;
 import de.be.thaw.export.pdf.util.ExportContext;
+import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.reference.Reference;
 import de.be.thaw.reference.ReferenceType;
 import de.be.thaw.reference.impl.ExternalReference;
@@ -19,7 +20,10 @@ import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.ElementType;
+import de.be.thaw.typeset.page.impl.PageNumberPlaceholderElement;
 import de.be.thaw.typeset.page.impl.TextElement;
+import de.be.thaw.typeset.util.Position;
+import de.be.thaw.typeset.util.Size;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -66,11 +70,8 @@ public class TextElementExporter implements ElementExporter {
             ThawPdfFont font = (ThawPdfFont) ctx.getFontForNode(node);
             double fontSize = ctx.getFontSizeForNode(node);
 
-            double y = getYOffsetForElement(te, ctx);
-
-            // Apply font and size
+            // Apply font
             out.setFont(font.getPdFont(), (float) fontSize);
-            out.newLineAtOffset((float) te.getPosition().getX(), (float) y);
 
             // Apply font color
             ColorStyle colorStyle = getFontColor(node, reference);
@@ -79,8 +80,38 @@ public class TextElementExporter implements ElementExporter {
                     PDDeviceRGB.INSTANCE
             ));
 
-            if (te.getKerningAdjustments() != null) {
-                showTextWithKerning(out, font, te.getText(), te.getKerningAdjustments(), te.getFontSize());
+            // Check if the element is really just a placeholder for the current page number
+            double[] kerningAdjustments = te.getKerningAdjustments();
+
+            if (te instanceof PageNumberPlaceholderElement) {
+                // We need to determine the page number of the target here to display as text
+                InternalReference internalReference = (InternalReference) reference;
+                ElementLocator targetLocator = ctx.getElementLookup().get(internalReference.getTargetID());
+                int pageNumber = targetLocator.getPageNumber();
+                String pageNumberStr = String.valueOf(pageNumber);
+
+                KernedSize size;
+                try {
+                    size = font.getKernedStringSize(-1, pageNumberStr, fontSize);
+                } catch (Exception e) {
+                    throw new ExportException(e);
+                }
+
+                te.setPosition(new Position(te.getPosition().getX() - size.getWidth(), te.getPosition().getY()));
+                te.setSize(new Size(size.getWidth(), size.getHeight()));
+                te.setText(pageNumberStr);
+                kerningAdjustments = size.getKerningAdjustments();
+            }
+
+            double y = getYOffsetForElement(te, ctx);
+            double x = te.getPosition().getX();
+
+            // Set the position of where to draw the text
+            out.newLineAtOffset((float) x, (float) y);
+
+            // Show the text
+            if (kerningAdjustments != null) {
+                showTextWithKerning(out, font, te.getText(), kerningAdjustments, te.getFontSize());
             } else {
                 out.showText(te.getText());
             }

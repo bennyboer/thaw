@@ -65,7 +65,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
 
         // Set up the initial position of the paragraph
         ctx.getPositionContext().increaseY(insetsStyle.getTop());
-        ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft());
+        ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + insetsStyle.getLeft());
 
         // Check if we have a floating element nearby
         if (ctx.getFloatConfig().getFloatUntilY() > ctx.getPositionContext().getY()) {
@@ -91,6 +91,19 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             });
         }
 
+        // Reduce line width supplier line width by the paragraphs left and right indents
+        if (insetsStyle.getLeft() != 0 || insetsStyle.getRight() != 0) {
+            final double reduceBy = insetsStyle.getLeft() + insetsStyle.getRight();
+            IntToDoubleFunction oldLineWidthSupplier = textParagraph.getLineWidthSupplier();
+            textParagraph.setLineWidthSupplier(lineNumber -> {
+                if (oldLineWidthSupplier != null) {
+                    return oldLineWidthSupplier.applyAsDouble(lineNumber) - reduceBy;
+                } else {
+                    return textParagraph.getDefaultLineWidth() - reduceBy;
+                }
+            });
+        }
+
         // Find the break points in the text paragraph to split the paragraph into lines with later
         KnuthPlassAlgorithm.LineBreakingResult result = findBreakPoints(textParagraph, ctx);
 
@@ -98,7 +111,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         List<List<Item>> lines = splitParagraphIntoLines(textParagraph, result);
 
         // Lay out the found lines
-        double indent = 0; // Indent of the paragraph (if any), set for example for enumerations.
+        double indent = insetsStyle.getLeft(); // Indent of the paragraph (if any), set for example for enumerations.
         for (int i = 0; i < lines.size(); i++) {
             List<Item> line = lines.get(i);
 
@@ -150,7 +163,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             for (Item item : line) {
                 // Check if the item indicates an enumeration item start
                 if (item instanceof EnumerationItemStartBox) {
-                    indent = ((EnumerationItemStartBox) item).getIndent();
+                    indent += ((EnumerationItemStartBox) item).getIndent();
                     ctx.getPositionContext().increaseX(indent - item.getWidth());
                 }
 

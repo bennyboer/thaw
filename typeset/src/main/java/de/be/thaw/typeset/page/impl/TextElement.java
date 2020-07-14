@@ -17,7 +17,7 @@ public class TextElement extends AbstractElement {
     /**
      * Text of the element.
      */
-    private final String text;
+    private String text;
 
     /**
      * Font size of the text in the text element.
@@ -59,6 +59,15 @@ public class TextElement extends AbstractElement {
      */
     public String getText() {
         return text;
+    }
+
+    /**
+     * Set the elements text.
+     *
+     * @param text to set
+     */
+    public void setText(String text) {
+        this.text = text;
     }
 
     @Override
