@@ -14,7 +14,7 @@ We want to improve the situation by proposing *Thaw* which lets you organize you
 
 A Thaw document is defined by four files: **Text**, **Style**, **Info** and **References**.
 We've prepared an example using the below file contents (shown here only in extracts).
-Running the CLI with gradle (later an executable version will be provided) using the files with `./gradlew.bat run --args="--root-folder='C:\test' --output='C:\test.pdf'"`we get the following PDF:
+Running the CLI with gradle (later an executable version will be provided) using the files with `./gradlew.bat :cli:run --args="--root-folder='C:\test' --output='C:\test.pdf'"`we get the following PDF:
 
 ![Screenshot](docs/img/screenshot.png)
 
