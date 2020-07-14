@@ -1,6 +1,7 @@
 package de.be.thaw.style.model.style.impl;
 
 import de.be.thaw.font.util.FontVariant;
+import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
 
@@ -34,18 +35,25 @@ public class FontStyle implements Style {
      */
     private final String monoSpacedFontFamily;
 
+    /**
+     * The kerning mode to use.
+     */
+    private final KerningMode kerningMode;
+
     public FontStyle(
             String family,
             FontVariant variant,
             Double size,
             ColorStyle color,
-            String monoSpacedFontFamily
+            String monoSpacedFontFamily,
+            KerningMode kerningMode
     ) {
         this.family = family;
         this.variant = variant;
         this.size = size;
         this.color = color;
         this.monoSpacedFontFamily = monoSpacedFontFamily;
+        this.kerningMode = kerningMode;
     }
 
     @Override
@@ -66,7 +74,8 @@ public class FontStyle implements Style {
                 variant != null ? variant : other.getVariant(),
                 size != null ? size : other.getSize(),
                 color != null ? color : other.getColor(),
-                monoSpacedFontFamily != null ? monoSpacedFontFamily : other.getMonoSpacedFontFamily()
+                monoSpacedFontFamily != null ? monoSpacedFontFamily : other.getMonoSpacedFontFamily(),
+                kerningMode != null ? kerningMode : other.getKerningMode()
         );
     }
 
@@ -88,6 +97,10 @@ public class FontStyle implements Style {
 
     public String getMonoSpacedFontFamily() {
         return monoSpacedFontFamily;
+    }
+
+    public KerningMode getKerningMode() {
+        return kerningMode;
     }
 
 }

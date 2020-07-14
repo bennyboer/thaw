@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import de.be.thaw.font.util.FontVariant;
+import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.style.Style;
@@ -133,12 +134,15 @@ public class StyleModelDeserializer extends StdDeserializer<StyleModel> {
 
                 ColorStyle color = node.has("color") ? (ColorStyle) deserializeStyle(StyleType.COLOR, node.get("color"), null) : null;
 
+                KerningMode kerningMode = node.has("kerning") ? KerningMode.valueOf(node.get("kerning").asText("NATIVE").toUpperCase()) : null;
+
                 yield new FontStyle(
                         node.has("family") ? node.get("family").asText(null) : null,
                         variant,
                         node.has("size") ? node.get("size").asDouble() : null,
                         color,
-                        node.has("monoSpacedFontFamily") ? node.get("monoSpacedFontFamily").asText() : null
+                        node.has("monoSpacedFontFamily") ? node.get("monoSpacedFontFamily").asText() : null,
+                        kerningMode
                 ).merge(oldStyle);
             }
             case TEXT -> new TextStyle(

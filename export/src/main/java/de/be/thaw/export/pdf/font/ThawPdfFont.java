@@ -2,6 +2,7 @@ package de.be.thaw.export.pdf.font;
 
 import de.be.thaw.export.pdf.font.exception.FontParseException;
 import de.be.thaw.font.AbstractFont;
+import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.font.util.OperatingSystem;
 import de.be.thaw.font.util.Size;
 import de.be.thaw.font.util.exception.CouldNotDetermineOperatingSystemException;
@@ -75,6 +76,11 @@ public class ThawPdfFont extends AbstractFont {
      * Units per EM of this font.
      */
     private double unitsPerEm;
+
+    /**
+     * Kerning mode to use.
+     */
+    private KerningMode kerningMode = KerningMode.NATIVE;
 
     /**
      * Create new PDF font.
@@ -256,10 +262,17 @@ public class ThawPdfFont extends AbstractFont {
 
     @Override
     public double getKerningAdjustment(int leftChar, int rightChar, double fontSize) {
-        if (false && kerningSubtable != null) {
-            return kerningSubtable.getKerning(characterMap.getGlyphId(leftChar), characterMap.getGlyphId(rightChar)) * fontSize / unitsPerEm;
-        } else if (opticalKerningTable != null) {
-            return opticalKerningTable.getKerning(characterMap.getGlyphId(leftChar), characterMap.getGlyphId(rightChar)) * fontSize / unitsPerEm;
+        switch (kerningMode) {
+            case NATIVE -> {
+                if (kerningSubtable != null) {
+                    return kerningSubtable.getKerning(characterMap.getGlyphId(leftChar), characterMap.getGlyphId(rightChar)) * fontSize / unitsPerEm;
+                }
+            }
+            case OPTICAL -> {
+                if (opticalKerningTable != null) {
+                    return opticalKerningTable.getKerning(characterMap.getGlyphId(leftChar), characterMap.getGlyphId(rightChar)) * fontSize / unitsPerEm;
+                }
+            }
         }
 
         return 0;
@@ -329,6 +342,14 @@ public class ThawPdfFont extends AbstractFont {
         }
 
         return new Glyph(glyphID, codePoint, size, position, contours);
+    }
+
+    public KerningMode getKerningMode() {
+        return kerningMode;
+    }
+
+    public void setKerningMode(KerningMode kerningMode) {
+        this.kerningMode = kerningMode;
     }
 
 }

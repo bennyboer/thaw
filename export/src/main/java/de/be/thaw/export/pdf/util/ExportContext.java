@@ -300,7 +300,7 @@ public class ExportContext {
             }
         }
 
-        ThawFont font = fontCache.get(locator);
+        ThawPdfFont font = (ThawPdfFont) fontCache.get(locator);
         if (font == null) {
             // Load the font
             try {
@@ -311,6 +311,11 @@ public class ExportContext {
                 throw new ExportException(e);
             }
         }
+
+        font.setKerningMode(node.getStyle().getStyleAttribute(
+                StyleType.FONT,
+                style -> Optional.ofNullable(((FontStyle) style).getKerningMode())
+        ).orElseThrow());
 
         return font;
     }
