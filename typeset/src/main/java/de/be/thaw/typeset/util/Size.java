@@ -1,9 +1,11 @@
 package de.be.thaw.typeset.util;
 
+import java.io.Serializable;
+
 /**
  * Representation of a 2-dimensional objects size (height and width).
  */
-public class Size {
+public class Size implements Serializable {
 
     /**
      * Width.

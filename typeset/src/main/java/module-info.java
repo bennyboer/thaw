@@ -3,6 +3,9 @@ module de.be.thaw.typeset {
     exports de.be.thaw.typeset.util;
     exports de.be.thaw.typeset.page;
     exports de.be.thaw.typeset.exception;
+    exports de.be.thaw.typeset.kerning;
+    exports de.be.thaw.typeset.kerning.glyph;
+    exports de.be.thaw.typeset.kerning.optical;
     exports de.be.thaw.typeset.knuthplass;
     exports de.be.thaw.typeset.knuthplass.config;
     exports de.be.thaw.typeset.knuthplass.config.util;
