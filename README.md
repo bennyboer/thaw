@@ -100,3 +100,4 @@ The project is organized in multiple modules:
 | Font | `/font` | Helps dealing with fonts. |
 | Hyphenation | `/hyphenation` | Module dealing with hyphenating individual words. |
 | Plugin | `/plugin` | Plugin development resources. |
+| Shared | `/shared` | Some shared classes. |

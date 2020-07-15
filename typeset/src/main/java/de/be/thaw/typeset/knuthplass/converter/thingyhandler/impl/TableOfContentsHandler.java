@@ -58,7 +58,7 @@ public class TableOfContentsHandler implements ThingyHandler {
                 // Create dummy document node
                 Map<StyleType, Style> styles = new HashMap<>();
                 styles.put(StyleType.INSETS, new InsetsStyle(0.0, indent, 0.0, 0.0));
-                DocumentNode dummy = new DocumentNode(String.format("TOC_%s", numbering), documentNode.getTextNode(), new DocumentNodeStyle(documentNode.getStyle(), styles), documentNode.getChildren());
+                DocumentNode dummy = new DocumentNode(String.format("TOC_%s", numbering), documentNode.getTextNode(), null, new DocumentNodeStyle(documentNode.getStyle(), styles));
 
                 ctx.getDocument().getReferenceModel().addReference(new InternalReference(dummy.getId(), n.getId(), "TOC"));
 

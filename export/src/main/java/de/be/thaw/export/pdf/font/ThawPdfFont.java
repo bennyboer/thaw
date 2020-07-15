@@ -192,7 +192,6 @@ public class ThawPdfFont extends AbstractFont {
 
         if (opticalKerningTable == null) {
             // Calculate the optical kerning table
-            System.out.println(String.format("Calculating optical kerning table for the font '%s'. This might take a while...", ttf.getName()));
             opticalKerningTable = calculateOpticalKerningTable();
 
             // Write kerning table to cache file

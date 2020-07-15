@@ -49,7 +49,7 @@ public class StyleModelDeserializer extends StdDeserializer<StyleModel> {
 
     @Override
     public StyleModel deserialize(JsonParser p, DeserializationContext ctx) throws IOException, JsonProcessingException {
-        StyleModel styleModel = StyleModel.defaultModel();
+        StyleModel styleModel = new StyleModel(new HashMap<>());
 
         JsonNode root = p.getCodec().readTree(p);
 

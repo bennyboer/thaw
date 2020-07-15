@@ -4,6 +4,7 @@ module de.be.thaw.core {
     requires de.be.thaw.style;
     requires de.be.thaw.font;
     requires de.be.thaw.reference;
+    requires de.be.thaw.shared;
     exports de.be.thaw.core.document;
     exports de.be.thaw.core.document.node;
     exports de.be.thaw.core.document.node.style;

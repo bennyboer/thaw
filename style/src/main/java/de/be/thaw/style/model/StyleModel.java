@@ -147,4 +147,37 @@ public class StyleModel {
         return model;
     }
 
+    /**
+     * Merge this style model with the passed one.
+     *
+     * @param other to merge with
+     * @return the merged style model
+     */
+    public StyleModel merge(StyleModel other) {
+        if (other == null) {
+            return this;
+        }
+
+        Map<String, StyleBlock> mergedBlocks = new HashMap<>();
+        for (Map.Entry<String, StyleBlock> blockEntry : blocks.entrySet()) {
+            Optional<StyleBlock> otherBlock = other.getBlock(blockEntry.getKey());
+            if (otherBlock.isPresent()) {
+                // Other style model does have the block -> merge the blocks
+                mergedBlocks.put(blockEntry.getKey(), blockEntry.getValue().merge(otherBlock.get()));
+            } else {
+                // Does not have block -> keep it as is
+                mergedBlocks.put(blockEntry.getKey(), blockEntry.getValue());
+            }
+        }
+
+        // Add remaining blocks from the other style model (if any)
+        for (Map.Entry<String, StyleBlock> blockEntry : other.blocks.entrySet()) {
+            if (!mergedBlocks.containsKey(blockEntry.getKey())) {
+                mergedBlocks.put(blockEntry.getKey(), blockEntry.getValue());
+            }
+        }
+
+        return new StyleModel(mergedBlocks);
+    }
+
 }

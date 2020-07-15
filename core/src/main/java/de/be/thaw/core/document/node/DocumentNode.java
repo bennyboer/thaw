@@ -3,6 +3,7 @@ package de.be.thaw.core.document.node;
 import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.text.model.tree.Node;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,17 +30,26 @@ public class DocumentNode {
     /**
      * Children of the node.
      */
-    private final List<DocumentNode> children;
+    private final List<DocumentNode> children = new ArrayList<>();
 
-    public DocumentNode(Node node, DocumentNodeStyle style, List<DocumentNode> children) {
-        this(UUID.randomUUID().toString(), node, style, children);
+    /**
+     * The parent node.
+     */
+    private final DocumentNode parent;
+
+    public DocumentNode(Node node, DocumentNode parent, DocumentNodeStyle style) {
+        this(UUID.randomUUID().toString(), node, parent, style);
     }
 
-    public DocumentNode(String id, Node node, DocumentNodeStyle style, List<DocumentNode> children) {
+    public DocumentNode(String id, Node node, DocumentNode parent, DocumentNodeStyle style) {
         this.id = id;
         this.node = node;
         this.style = style;
-        this.children = children;
+        this.parent = parent;
+
+        if (parent != null) {
+            parent.getChildren().add(this);
+        }
     }
 
     /**
@@ -64,7 +74,11 @@ public class DocumentNode {
     }
 
     public boolean hasChildren() {
-        return children != null && children.size() > 0;
+        return children.size() > 0;
+    }
+
+    public DocumentNode getParent() {
+        return parent;
     }
 
 }

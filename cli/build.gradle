@@ -13,6 +13,7 @@ dependencies {
     implementation project(':typeset')
     implementation project(':info')
     implementation project(':style')
+    implementation project(':shared')
 
     // Command line argument parser library
     compile group: 'info.picocli', name: 'picocli', version: '4.3.2'

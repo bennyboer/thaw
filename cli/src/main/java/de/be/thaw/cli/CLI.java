@@ -9,6 +9,7 @@ import de.be.thaw.export.pdf.PdfExporter;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.info.parser.InfoParser;
 import de.be.thaw.info.parser.impl.DefaultInfoParser;
+import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.parser.StyleParser;
 import de.be.thaw.style.parser.impl.DefaultStyleParser;
@@ -114,12 +115,15 @@ public class CLI implements Callable<Integer> {
         System.out.println("### Configuration ###");
 
         Charset charset = getCharset();
+        ThawContext.getInstance().setEncoding(charset);
         System.out.println(String.format("Charset: '%s'", charset.displayName(Locale.ENGLISH)));
 
         System.out.println();
         System.out.println("### Processing ###");
 
         File root = getRootInfoFolderPath().toFile();
+        ThawContext.getInstance().setRootFolder(root);
+        ThawContext.getInstance().setCurrentFolder(root);
         System.out.println(String.format("Searching for Thaw files within folder at '%s'...", root.getAbsolutePath()));
 
         System.out.println();
@@ -137,6 +141,7 @@ public class CLI implements Callable<Integer> {
         File infoFile = new File(root, infoFiles[0]);
 
         InfoParser infoParser = new DefaultInfoParser();
+        ThawContext.getInstance().setInfoParser(infoParser);
         ThawInfo info;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(infoFile), charset))) {
             info = infoParser.parse(br);
@@ -166,6 +171,7 @@ public class CLI implements Callable<Integer> {
         File textFile = new File(root, textFiles[0]);
 
         TextParser textParser = new TextParser();
+        ThawContext.getInstance().setTextParser(textParser);
         TextModel textModel;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(textFile), info.getEncoding()))) {
             textModel = textParser.parse(br);
@@ -182,6 +188,8 @@ public class CLI implements Callable<Integer> {
 
         String[] styleFiles = root.list((dir, name) -> name.endsWith(".tds"));
 
+        StyleParser styleParser = new DefaultStyleParser();
+        ThawContext.getInstance().setStyleParser(styleParser);
         StyleModel styleModel;
         if (styleFiles.length > 1) {
             System.err.println(String.format("There are more than one Thaw style file (ending with *.tds) in the folder at '%s'", root.getAbsolutePath()));
@@ -191,9 +199,9 @@ public class CLI implements Callable<Integer> {
 
             File styleFile = new File(root, styleFiles[0]);
 
-            StyleParser styleParser = new DefaultStyleParser();
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(styleFile), info.getEncoding()))) {
                 styleModel = styleParser.parse(br);
+                styleModel = styleModel.merge(StyleModel.defaultModel());
             } catch (de.be.thaw.style.parser.exception.ParseException e) {
                 System.err.println(String.format(
                         "An exception occurred while trying to parse the provided style file at '%s'.\n" +
