@@ -312,10 +312,12 @@ public class ExportContext {
             }
         }
 
-        font.setKerningMode(node.getStyle().getStyleAttribute(
-                StyleType.FONT,
-                style -> Optional.ofNullable(((FontStyle) style).getKerningMode())
-        ).orElseThrow());
+        if (variant != FontVariant.MONOSPACE) { // Monospaced fonts should not be optically kerned
+            font.setKerningMode(node.getStyle().getStyleAttribute(
+                    StyleType.FONT,
+                    style -> Optional.ofNullable(((FontStyle) style).getKerningMode())
+            ).orElseThrow());
+        }
 
         return font;
     }
