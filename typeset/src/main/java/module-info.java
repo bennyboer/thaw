@@ -23,4 +23,5 @@ module de.be.thaw.typeset {
     requires java.desktop;
     requires de.be.thaw.style;
     requires de.be.thaw.reference;
+    requires de.be.thaw.font;
 }

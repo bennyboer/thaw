@@ -4,9 +4,11 @@ import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.node.style.DocumentNodeStyle;
+import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.reference.impl.InternalReference;
 import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
@@ -55,19 +57,25 @@ public class TableOfContentsHandler implements ThingyHandler {
                 double indentPerLevel = lineWidth / 20; // TODO Set in style
                 double indent = (level - 1) * indentPerLevel;
 
-                // Create dummy document node
-                Map<StyleType, Style> styles = new HashMap<>();
-                styles.put(StyleType.INSETS, new InsetsStyle(0.0, indent, 0.0, 0.0));
-                DocumentNode dummy = new DocumentNode(String.format("TOC_%s", numbering), documentNode.getTextNode(), null, new DocumentNodeStyle(documentNode.getStyle(), styles));
+                // Create dummy document nodes
+                Map<StyleType, Style> numberingStyles = new HashMap<>();
+                numberingStyles.put(StyleType.INSETS, new InsetsStyle(0.0, indent, 0.0, 0.0));
+                numberingStyles.put(StyleType.FONT, new FontStyle(null, FontVariant.BOLD, null, null, null, null));
+                DocumentNode dummyNumberingNode = new DocumentNode(String.format("TOC_%s", numbering), documentNode.getTextNode(), null, new DocumentNodeStyle(documentNode.getStyle(), numberingStyles));
 
-                ctx.getDocument().getReferenceModel().addReference(new InternalReference(dummy.getId(), n.getId(), "TOC"));
+                Map<StyleType, Style> headlineStyles = new HashMap<>();
+                DocumentNode dummyHeadlineNode = new DocumentNode(String.format("TOC_%s", headline), documentNode.getTextNode(), null, new DocumentNodeStyle(documentNode.getStyle(), headlineStyles));
 
-                TableOfContentsItemParagraph paragraph = new TableOfContentsItemParagraph(lineWidth - maxPageNumberWidth, dummy, maxPageNumberWidth);
+                ctx.getDocument().getReferenceModel().addReference(new InternalReference(dummyNumberingNode.getId(), n.getId(), "TOC_numbering"));
+                ctx.getDocument().getReferenceModel().addReference(new InternalReference(dummyHeadlineNode.getId(), n.getId(), "TOC_headline"));
+
+                TableOfContentsItemParagraph paragraph = new TableOfContentsItemParagraph(lineWidth - maxPageNumberWidth, dummyNumberingNode, maxPageNumberWidth);
                 paragraph.addItem(new EmptyBox(0));
                 ctx.setCurrentParagraph(paragraph);
 
                 // Add numbering and headline text
-                ctx.appendTextToParagraph(paragraph, String.format("%s %s", numbering, headline), dummy);
+                ctx.appendTextToParagraph(paragraph, numbering, dummyNumberingNode);
+                ctx.appendTextToParagraph(paragraph, headline, dummyHeadlineNode);
                 ctx.finalizeParagraph();
             }
         }

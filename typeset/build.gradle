@@ -3,5 +3,6 @@ dependencies {
     implementation project(':text')
     implementation project(':info')
     implementation project(':style')
+    implementation project(':font')
     implementation project(':reference')
 }
