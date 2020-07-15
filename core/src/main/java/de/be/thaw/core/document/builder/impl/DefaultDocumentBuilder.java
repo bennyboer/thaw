@@ -5,17 +5,19 @@ import de.be.thaw.core.document.builder.DocumentBuilder;
 import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.exception.MissingReferenceTargetException;
 import de.be.thaw.core.document.builder.impl.source.DocumentBuildSource;
+import de.be.thaw.core.document.builder.impl.thingy.ThingyHandler;
+import de.be.thaw.core.document.builder.impl.thingy.impl.HyperRefHandler;
+import de.be.thaw.core.document.builder.impl.thingy.impl.IncludeHandler;
+import de.be.thaw.core.document.builder.impl.thingy.impl.RefHandler;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.reference.ReferenceModel;
 import de.be.thaw.reference.impl.DefaultReferenceModel;
-import de.be.thaw.reference.impl.ExternalReference;
 import de.be.thaw.reference.impl.InternalReference;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.BoxNode;
@@ -37,33 +39,60 @@ import java.util.stream.Collectors;
 public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSource> {
 
     /**
-     * List of potential references.
+     * Mapping of thingy names to their handler.
      */
-    private final List<PotentialInternalReference> potentialReferences = new ArrayList<>();
+    private static final Map<String, ThingyHandler> THINGY_HANDLER_MAP = new HashMap<>();
+
+    static {
+        initThingyHandler(new RefHandler());
+        initThingyHandler(new HyperRefHandler());
+        initThingyHandler(new IncludeHandler());
+    }
 
     /**
-     * Lookup from labels to their node ID.
+     * Initialize the passed thingy handler.
+     *
+     * @param handler to initialize
      */
-    private final Map<String, String> labelToNodeID = new HashMap<>();
+    private static void initThingyHandler(ThingyHandler handler) {
+        for (String name : handler.getThingyNames()) {
+            THINGY_HANDLER_MAP.put(name.toLowerCase(), handler);
+        }
+    }
 
     /**
-     * Counter for headline numbering.
+     * Get a thingy handler by the passed thingy name.
+     *
+     * @param name to get handler for
+     * @return the thingy handler or an empty optional
      */
-    private final List<Integer> headlineCounter = new ArrayList<>();
+    private static Optional<ThingyHandler> getThingyHandler(String name) {
+        return Optional.ofNullable(THINGY_HANDLER_MAP.get(name.toLowerCase()));
+    }
 
     @Override
     public Document build(DocumentBuildSource source) throws DocumentBuildException {
-        potentialReferences.clear();
-        labelToNodeID.clear();
-
         ReferenceModel referenceModel = new DefaultReferenceModel();
-        DocumentNode root = toRootNode(source.getTextModel(), source.getStyleModel(), referenceModel);
+        DocumentBuildContext ctx = new DocumentBuildContext(source.getInfo(), source.getTextModel(), referenceModel, source.getStyleModel());
 
-        Document document = new Document(source.getInfo(), root, referenceModel);
+        Document document = new Document(source.getInfo(), toRootNode(ctx), referenceModel);
 
+        processPotentialReferences(document, ctx);
+
+        return document;
+    }
+
+    /**
+     * Process all dangling potential references.
+     *
+     * @param document of the references
+     * @param ctx      the build context
+     * @throws MissingReferenceTargetException in case a references target is not found
+     */
+    private void processPotentialReferences(Document document, DocumentBuildContext ctx) throws MissingReferenceTargetException {
         // Add potential targets to reference model if the target has been found, otherwise throw an exception
-        for (PotentialInternalReference potentialReference : potentialReferences) {
-            String targetID = labelToNodeID.get(potentialReference.getTargetLabel());
+        for (DocumentBuildContext.PotentialInternalReference potentialReference : ctx.getPotentialReferences()) {
+            String targetID = ctx.getLabelToNodeID().get(potentialReference.getTargetLabel());
             if (targetID == null) {
                 throw new MissingReferenceTargetException(String.format(
                         "Reference target with label '%s' is missing",
@@ -78,15 +107,13 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
                 counterName = thingyNode.getName();
             }
 
-            referenceModel.addReference(new InternalReference(
+            ctx.getReferenceModel().addReference(new InternalReference(
                     potentialReference.getSourceID(),
                     targetID,
                     counterName.toLowerCase(),
                     potentialReference.getPrefix()
             ));
         }
-
-        return document;
     }
 
     /**
@@ -117,17 +144,14 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
     /**
      * Convert the passed models to a document node.
      *
-     * @param textModel      to convert
-     * @param styleModel     to convert
-     * @param referenceModel the reference model
+     * @param ctx the document build context
      * @return the root document node
      */
-    private DocumentNode toRootNode(TextModel textModel, StyleModel styleModel, ReferenceModel referenceModel) throws DocumentBuildException {
+    private DocumentNode toRootNode(DocumentBuildContext ctx) throws DocumentBuildException {
         return processRootNode(
-                textModel.getRoot(),
-                new DocumentNodeStyle(null, styleModel.getBlock("DOCUMENT").orElseThrow().getStyles()),
-                styleModel,
-                referenceModel
+                ctx.getTextModel().getRoot(),
+                new DocumentNodeStyle(null, ctx.getStyleModel().getBlock("DOCUMENT").orElseThrow().getStyles()),
+                ctx
         );
     }
 
@@ -136,15 +160,14 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
      *
      * @param node            to convert
      * @param parentStyleNode the parent style node
-     * @param styleModel      to convert
-     * @param referenceModel  the reference model
+     * @param ctx             the build context
      * @return the root document node
      */
-    private DocumentNode processRootNode(RootNode node, DocumentNodeStyle parentStyleNode, StyleModel styleModel, ReferenceModel referenceModel) throws DocumentBuildException {
+    private DocumentNode processRootNode(RootNode node, DocumentNodeStyle parentStyleNode, DocumentBuildContext ctx) throws DocumentBuildException {
         List<DocumentNode> children = new ArrayList<>();
         if (node.hasChildren()) {
             for (Node child : node.children()) {
-                children.add(processBoxNode((BoxNode) child, parentStyleNode, styleModel, referenceModel));
+                children.add(processBoxNode((BoxNode) child, parentStyleNode, ctx));
             }
         }
 
@@ -156,11 +179,10 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
      *
      * @param node            to process
      * @param parentStyleNode the style node of the parent
-     * @param styleModel      the style model
-     * @param referenceModel  the reference model
+     * @param ctx             the build context
      * @return the box node as a document node
      */
-    private DocumentNode processBoxNode(BoxNode node, DocumentNodeStyle parentStyleNode, StyleModel styleModel, ReferenceModel referenceModel) throws DocumentBuildException {
+    private DocumentNode processBoxNode(BoxNode node, DocumentNodeStyle parentStyleNode, DocumentBuildContext ctx) throws DocumentBuildException {
         // Find child node that may be a thingy node -> in that case we can apply special styles from the style model
         Optional<ThingyNode> optionalThingyNode = getFirstThingyNodeInBox(node);
         String blockName = null;
@@ -175,15 +197,15 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
                     int level = Integer.parseInt(String.valueOf(blockName.charAt(1)));
 
                     // Check if counter size is great enough
-                    while (headlineCounter.size() < level) {
-                        headlineCounter.add(0);
+                    while (ctx.getHeadlineCounter().size() < level) {
+                        ctx.getHeadlineCounter().add(0);
                     }
 
                     // Increase counter for the level
-                    headlineCounter.set(level - 1, headlineCounter.get(level - 1) + 1);
+                    ctx.getHeadlineCounter().set(level - 1, ctx.getHeadlineCounter().get(level - 1) + 1);
 
                     // Save numbering string for later
-                    String numberingString = headlineCounter.stream().map(String::valueOf).collect(Collectors.joining("."));
+                    String numberingString = ctx.getHeadlineCounter().stream().map(String::valueOf).collect(Collectors.joining("."));
                     optionalThingyNode.get().getOptions().put("_numbering", numberingString);
 
                     // Retrieve and store the headline text for later
@@ -193,14 +215,14 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
             }
         }
 
-        StyleBlock styleBlock = getStyleBlock("PARAGRAPH", blockName, styleModel);
+        StyleBlock styleBlock = getStyleBlock("PARAGRAPH", blockName, ctx.getStyleModel());
 
         DocumentNodeStyle styleNode = new DocumentNodeStyle(parentStyleNode, styleBlock.getStyles());
 
         List<DocumentNode> children = new ArrayList<>();
         if (node.hasChildren()) {
             for (Node child : node.children()) {
-                children.add(processNode(child, styleNode, styleModel, referenceModel));
+                children.add(processNode(child, styleNode, ctx));
             }
         }
 
@@ -248,24 +270,23 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
      *
      * @param node            to process
      * @param parentStyleNode the parent style node
-     * @param styleModel      the style model
-     * @param referenceModel  the reference model
+     * @param ctx             the build context
      * @return a document node
      */
-    private DocumentNode processNode(Node node, DocumentNodeStyle parentStyleNode, StyleModel styleModel, ReferenceModel referenceModel) throws DocumentBuildException {
+    private DocumentNode processNode(Node node, DocumentNodeStyle parentStyleNode, DocumentBuildContext ctx) throws DocumentBuildException {
         DocumentNodeStyle style = new DocumentNodeStyle(parentStyleNode, null); // Empty node style TODO Allow styling every node?
 
         List<DocumentNode> children = new ArrayList<>();
         if (node.hasChildren()) {
             for (Node child : node.children()) {
-                children.add(processNode(child, style, styleModel, referenceModel));
+                children.add(processNode(child, style, ctx));
             }
         }
 
         DocumentNode documentNode = new DocumentNode(node, style, children);
 
         if (node.getType() == NodeType.THINGY) {
-            processThingy((ThingyNode) node, documentNode, styleModel, referenceModel);
+            processThingy((ThingyNode) node, documentNode, ctx);
         }
 
         return documentNode;
@@ -274,58 +295,20 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
     /**
      * Process a thingy.
      *
-     * @param thingyNode     to process
-     * @param documentNode   the document node the thingy node is contained in
-     * @param styleModel     to modify (optionally)
-     * @param referenceModel to modify (optionally)
+     * @param thingyNode   to process
+     * @param documentNode the document node the thingy node is contained in
+     * @param ctx          the build context
      */
-    private void processThingy(ThingyNode thingyNode, DocumentNode documentNode, StyleModel styleModel, ReferenceModel referenceModel) throws DocumentBuildException {
+    private void processThingy(ThingyNode thingyNode, DocumentNode documentNode, DocumentBuildContext ctx) throws DocumentBuildException {
         String label = thingyNode.getOptions().get("label");
         if (label != null) {
             // Add as potential target
-            labelToNodeID.put(label, documentNode.getId());
+            ctx.getLabelToNodeID().put(label, documentNode.getId());
         }
 
-        String name = thingyNode.getName().toLowerCase();
-
-        switch (name) {
-            case "ref" -> {
-                // Add potential internal reference
-                if (thingyNode.getArguments().isEmpty()) {
-                    // Expected a target label
-                    throw new MissingReferenceTargetException(String.format(
-                            "Expected #REF# Thingy to include a reference target label as first argument at %s",
-                            thingyNode.getTextPosition()
-                    ));
-                }
-
-                String targetLabel = thingyNode.getArguments().iterator().next();
-                potentialReferences.add(new PotentialInternalReference(
-                        documentNode.getId(),
-                        targetLabel,
-                        thingyNode.getOptions().get("prefix"),
-                        thingyNode.getOptions().get("counter")
-                ));
-            }
-            case "href" -> {
-                // Add external reference to the reference model
-                if (thingyNode.getArguments().isEmpty()) {
-                    // Expected a target URL
-                    throw new MissingReferenceTargetException(String.format(
-                            "Expected #HREF# Thingy to include a reference target URL as first argument at %s",
-                            thingyNode.getTextPosition()
-                    ));
-                }
-
-                String targetURL = thingyNode.getArguments().iterator().next();
-
-                String displayName = thingyNode.getOptions().get("name");
-                if (displayName != null) {
-                    referenceModel.addReference(new ExternalReference(targetURL, documentNode.getId(), displayName));
-                } else {
-                    referenceModel.addReference(new ExternalReference(targetURL, documentNode.getId()));
-                }
-            }
+        Optional<ThingyHandler> optionalThingyHandler = getThingyHandler(thingyNode.getName());
+        if (optionalThingyHandler.isPresent()) {
+            optionalThingyHandler.get().handle(thingyNode, documentNode, ctx);
         }
     }
 
@@ -376,56 +359,6 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
         });
 
         return new StyleBlock(blockName, styles);
-    }
-
-    /**
-     * A potential internal reference.
-     */
-    private static class PotentialInternalReference {
-
-        /**
-         * ID of the source node.
-         */
-        private final String sourceID;
-
-        /**
-         * Label of the target.
-         */
-        private final String targetLabel;
-
-        /**
-         * Prefix to prefix the reference number with.
-         */
-        private final String prefix;
-
-        /**
-         * Name of the counter to use.
-         */
-        private final String counterName;
-
-        public PotentialInternalReference(String sourceID, String targetLabel, String prefix, String counterName) {
-            this.sourceID = sourceID;
-            this.targetLabel = targetLabel;
-            this.prefix = prefix;
-            this.counterName = counterName;
-        }
-
-        public String getSourceID() {
-            return sourceID;
-        }
-
-        public String getTargetLabel() {
-            return targetLabel;
-        }
-
-        public String getPrefix() {
-            return prefix;
-        }
-
-        public String getCounterName() {
-            return counterName;
-        }
-
     }
 
 }
