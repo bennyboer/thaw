@@ -15,6 +15,7 @@ import de.be.thaw.typeset.knuthplass.item.ItemType;
 import de.be.thaw.typeset.knuthplass.item.impl.Glue;
 import de.be.thaw.typeset.knuthplass.item.impl.Penalty;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
+import de.be.thaw.typeset.knuthplass.item.impl.box.PageNumberPlaceholderBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
@@ -168,11 +169,26 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                 }
 
                 if (item instanceof TextBox) {
+                    TextBox tb = (TextBox) item;
+
+                    if (item instanceof PageNumberPlaceholderBox) {
+                        // Replace text with the actual page number we are currently at
+                        String text = String.valueOf(ctx.getCurrentPageNumber());
+
+                        // Measure the page number string and set it on the text box item
+                        try {
+                            var metrics = ctx.getConfig().getFontDetailsSupplier().measureString(tb.getNode(), -1, text);
+                            ((PageNumberPlaceholderBox) item).set(text, metrics.getWidth(), metrics.getKerningAdjustments(), metrics.getFontSize());
+                        } catch (Exception e) {
+                            throw new TypeSettingException(e);
+                        }
+                    }
+
                     ctx.pushPageElement(new TextElement(
-                            ((TextBox) item).getText(),
-                            ((TextBox) item).getFontSize(),
-                            ((TextBox) item).getKerningAdjustments(),
-                            ((TextBox) item).getNode(),
+                            tb.getText(),
+                            tb.getFontSize(),
+                            tb.getKerningAdjustments(),
+                            tb.getNode(),
                             ctx.getCurrentPageNumber(),
                             new Size(item.getWidth(), lineHeight),
                             new Position(ctx.getPositionContext().getX(), ctx.getPositionContext().getY())

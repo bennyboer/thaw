@@ -19,6 +19,7 @@ import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.ExplicitBreakH
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.HeadlineHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.HyperRefHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.ImageHandler;
+import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.PageHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.RefHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.TableOfContentsHandler;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
@@ -47,6 +48,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         initThingyHandler(new RefHandler());
         initThingyHandler(new HeadlineHandler());
         initThingyHandler(new TableOfContentsHandler());
+        initThingyHandler(new PageHandler());
     }
 
     /**
@@ -54,8 +56,14 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
      */
     private final KnuthPlassTypeSettingConfig config;
 
-    public KnuthPlassConverter(KnuthPlassTypeSettingConfig config) {
+    /**
+     * The root node to convert.
+     */
+    private final DocumentNode root;
+
+    public KnuthPlassConverter(DocumentNode root, KnuthPlassTypeSettingConfig config) {
         this.config = config;
+        this.root = root;
     }
 
     /**
@@ -73,7 +81,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
     public List<List<Paragraph>> convert(Document document) throws DocumentConversionException {
         ConversionContext ctx = new ConversionContext(config, document);
 
-        initializeForNode(ctx, document.getRoot());
+        initializeForNode(ctx, root);
 
         // Finalize the last paragraph and list of consecutive paragraphs
         ctx.finalizeParagraph();

@@ -343,7 +343,7 @@ public class ConversionContext {
     public void appendEmptyBoxToParagraph(DocumentNode node, TextParagraph paragraph) {
         double firstLineIndent = node.getStyle().getStyleAttribute(
                 StyleType.TEXT,
-                style -> Optional.of(((TextStyle) style).getFirstLineIndent())
+                style -> Optional.ofNullable(((TextStyle) style).getFirstLineIndent())
         ).orElse(0.0);
 
         paragraph.addItem(new EmptyBox(firstLineIndent));

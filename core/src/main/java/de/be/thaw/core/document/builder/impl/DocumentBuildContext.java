@@ -7,8 +7,10 @@ import de.be.thaw.core.document.builder.impl.thingy.impl.IncludeHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.RefHandler;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.node.style.DocumentNodeStyle;
+import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
+import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.style.Style;
@@ -20,7 +22,13 @@ import de.be.thaw.text.model.tree.impl.BoxNode;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
+import de.be.thaw.text.parser.exception.ParseException;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +86,16 @@ public class DocumentBuildContext {
      * Style model of the document.
      */
     private StyleModel styleModel;
+
+    /**
+     * Mapping of all loaded header nodes.
+     */
+    private final Map<PageRange, DocumentNode> headerNodes = new HashMap<>();
+
+    /**
+     * Mapping of all loaded footer nodes.
+     */
+    private final Map<PageRange, DocumentNode> footerNodes = new HashMap<>();
 
     public DocumentBuildContext(ThawInfo info, TextModel textModel, ReferenceModel referenceModel, StyleModel styleModel) {
         this.info = info;
@@ -137,6 +155,14 @@ public class DocumentBuildContext {
 
     public void setStyleModel(StyleModel styleModel) {
         this.styleModel = styleModel;
+    }
+
+    public Map<PageRange, DocumentNode> getHeaderNodes() {
+        return headerNodes;
+    }
+
+    public Map<PageRange, DocumentNode> getFooterNodes() {
+        return footerNodes;
     }
 
     /**
@@ -315,6 +341,93 @@ public class DocumentBuildContext {
         });
 
         return new StyleBlock(blockName, styles);
+    }
+
+    /**
+     * Load the header or footer node from the passed folder.
+     *
+     * @param folder to load from
+     * @return the loaded node
+     * @throws DocumentBuildException in case the node could not be loaded
+     */
+    public DocumentNode loadHeaderFooterNode(File folder) throws DocumentBuildException {
+        if (!folder.exists()) {
+            throw new DocumentBuildException(String.format(
+                    "Expected the header or footer folder '%s' that has been specified to exist",
+                    folder.getAbsolutePath()
+            ));
+        }
+
+        // Get text file
+        String[] textFiles = folder.list((dir, name) -> name.endsWith(".tdt"));
+        if (textFiles.length == 0) {
+            throw new DocumentBuildException(String.format(
+                    "Could not find a text file (ending with *.tdt) in the header or footer folder specified at '%s'",
+                    folder.getAbsolutePath()
+            ));
+        } else if (textFiles.length > 1) {
+            throw new DocumentBuildException(String.format(
+                    "Could find more than one text file (ending with *.tdt) in the header or footer folder specified at '%s'",
+                    folder.getAbsolutePath()
+            ));
+        }
+        File textFile = new File(folder, textFiles[0]);
+
+        TextModel textModel;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(textFile), ThawContext.getInstance().getEncoding()))) {
+            textModel = ThawContext.getInstance().getTextParser().parse(br);
+        } catch (IOException | ParseException e) {
+            throw new DocumentBuildException(String.format(
+                    "Could not parse text file at '%s' that should be used as header or footer",
+                    textFile.getAbsolutePath()
+            ), e);
+        }
+
+        // Get style model
+        StyleModel styleModel = getStyleModel();
+        String[] styleFiles = folder.list((dir, name) -> name.endsWith(".tds"));
+        if (styleFiles.length > 1) {
+            throw new DocumentBuildException(String.format(
+                    "Could find more than one style file (ending with *.tds) in the folder specified as header or footer at '%s'",
+                    folder.getAbsolutePath()
+            ));
+        } else if (styleFiles.length == 1) {
+            File styleFile = new File(folder, styleFiles[0]);
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(styleFile), ThawContext.getInstance().getEncoding()))) {
+                styleModel = ThawContext.getInstance().getStyleParser().parse(br);
+            } catch (IOException | de.be.thaw.style.parser.exception.ParseException e) {
+                throw new DocumentBuildException(String.format(
+                        "Could not parse style file at '%s' that should be included as header or footer",
+                        styleFile.getAbsolutePath()
+                ));
+            }
+
+            // Merge current style model and the new one
+            styleModel = styleModel.merge(getStyleModel());
+        }
+
+        DocumentNode root = new DocumentNode(
+                textModel.getRoot(),
+                null,
+                new DocumentNodeStyle(null, styleModel.getBlock("DOCUMENT").orElseThrow().getStyles())
+        );
+
+        File oldProcessingFolder = ThawContext.getInstance().getCurrentFolder();
+        ThawContext.getInstance().setCurrentFolder(folder); // Set the currently processing folder
+        StyleModel oldStyleModel = getStyleModel();
+        setStyleModel(styleModel); // Set the new style model
+
+        for (Node node : textModel.getRoot().children()) {
+            if (node.getType() == NodeType.BOX) {
+                processBoxNode((BoxNode) node, root, root.getStyle());
+            }
+        }
+
+        ThawContext.getInstance().setCurrentFolder(oldProcessingFolder); // Reset the currently processing folder
+        setStyleModel(oldStyleModel); // Reset to the old style model
+
+        return root;
     }
 
     /**

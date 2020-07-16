@@ -15,6 +15,7 @@ import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.BackgroundStyle;
 import de.be.thaw.style.model.style.impl.ColorStyle;
 import de.be.thaw.style.model.style.impl.FontStyle;
+import de.be.thaw.style.model.style.impl.HeaderFooterStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.ReferenceStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
@@ -22,8 +23,10 @@ import de.be.thaw.style.model.style.impl.TextStyle;
 import de.be.thaw.style.model.style.text.TextAlignment;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -158,9 +161,38 @@ public class StyleModelDeserializer extends StdDeserializer<StyleModel> {
                 yield new ReferenceStyle(
                         internalColor,
                         externalColor
-                );
+                ).merge(oldStyle);
             }
+            case HEADER_FOOTER -> new HeaderFooterStyle(
+                    node.has("header") ? deserializeHeaderFooterSettings(node.get("header")) : null,
+                    node.has("footer") ? deserializeHeaderFooterSettings(node.get("footer")) : null
+            ).merge(oldStyle);
         };
+    }
+
+    /**
+     * Deserialize the passed node to header footer settings.
+     *
+     * @param node to deserialize
+     * @return the deserialized node
+     */
+    private HeaderFooterStyle.HeaderFooterSettings deserializeHeaderFooterSettings(JsonNode node) {
+        String defaultSrc = node.has("default") ? node.get("default").asText() : null;
+
+        List<HeaderFooterStyle.SpecialHeaderFooterSettings> specialSettings = null;
+        if (node.has("special")) {
+            specialSettings = new ArrayList<>();
+
+            for (JsonNode specialNode : node.get("special")) {
+                Integer startPage = specialNode.has("startPage") ? specialNode.get("startPage").asInt(1) : null;
+                Integer endPage = specialNode.has("endPage") ? specialNode.get("endPage").asInt(Integer.MAX_VALUE) : null;
+                String src = specialNode.get("src").asText();
+
+                specialSettings.add(new HeaderFooterStyle.SpecialHeaderFooterSettings(startPage, endPage, src));
+            }
+        }
+
+        return new HeaderFooterStyle.HeaderFooterSettings(defaultSrc, specialSettings);
     }
 
 }

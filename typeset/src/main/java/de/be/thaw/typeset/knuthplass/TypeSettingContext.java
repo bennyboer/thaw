@@ -1,12 +1,20 @@
 package de.be.thaw.typeset.knuthplass;
 
+import de.be.thaw.core.document.util.PageRange;
+import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
+import de.be.thaw.typeset.knuthplass.util.RethrowingBiFunction;
+import de.be.thaw.typeset.page.AbstractElement;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
+import de.be.thaw.typeset.util.Position;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Context used during typesetting.
@@ -19,14 +27,9 @@ public class TypeSettingContext {
     private final KnuthPlassTypeSettingConfig config;
 
     /**
-     * List of lists of consecutive paragraphs to type set.
-     */
-    private final List<List<Paragraph>> consecutiveParagraphLists;
-
-    /**
      * The currently typeset pages.
      */
-    private List<Page> pages = new ArrayList<>();
+    private final List<Page> pages = new ArrayList<>();
 
     /**
      * Elements of the current page.
@@ -43,9 +46,47 @@ public class TypeSettingContext {
      */
     private final PositionContext positionContext = new PositionContext();
 
-    public TypeSettingContext(KnuthPlassTypeSettingConfig config, List<List<Paragraph>> consecutiveParagraphLists) {
+    /**
+     * The model needed by the typesetter.
+     */
+    private final List<List<Paragraph>> consecutiveParagraphLists;
+
+    /**
+     * All available header paragraph lists.
+     */
+    private final Map<PageRange, List<List<Paragraph>>> headerParagraphs;
+
+    /**
+     * All available footer paragraph lists.
+     */
+    private final Map<PageRange, List<List<Paragraph>>> footerParagraphs;
+
+    /**
+     * Function used to typeset a passed list of paragraphs to pages.
+     * Used to typeset headers and footer paragraph lists on demand.
+     */
+    @Nullable
+    private final RethrowingBiFunction<List<List<Paragraph>>, TypeSettingContext, List<Page>, TypeSettingException> typesettingFunction;
+
+    /**
+     * Offset added to the current page number.
+     * Used for example when typesetting headers and footers on demand.
+     */
+    private int pageNumberOffset = 0;
+
+    public TypeSettingContext(
+            KnuthPlassTypeSettingConfig config,
+            List<List<Paragraph>> consecutiveParagraphLists,
+            @Nullable Map<PageRange, List<List<Paragraph>>> headerParagraphs,
+            @Nullable Map<PageRange, List<List<Paragraph>>> footerParagraphs,
+            @Nullable RethrowingBiFunction<List<List<Paragraph>>, TypeSettingContext, List<Page>, TypeSettingException> typesettingFunction
+    ) {
         this.config = config;
         this.consecutiveParagraphLists = consecutiveParagraphLists;
+
+        this.headerParagraphs = headerParagraphs;
+        this.footerParagraphs = footerParagraphs;
+        this.typesettingFunction = typesettingFunction;
 
         positionContext.setY(config.getPageInsets().getTop()); // Initialize y-offset
     }
@@ -75,16 +116,133 @@ public class TypeSettingContext {
     }
 
     /**
+     * Get the offset added to the page number.
+     *
+     * @return page number offset
+     */
+    public int getPageNumberOffset() {
+        return pageNumberOffset;
+    }
+
+    /**
+     * Set a offset that is added to the page number.
+     *
+     * @param pageNumberOffset to set
+     */
+    public void setPageNumberOffset(int pageNumberOffset) {
+        this.pageNumberOffset = pageNumberOffset;
+    }
+
+    /**
      * Push the current page elements to a new page.
      */
-    public void pushPage() {
-        pages.add(new Page(pages.size() + 1, config.getPageSize(), config.getPageInsets(), currentPageElements));
+    public void pushPage() throws TypeSettingException {
+        addHeaderFooterToPage();
+
+        pages.add(new Page(getCurrentPageNumber(), config.getPageSize(), config.getPageInsets(), currentPageElements));
 
         currentPageElements = new ArrayList<>();
         getPositionContext().setY(config.getPageInsets().getTop());
 
         // Reset the floating configuration
         getFloatConfig().reset();
+    }
+
+    /**
+     * Add a header and footer (if any) to the current page elements.
+     */
+    private void addHeaderFooterToPage() throws TypeSettingException {
+        if (typesettingFunction == null) {
+            return;
+        }
+
+        int currentPageNumber = getCurrentPageNumber();
+
+        List<List<Paragraph>> headerParagraphList = getHeaderFooterForPageNumber(currentPageNumber, headerParagraphs);
+        List<List<Paragraph>> footerParagraphList = getHeaderFooterForPageNumber(currentPageNumber, footerParagraphs);
+
+        if (headerParagraphList != null) {
+            TypeSettingContext newContext = new TypeSettingContext(config, headerParagraphList, null, null, null);
+            newContext.setPageNumberOffset(currentPageNumber - 1);
+
+            List<Page> headerPages = typesettingFunction.apply(headerParagraphList, newContext);
+            Page headerPage = headerPages.get(0); // We are only interested in the first page -> Content should actually be only a portion of one page
+
+            double pageXInsets = headerPage.getInsets().getLeft();
+            double pageYInsets = headerPage.getInsets().getTop();
+
+            headerPage.getElements().sort(Comparator.comparingDouble(e -> e.getPosition().getY() + e.getSize().getHeight()));
+            Element lastElm = headerPage.getElements().get(headerPage.getElements().size() - 1);
+            double maxY = lastElm.getPosition().getY() + lastElm.getSize().getHeight();
+
+            System.out.println(maxY);
+            System.out.println(pageYInsets);
+
+            // Position elements properly on the actual page
+            for (Element element : headerPage.getElements()) {
+                AbstractElement e = (AbstractElement) element;
+
+                e.setPosition(new Position(
+                        element.getPosition().getX() - pageXInsets + config.getPageInsets().getLeft(),
+                        element.getPosition().getY() - maxY + pageYInsets
+                ));
+
+                currentPageElements.add(e);
+            }
+        }
+
+        if (footerParagraphList != null) {
+            TypeSettingContext newContext = new TypeSettingContext(config, footerParagraphList, null, null, null);
+            newContext.setPageNumberOffset(currentPageNumber - 1);
+
+            List<Page> footerPages = typesettingFunction.apply(footerParagraphList, newContext);
+            Page footerPage = footerPages.get(0); // We are only interested in the first page -> Content should actually be only a portion of one page
+
+            double pageXInsets = footerPage.getInsets().getLeft();
+            double pageYInsets = footerPage.getInsets().getTop();
+
+            double startY = config.getPageSize().getHeight() - config.getPageInsets().getBottom();
+
+            // Position elements properly on the actual page
+            for (Element element : footerPage.getElements()) {
+                AbstractElement e = (AbstractElement) element;
+
+                e.setPosition(new Position(
+                        element.getPosition().getX() - pageXInsets + config.getPageInsets().getLeft(),
+                        element.getPosition().getY() - pageYInsets + startY
+                ));
+
+                currentPageElements.add(e);
+            }
+        }
+    }
+
+    /**
+     * Get the header or footer paragraph list for the passed page number from the given lookup.
+     *
+     * @param pageNumber         to get header or footer paragraph list for
+     * @param headerFooterLookup to get list from
+     * @return the paragraph list
+     */
+    private List<List<Paragraph>> getHeaderFooterForPageNumber(int pageNumber, Map<PageRange, List<List<Paragraph>>> headerFooterLookup) {
+        if (headerFooterLookup == null) {
+            return null;
+        }
+
+        for (Map.Entry<PageRange, List<List<Paragraph>>> entry : headerFooterLookup.entrySet()) {
+            PageRange range = entry.getKey();
+            if (range == null) {
+                continue; // Skip the default header or footer entry
+            }
+
+            int startPage = range.getStartPage().orElse(1);
+
+            if (startPage <= pageNumber && (range.getEndPage().isEmpty() || range.getEndPage().get() >= pageNumber)) {
+                return entry.getValue();
+            }
+        }
+
+        return headerFooterLookup.get(null); // Return the default header or footer
     }
 
     /**
@@ -102,7 +260,7 @@ public class TypeSettingContext {
      * @return current page number
      */
     public int getCurrentPageNumber() {
-        return pages.size() + 1;
+        return pages.size() + 1 + getPageNumberOffset();
     }
 
     /**

@@ -1,6 +1,7 @@
 package de.be.thaw.core.document;
 
 import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
 
@@ -33,10 +34,22 @@ public class Document {
      */
     private final Map<String, DocumentNode> nodeLookup = new HashMap<>();
 
-    public Document(ThawInfo info, DocumentNode root, ReferenceModel referenceModel) {
+    /**
+     * Root node for headers (if any).
+     */
+    private final Map<PageRange, DocumentNode> headerNodes;
+
+    /**
+     * Root node for footers (if any).
+     */
+    private final Map<PageRange, DocumentNode> footerNodes;
+
+    public Document(ThawInfo info, DocumentNode root, ReferenceModel referenceModel, Map<PageRange, DocumentNode> headerNodes, Map<PageRange, DocumentNode> footerNodes) {
         this.info = info;
         this.root = root;
         this.referenceModel = referenceModel;
+        this.headerNodes = headerNodes;
+        this.footerNodes = footerNodes;
 
         initLookup(root);
     }
@@ -91,6 +104,24 @@ public class Document {
      */
     public Optional<DocumentNode> getNodeForId(String nodeID) {
         return Optional.ofNullable(nodeLookup.get(nodeID));
+    }
+
+    /**
+     * Get the document nodes for all headers.
+     *
+     * @return header nodes
+     */
+    public Map<PageRange, DocumentNode> getHeaderNodes() {
+        return headerNodes;
+    }
+
+    /**
+     * Get the document nodes for all footers.
+     *
+     * @return footer nodes
+     */
+    public Map<PageRange, DocumentNode> getFooterNodes() {
+        return footerNodes;
     }
 
 }

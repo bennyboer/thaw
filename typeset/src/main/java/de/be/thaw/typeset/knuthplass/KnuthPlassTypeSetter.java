@@ -2,6 +2,8 @@ package de.be.thaw.typeset.knuthplass;
 
 import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
+import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
@@ -15,6 +17,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.TextParagraphHandler
 import de.be.thaw.typeset.page.Page;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -65,18 +68,34 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
     @Override
     public List<Page> typeset(Document document) throws TypeSettingException {
-        // Convert the passed document to a format needed by the Knuth-Plass algorithm.
-        List<List<Paragraph>> paragraphs;
-        try {
-            paragraphs = new KnuthPlassConverter(config).convert(document);
-        } catch (DocumentConversionException e) {
-            throw new TypeSettingException("Could not convert the document into the Knuth-Plass algorithm format", e);
-        }
+        List<List<Paragraph>> consecutiveParagraphLists = convertToParagraphs(document, document.getRoot());
+
+        // Convert headers and footers to paragraph lists for later use during the typesetting
+        Map<PageRange, List<List<Paragraph>>> headerParagraphs = convertHeadersOrFootersToParagraphs(document, document.getHeaderNodes());
+        Map<PageRange, List<List<Paragraph>>> footerParagraphs = convertHeadersOrFootersToParagraphs(document, document.getFooterNodes());
 
         // Creating context used during typesetting.
-        TypeSettingContext ctx = new TypeSettingContext(config, paragraphs);
+        TypeSettingContext ctx = new TypeSettingContext(
+                config,
+                consecutiveParagraphLists,
+                headerParagraphs,
+                footerParagraphs,
+                this::typesetConsecutiveParagraphs
+        );
 
-        for (List<Paragraph> consecutiveParagraphs : paragraphs) {
+        // Type set main document content
+        return typesetConsecutiveParagraphs(consecutiveParagraphLists, ctx);
+    }
+
+    /**
+     * Typeset the passed list of consecutive paragraph lists.
+     *
+     * @param consecutiveParagraphLists a list of consecutive paragraph lists to typeset
+     * @param ctx                       the typesetting context
+     * @return the typeset pages
+     */
+    private List<Page> typesetConsecutiveParagraphs(List<List<Paragraph>> consecutiveParagraphLists, TypeSettingContext ctx) throws TypeSettingException {
+        for (List<Paragraph> consecutiveParagraphs : consecutiveParagraphLists) {
             for (Paragraph paragraph : consecutiveParagraphs) {
                 ParagraphTypesetHandler handler = KnuthPlassTypeSetter.getHandler(paragraph.getType())
                         .orElseThrow(() -> new TypeSettingException(String.format(
@@ -91,6 +110,40 @@ public class KnuthPlassTypeSetter implements TypeSetter {
         }
 
         return ctx.getPages();
+    }
+
+    /**
+     * Convert the passed header or footer document root nodes to lists of consecutive paragraphs.
+     *
+     * @param document to convert node of
+     * @param nodeMap  the header or footer document root node mapping
+     * @return the converted mapping
+     * @throws TypeSettingException in case the headers or footers could not be converted properly
+     */
+    private Map<PageRange, List<List<Paragraph>>> convertHeadersOrFootersToParagraphs(Document document, Map<PageRange, DocumentNode> nodeMap) throws TypeSettingException {
+        Map<PageRange, List<List<Paragraph>>> result = new HashMap<>();
+
+        for (Map.Entry<PageRange, DocumentNode> entry : nodeMap.entrySet()) {
+            result.put(entry.getKey(), convertToParagraphs(document, entry.getValue()));
+        }
+
+        return result;
+    }
+
+    /**
+     * Convert the passed document and root node to paragraphs.
+     *
+     * @param document to convert with
+     * @param root     node to convert
+     * @return a list of consecutive paragraphs
+     * @throws TypeSettingException in case the conversion failed
+     */
+    private List<List<Paragraph>> convertToParagraphs(Document document, DocumentNode root) throws TypeSettingException {
+        try {
+            return new KnuthPlassConverter(root, config).convert(document);
+        } catch (DocumentConversionException e) {
+            throw new TypeSettingException("Could not convert the document into the Knuth-Plass algorithm format", e);
+        }
     }
 
 }

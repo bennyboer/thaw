@@ -115,7 +115,6 @@ public class CLI implements Callable<Integer> {
         System.out.println("### Configuration ###");
 
         Charset charset = getCharset();
-        ThawContext.getInstance().setEncoding(charset);
         System.out.println(String.format("Charset: '%s'", charset.displayName(Locale.ENGLISH)));
 
         System.out.println();
@@ -155,6 +154,7 @@ public class CLI implements Callable<Integer> {
 
             return ErrorResult.INFO_FILE_PARSING_ERROR.getCode();
         }
+        ThawContext.getInstance().setEncoding(info.getEncoding());
 
         String[] textFiles = root.list((dir, name) -> name.endsWith(".tdt"));
 

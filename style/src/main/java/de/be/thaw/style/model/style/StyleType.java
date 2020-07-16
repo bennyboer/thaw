@@ -14,7 +14,8 @@ public enum StyleType {
     BACKGROUND("background"),
     COLOR("color"),
     TEXT("text"),
-    REFERENCE("reference");
+    REFERENCE("reference"),
+    HEADER_FOOTER("header-footer");
 
     /**
      * Lookup of style types by their key.

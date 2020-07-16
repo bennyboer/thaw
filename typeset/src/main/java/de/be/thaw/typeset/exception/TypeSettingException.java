@@ -13,6 +13,10 @@ public class TypeSettingException extends Exception {
         super(message);
     }
 
+    public TypeSettingException(Throwable cause) {
+        super(cause);
+    }
+
     public TypeSettingException(String message, Throwable cause) {
         super(message, cause);
     }

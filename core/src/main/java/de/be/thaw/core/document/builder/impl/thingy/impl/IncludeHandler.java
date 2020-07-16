@@ -120,18 +120,24 @@ public class IncludeHandler implements ThingyHandler {
         }
 
         // Process the nodes in the included files
-        DocumentNode root = documentNode.getParent().getParent();
+        DocumentNode root = documentNode;
+        while (root.getParent() != null) {
+            root = root.getParent();
+        }
 
+        // SET CONTEXT TO THE NEW SETTINGS
         ThawContext.getInstance().setCurrentFolder(subFolder); // Set the currently processing folder for nested #INCLUDE# Thingies
         StyleModel oldStyleModel = ctx.getStyleModel();
         ctx.setStyleModel(styleModel); // Set the new style model
 
+        // Create nodes in the included folder
         for (Node node : textModel.getRoot().children()) {
             if (node.getType() == NodeType.BOX) {
                 ctx.processBoxNode((BoxNode) node, root, root.getStyle());
             }
         }
 
+        // RESET TO OLD SETTINGS
         ThawContext.getInstance().setCurrentFolder(currentProcessingFolder); // Reset the currently processing folder
         ctx.setStyleModel(oldStyleModel); // Reset to the old style model
     }
