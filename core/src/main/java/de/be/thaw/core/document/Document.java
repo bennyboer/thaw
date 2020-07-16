@@ -44,12 +44,28 @@ public class Document {
      */
     private final Map<PageRange, DocumentNode> footerNodes;
 
-    public Document(ThawInfo info, DocumentNode root, ReferenceModel referenceModel, Map<PageRange, DocumentNode> headerNodes, Map<PageRange, DocumentNode> footerNodes) {
+    /**
+     * List of foot notes in the document.
+     * Mapping from source document node ID to the foot note document node.
+     */
+    private final Map<String, DocumentNode> footNotes;
+
+    public Document(
+            ThawInfo info,
+            DocumentNode root,
+            ReferenceModel referenceModel,
+            Map<PageRange, DocumentNode> headerNodes,
+            Map<PageRange, DocumentNode> footerNodes,
+            Map<String, DocumentNode> footNotes
+    ) {
         this.info = info;
         this.root = root;
         this.referenceModel = referenceModel;
+
         this.headerNodes = headerNodes;
         this.footerNodes = footerNodes;
+
+        this.footNotes = footNotes;
 
         initLookup(root);
     }
@@ -122,6 +138,15 @@ public class Document {
      */
     public Map<PageRange, DocumentNode> getFooterNodes() {
         return footerNodes;
+    }
+
+    /**
+     * Get the foot notes mapped by document node IDs.
+     *
+     * @return foot notes
+     */
+    public Map<String, DocumentNode> getFootNotes() {
+        return footNotes;
     }
 
 }

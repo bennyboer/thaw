@@ -20,7 +20,7 @@ public class EscapedState implements State {
     @Override
     public State translate(char c, TokenizingContext ctx) {
         return switch (c) {
-            case '#', '_', '*', '`' -> {
+            case '#', '_', '*', '`', ',' -> {
                 ctx.getBuffer().append(c);
 
                 yield returnState;

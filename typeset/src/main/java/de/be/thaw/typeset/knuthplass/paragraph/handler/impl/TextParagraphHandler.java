@@ -15,12 +15,14 @@ import de.be.thaw.typeset.knuthplass.item.ItemType;
 import de.be.thaw.typeset.knuthplass.item.impl.Glue;
 import de.be.thaw.typeset.knuthplass.item.impl.Penalty;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
+import de.be.thaw.typeset.knuthplass.item.impl.box.FootNoteBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.PageNumberPlaceholderBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
+import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.impl.TextElement;
 import de.be.thaw.typeset.util.Position;
 import de.be.thaw.typeset.util.Size;
@@ -116,7 +118,23 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         for (int i = 0; i < lines.size(); i++) {
             List<Item> line = lines.get(i);
 
-            double availableHeight = (ctx.getConfig().getPageSize().getHeight() - ctx.getConfig().getPageInsets().getBottom()) - ctx.getPositionContext().getY();
+            // Check if line contains foot note -> must fit on the current page!
+            for (Item item : line) {
+                if (item instanceof FootNoteBox) {
+                    // Push foot note to be included on the page
+                    ctx.pushFootNote(((FootNoteBox) item).getNode());
+
+                    if (getAvailableHeight(ctx) < lineHeight) {
+                        // Create new page first as foot note and foot note reference do not fit on the same page anymore
+                        List<Element> footNoteElements = ctx.popFootNote(); // Pop the last foot note again from the current page
+                        ctx.pushPage(); // Push the next page
+                        ctx.pushFootNote(footNoteElements);
+                    }
+                }
+            }
+
+            // Check if there is enough space for the line
+            double availableHeight = getAvailableHeight(ctx);
             if (availableHeight < lineHeight) {
                 // Not enough space for this line left on the current page -> Create next page
                 ctx.pushPage();
@@ -229,6 +247,10 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         }
 
         ctx.getPositionContext().increaseY(insetsStyle.getBottom());
+    }
+
+    private double getAvailableHeight(TypeSettingContext ctx) {
+        return (ctx.getConfig().getPageSize().getHeight() - ctx.getConfig().getPageInsets().getBottom()) - ctx.getPositionContext().getY() - ctx.getCurrentFootNoteElementsHeight();
     }
 
     /**

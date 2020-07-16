@@ -35,7 +35,14 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
         DocumentNode root = toRootNode(ctx);
         loadHeadersAndFooters(root, ctx);
 
-        Document document = new Document(source.getInfo(), root, referenceModel, ctx.getHeaderNodes(), ctx.getFooterNodes());
+        Document document = new Document(
+                source.getInfo(),
+                root,
+                referenceModel,
+                ctx.getHeaderNodes(),
+                ctx.getFooterNodes(),
+                ctx.getFootNotes()
+        );
 
         processPotentialReferences(document, ctx);
 

@@ -2,6 +2,7 @@ package de.be.thaw.core.document.builder.impl;
 
 import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.thingy.ThingyHandler;
+import de.be.thaw.core.document.builder.impl.thingy.impl.FootNoteHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.HyperRefHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.IncludeHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.RefHandler;
@@ -50,6 +51,7 @@ public class DocumentBuildContext {
         initThingyHandler(new RefHandler());
         initThingyHandler(new HyperRefHandler());
         initThingyHandler(new IncludeHandler());
+        initThingyHandler(new FootNoteHandler());
     }
 
     /**
@@ -96,6 +98,11 @@ public class DocumentBuildContext {
      * Mapping of all loaded footer nodes.
      */
     private final Map<PageRange, DocumentNode> footerNodes = new HashMap<>();
+
+    /**
+     * List of foot notes mapped by document node IDs.
+     */
+    private final Map<String, DocumentNode> footNotes = new HashMap<>();
 
     public DocumentBuildContext(ThawInfo info, TextModel textModel, ReferenceModel referenceModel, StyleModel styleModel) {
         this.info = info;
@@ -163,6 +170,10 @@ public class DocumentBuildContext {
 
     public Map<PageRange, DocumentNode> getFooterNodes() {
         return footerNodes;
+    }
+
+    public Map<String, DocumentNode> getFootNotes() {
+        return footNotes;
     }
 
     /**

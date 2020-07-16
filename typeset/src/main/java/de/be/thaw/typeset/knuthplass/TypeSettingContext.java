@@ -1,5 +1,7 @@
 package de.be.thaw.typeset.knuthplass;
 
+import de.be.thaw.core.document.Document;
+import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
@@ -35,6 +37,16 @@ public class TypeSettingContext {
      * Elements of the current page.
      */
     private List<Element> currentPageElements = new ArrayList<>();
+
+    /**
+     * Current foot note page elements.
+     */
+    private List<List<Element>> currentFootNotePageElements = new ArrayList<>();
+
+    /**
+     * Current height used by foot note elements.
+     */
+    private double currentFootNoteElementsHeight = 0;
 
     /**
      * The current floating configuration.
@@ -74,21 +86,53 @@ public class TypeSettingContext {
      */
     private int pageNumberOffset = 0;
 
+    /**
+     * The source Thaw document.
+     */
+    private final Document document;
+
+    /**
+     * Foot note paragraphs in the document to typeset.
+     */
+    private final Map<String, List<List<Paragraph>>> footNoteParagraphs;
+
+    /**
+     * Current foot note index.
+     */
+    private int footNoteNumber = 1;
+
     public TypeSettingContext(
             KnuthPlassTypeSettingConfig config,
+            Document document,
             List<List<Paragraph>> consecutiveParagraphLists,
             @Nullable Map<PageRange, List<List<Paragraph>>> headerParagraphs,
             @Nullable Map<PageRange, List<List<Paragraph>>> footerParagraphs,
+            @Nullable Map<String, List<List<Paragraph>>> footNoteParagraphs,
             @Nullable RethrowingBiFunction<List<List<Paragraph>>, TypeSettingContext, List<Page>, TypeSettingException> typesettingFunction
     ) {
         this.config = config;
+        this.document = document;
         this.consecutiveParagraphLists = consecutiveParagraphLists;
 
         this.headerParagraphs = headerParagraphs;
         this.footerParagraphs = footerParagraphs;
+        this.footNoteParagraphs = footNoteParagraphs;
         this.typesettingFunction = typesettingFunction;
 
         positionContext.setY(config.getPageInsets().getTop()); // Initialize y-offset
+    }
+
+    /**
+     * Current height taken up by foot notes.
+     *
+     * @return current height taken up by foot notes
+     */
+    public double getCurrentFootNoteElementsHeight() {
+        return currentFootNoteElementsHeight;
+    }
+
+    public Document getDocument() {
+        return document;
     }
 
     public KnuthPlassTypeSettingConfig getConfig() {
@@ -138,6 +182,7 @@ public class TypeSettingContext {
      */
     public void pushPage() throws TypeSettingException {
         addHeaderFooterToPage();
+        addFootNotesToPage();
 
         pages.add(new Page(getCurrentPageNumber(), config.getPageSize(), config.getPageInsets(), currentPageElements));
 
@@ -146,6 +191,36 @@ public class TypeSettingContext {
 
         // Reset the floating configuration
         getFloatConfig().reset();
+    }
+
+    /**
+     * Add all pending foot notes to the page.
+     */
+    private void addFootNotesToPage() {
+        double startY = config.getPageSize().getHeight() - config.getPageInsets().getBottom() - currentFootNoteElementsHeight;
+
+        for (List<Element> elements : currentFootNotePageElements) {
+            // Position the elements properly
+            double maxY = 0;
+            for (Element element : elements) {
+                AbstractElement e = (AbstractElement) element;
+                e.setPosition(new Position(
+                        element.getPosition().getX(),
+                        element.getPosition().getY() - config.getPageInsets().getTop() + startY
+                ));
+
+                if (element.getPosition().getY() + element.getSize().getHeight() > maxY) {
+                    maxY = element.getPosition().getY() + element.getSize().getHeight();
+                }
+            }
+
+            currentPageElements.addAll(elements);
+
+            startY = maxY;
+        }
+
+        currentFootNotePageElements.clear();
+        currentFootNoteElementsHeight = 0;
     }
 
     /**
@@ -162,7 +237,7 @@ public class TypeSettingContext {
         List<List<Paragraph>> footerParagraphList = getHeaderFooterForPageNumber(currentPageNumber, footerParagraphs);
 
         if (headerParagraphList != null) {
-            TypeSettingContext newContext = new TypeSettingContext(config, headerParagraphList, null, null, null);
+            TypeSettingContext newContext = new TypeSettingContext(config, document, headerParagraphList, null, null, null, null);
             newContext.setPageNumberOffset(currentPageNumber - 1);
 
             List<Page> headerPages = typesettingFunction.apply(headerParagraphList, newContext);
@@ -174,9 +249,6 @@ public class TypeSettingContext {
             headerPage.getElements().sort(Comparator.comparingDouble(e -> e.getPosition().getY() + e.getSize().getHeight()));
             Element lastElm = headerPage.getElements().get(headerPage.getElements().size() - 1);
             double maxY = lastElm.getPosition().getY() + lastElm.getSize().getHeight();
-
-            System.out.println(maxY);
-            System.out.println(pageYInsets);
 
             // Position elements properly on the actual page
             for (Element element : headerPage.getElements()) {
@@ -192,7 +264,7 @@ public class TypeSettingContext {
         }
 
         if (footerParagraphList != null) {
-            TypeSettingContext newContext = new TypeSettingContext(config, footerParagraphList, null, null, null);
+            TypeSettingContext newContext = new TypeSettingContext(config, document, footerParagraphList, null, null, null, null);
             newContext.setPageNumberOffset(currentPageNumber - 1);
 
             List<Page> footerPages = typesettingFunction.apply(footerParagraphList, newContext);
@@ -261,6 +333,56 @@ public class TypeSettingContext {
      */
     public int getCurrentPageNumber() {
         return pages.size() + 1 + getPageNumberOffset();
+    }
+
+    /**
+     * Push a foot note to the current page.
+     */
+    public void pushFootNote(DocumentNode node) throws TypeSettingException {
+        List<List<Paragraph>> paragraphLists = footNoteParagraphs.get(node.getId());
+        List<Page> pages = typesettingFunction.apply(paragraphLists, new TypeSettingContext(config, document, paragraphLists, null, null, null, null));
+        Page page = pages.get(0);
+
+        page.getElements().sort(Comparator.comparingDouble(e -> e.getPosition().getY() + e.getSize().getHeight()));
+        Element lastElement = page.getElements().get(page.getElements().size() - 1);
+        double height = lastElement.getPosition().getY() + lastElement.getSize().getHeight() - page.getInsets().getTop();
+
+        // TODO Add foot note number as element
+        currentFootNotePageElements.add(page.getElements());
+        currentFootNoteElementsHeight += height;
+
+        footNoteNumber++;
+    }
+
+    /**
+     * Push a foot note by its elements.
+     *
+     * @param elements to push
+     */
+    public void pushFootNote(List<Element> elements) {
+        Element lastElement = elements.get(elements.size() - 1);
+        double height = lastElement.getPosition().getY() + lastElement.getSize().getHeight() - config.getPageInsets().getTop();
+        currentFootNoteElementsHeight += height;
+        currentFootNotePageElements.add(elements);
+    }
+
+    /**
+     * Pop the last foot notes elements.
+     *
+     * @return last foot notes elements
+     */
+    public List<Element> popFootNote() {
+        if (currentFootNotePageElements.size() > 0) {
+            List<Element> elements = currentFootNotePageElements.get(currentFootNotePageElements.size() - 1);
+            Element lastElement = elements.get(elements.size() - 1);
+            double height = lastElement.getPosition().getY() + lastElement.getSize().getHeight() - config.getPageInsets().getTop();
+
+            currentFootNoteElementsHeight -= height;
+
+            return currentFootNotePageElements.remove(currentFootNotePageElements.size() - 1);
+        }
+
+        return null;
     }
 
     /**

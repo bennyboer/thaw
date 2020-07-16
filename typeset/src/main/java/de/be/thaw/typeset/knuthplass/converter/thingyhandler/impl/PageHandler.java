@@ -24,7 +24,7 @@ public class PageHandler implements ThingyHandler {
     public void handle(ThingyNode node, DocumentNode documentNode, ConversionContext ctx) throws DocumentConversionException {
         if (!(ctx.getCurrentParagraph() instanceof TextParagraph)) {
             throw new DocumentConversionException(String.format(
-                    "Expected the #REF# Thingy to be inside a text paragraph at %s",
+                    "Expected the #PAGE# Thingy to be inside a text paragraph at %s",
                     node.getTextPosition()
             ));
         }

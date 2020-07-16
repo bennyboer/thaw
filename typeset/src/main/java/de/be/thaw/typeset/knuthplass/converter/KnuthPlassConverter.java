@@ -16,6 +16,7 @@ import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.ExplicitBreakHandler;
+import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.FootNoteHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.HeadlineHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.HyperRefHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.ImageHandler;
@@ -49,6 +50,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         initThingyHandler(new HeadlineHandler());
         initThingyHandler(new TableOfContentsHandler());
         initThingyHandler(new PageHandler());
+        initThingyHandler(new FootNoteHandler());
     }
 
     /**
