@@ -4,11 +4,17 @@ import de.be.thaw.reference.citation.CitationStyle;
 import de.be.thaw.reference.citation.source.Source;
 import de.be.thaw.reference.citation.source.SourceType;
 import de.be.thaw.reference.citation.styles.SourceHandler;
+import de.be.thaw.reference.citation.styles.apa.handler.ArticleHandler;
 import de.be.thaw.reference.citation.styles.apa.handler.BookHandler;
+import de.be.thaw.reference.citation.styles.apa.handler.EBookHandler;
+import de.be.thaw.reference.citation.styles.apa.handler.OnlineBookHandler;
 import de.be.thaw.reference.citation.styles.exception.ReferenceBuildException;
 import de.be.thaw.reference.citation.styles.exception.UnsupportedSourceTypeException;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -25,6 +31,9 @@ public class APA implements CitationStyle {
 
     static {
         initSourceHandler(new BookHandler());
+        initSourceHandler(new EBookHandler());
+        initSourceHandler(new OnlineBookHandler());
+        initSourceHandler(new ArticleHandler());
     }
 
     /**
@@ -62,11 +71,24 @@ public class APA implements CitationStyle {
     }
 
     @Override
-    public String buildInTextCitation(Source source) throws UnsupportedSourceTypeException, ReferenceBuildException {
-        return getSourceHandler(source.getType()).orElseThrow(() -> new UnsupportedSourceTypeException(String.format(
-                "Could not build in-text-citation because the source type '%s' is not supported by the citation style",
-                source.getType().name()
-        ))).buildInTextCitation(source);
+    public String buildInTextCitation(List<Source> sources, List<String> positions) throws UnsupportedSourceTypeException, ReferenceBuildException {
+        List<String> parts = new ArrayList<>(sources.size());
+
+        for (int i = 0; i < sources.size(); i++) {
+            Source source = sources.get(i);
+            String position = positions.get(i);
+
+            parts.add(getSourceHandler(source.getType()).orElseThrow(() -> new UnsupportedSourceTypeException(String.format(
+                    "Could not build in-text-citation because the source type '%s' is not supported by the citation style",
+                    source.getType().name()
+            ))).buildInTextCitation(source, position));
+        }
+
+        // Sort sources alphabetically
+        Collections.sort(parts);
+
+        // Separate the individual sources by semicolons
+        return String.join("; ", parts);
     }
 
 }

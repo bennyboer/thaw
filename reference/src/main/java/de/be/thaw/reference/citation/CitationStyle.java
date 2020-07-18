@@ -4,6 +4,8 @@ import de.be.thaw.reference.citation.source.Source;
 import de.be.thaw.reference.citation.styles.exception.ReferenceBuildException;
 import de.be.thaw.reference.citation.styles.exception.UnsupportedSourceTypeException;
 
+import java.util.List;
+
 /**
  * Representation of a citation style.
  */
@@ -28,11 +30,12 @@ public interface CitationStyle {
     String buildReferenceListEntry(Source source) throws UnsupportedSourceTypeException, ReferenceBuildException;
 
     /**
-     * Build an in-text-citation for the passed source.
+     * Build an in-text-citation for the passed sources.
      *
-     * @param source to build in-text-citation for.
+     * @param sources   to build in-text-citation for.
+     * @param positions of the citation in the sources
      * @return the in-text-citation
      */
-    String buildInTextCitation(Source source) throws UnsupportedSourceTypeException, ReferenceBuildException;
+    String buildInTextCitation(List<Source> sources, List<String> positions) throws UnsupportedSourceTypeException, ReferenceBuildException;
 
 }

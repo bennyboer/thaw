@@ -29,9 +29,10 @@ public interface SourceHandler {
     /**
      * Build an in-text-citation.
      *
-     * @param source to build for
+     * @param source   to build for
+     * @param position in the source (may be a page)
      * @return the Thaw document text formatted string
      */
-    String buildInTextCitation(Source source) throws ReferenceBuildException;
+    String buildInTextCitation(Source source, String position) throws ReferenceBuildException;
 
 }
