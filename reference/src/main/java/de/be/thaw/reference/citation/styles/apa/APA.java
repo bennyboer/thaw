@@ -63,7 +63,7 @@ public class APA implements CitationStyle {
     /**
      * Settings for the citation style.
      */
-    private final APASettings settings;
+    private APASettings settings;
 
     /**
      * Mapping of source identifiers to their reference list entry.
@@ -75,6 +75,24 @@ public class APA implements CitationStyle {
     }
 
     public APA(APASettings settings) {
+        this.settings = settings;
+    }
+
+    /**
+     * Get the settings.
+     *
+     * @return settings
+     */
+    public APASettings getSettings() {
+        return settings;
+    }
+
+    /**
+     * Set the APA specific settings.
+     *
+     * @param settings to set
+     */
+    public void setSettings(APASettings settings) {
         this.settings = settings;
     }
 

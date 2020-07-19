@@ -12,6 +12,7 @@ import de.be.thaw.info.parser.impl.DefaultInfoParser;
 import de.be.thaw.reference.citation.source.model.SourceModel;
 import de.be.thaw.reference.citation.source.model.parser.SourceParser;
 import de.be.thaw.reference.citation.source.model.parser.impl.DefaultSourceParser;
+import de.be.thaw.reference.citation.styles.CitationStyles;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.parser.StyleParser;
@@ -245,7 +246,7 @@ public class CLI implements Callable<Integer> {
                 return ErrorResult.SOURCE_FILE_PARSING_ERROR.getCode();
             }
         } else {
-            sourceModel = new SourceModel(); // Empty source model
+            sourceModel = new SourceModel(CitationStyles.getDefault()); // Empty source model
         }
 
         Document document = new DefaultDocumentBuilder().build(new DocumentBuildSource(

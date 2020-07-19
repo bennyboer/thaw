@@ -1,6 +1,7 @@
 package de.be.thaw.reference.citation.source.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.be.thaw.reference.citation.CitationStyle;
 import de.be.thaw.reference.citation.source.Source;
 import de.be.thaw.reference.citation.source.model.parser.impl.SourceModelDeserializer;
 
@@ -18,6 +19,15 @@ public class SourceModel {
      * All sources mapped by their identifiers.
      */
     private final Map<String, Source> sources = new HashMap<>();
+
+    /**
+     * The citation style to use.
+     */
+    private final CitationStyle style;
+
+    public SourceModel(CitationStyle style) {
+        this.style = style;
+    }
 
     /**
      * Add a source.

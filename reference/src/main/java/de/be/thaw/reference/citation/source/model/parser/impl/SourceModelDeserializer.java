@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import de.be.thaw.reference.citation.CitationStyle;
 import de.be.thaw.reference.citation.source.Source;
 import de.be.thaw.reference.citation.source.contributor.Author;
 import de.be.thaw.reference.citation.source.contributor.Contributor;
@@ -17,6 +18,9 @@ import de.be.thaw.reference.citation.source.impl.book.Book;
 import de.be.thaw.reference.citation.source.impl.book.EBook;
 import de.be.thaw.reference.citation.source.impl.book.OnlineBook;
 import de.be.thaw.reference.citation.source.model.SourceModel;
+import de.be.thaw.reference.citation.styles.CitationStyles;
+import de.be.thaw.reference.citation.styles.apa.APA;
+import de.be.thaw.reference.citation.styles.apa.APASettings;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -25,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -44,14 +49,81 @@ public class SourceModelDeserializer extends StdDeserializer<SourceModel> {
 
     @Override
     public SourceModel deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        SourceModel sourceModel = new SourceModel();
-
         JsonNode root = p.getCodec().readTree(p);
-        for (JsonNode sourceNode : root) {
+
+        SourceModel sourceModel = new SourceModel(parseCitationStyle(root));
+
+        for (JsonNode sourceNode : root.get("sources")) {
             sourceModel.addSource(toSource(sourceNode));
         }
 
         return sourceModel;
+    }
+
+    /**
+     * Parse the citation style from the passed node.
+     *
+     * @param node to get citation style for
+     * @return the citation style
+     * @throws IOException in case the citation style could not be parsed
+     */
+    private CitationStyle parseCitationStyle(JsonNode node) throws IOException {
+        if (!node.has("style")) {
+            // Return default citation style
+            return CitationStyles.getDefault();
+        }
+
+        JsonNode styleNode = node.get("style");
+        if (!styleNode.has("name")) {
+            throw new IOException("The 'style' node needs to contain the citation style 'name' attribute");
+        }
+        String name = styleNode.get("name").asText();
+
+        Optional<CitationStyle> citationStyleOptional = CitationStyles.getCitationStyle(name);
+        if (citationStyleOptional.isEmpty()) {
+            throw new IOException(String.format("Could not find citation style with name '%s'", name));
+        }
+
+        CitationStyle style = citationStyleOptional.get();
+
+        if (styleNode.has("settings")) {
+            switch (style.getName()) {
+                case "APA" -> parseAPASettings(style, styleNode.get("settings"));
+            }
+        }
+
+        return style;
+    }
+
+    /**
+     * Parse settings for the APA citation style.
+     *
+     * @param style to parse settings for
+     * @param node  to parse from
+     * @throws IOException in case the settings could not be parsed
+     */
+    private void parseAPASettings(CitationStyle style, JsonNode node) throws IOException {
+        APASettings settings = new APASettings();
+
+        if (node.has("noDateStr")) {
+            settings.setNoDateStr(node.get("noDateStr").asText());
+        }
+        if (node.has("startQuotationMark")) {
+            settings.setStartQuotationMark(node.get("startQuotationMark").asText());
+        }
+        if (node.has("endQuotationMark")) {
+            settings.setEndQuotationMark(node.get("endQuotationMark").asText());
+        }
+        if (node.has("andStr")) {
+            settings.setAndStr(node.get("andStr").asText());
+        }
+        if (node.has("dateFormat")) {
+            String dateFormatStr = node.get("dateFormat").asText();
+            settings.setDateFormat(new SimpleDateFormat(dateFormatStr));
+        }
+
+        APA apa = (APA) style;
+        apa.setSettings(settings);
     }
 
     /**
