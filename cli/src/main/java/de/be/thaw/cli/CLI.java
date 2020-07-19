@@ -9,6 +9,9 @@ import de.be.thaw.export.pdf.PdfExporter;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.info.parser.InfoParser;
 import de.be.thaw.info.parser.impl.DefaultInfoParser;
+import de.be.thaw.reference.citation.source.model.SourceModel;
+import de.be.thaw.reference.citation.source.model.parser.SourceParser;
+import de.be.thaw.reference.citation.source.model.parser.impl.DefaultSourceParser;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.parser.StyleParser;
@@ -192,7 +195,7 @@ public class CLI implements Callable<Integer> {
         ThawContext.getInstance().setStyleParser(styleParser);
         StyleModel styleModel;
         if (styleFiles.length > 1) {
-            System.err.println(String.format("There are more than one Thaw style file (ending with *.tds) in the folder at '%s'", root.getAbsolutePath()));
+            System.err.println(String.format("There are more than one Thaw style files (ending with *.tds) in the folder at '%s'", root.getAbsolutePath()));
             return ErrorResult.MORE_THAN_ONE_STYLE_FILE.getCode();
         } else if (styleFiles.length == 1) {
             System.out.println(String.format("Processing Thaw style file '%s'...", styleFiles[0]));
@@ -216,10 +219,40 @@ public class CLI implements Callable<Integer> {
             styleModel = StyleModel.defaultModel();
         }
 
+        String[] sourceFiles = root.list((dir, name) -> name.endsWith(".tdr"));
+
+        SourceParser sourceParser = new DefaultSourceParser();
+        ThawContext.getInstance().setSourceParser(sourceParser);
+        SourceModel sourceModel;
+        if (sourceFiles.length > 1) {
+            System.err.println(String.format("There are more than one Thaw source files (ending with *.tdr) in the folder at '%s'", root.getAbsolutePath()));
+            return ErrorResult.MORE_THAN_ONE_SOURCE_FILE.getCode();
+        } else if (styleFiles.length == 1) {
+            System.out.println(String.format("Processing Thaw source file '%s'...", sourceFiles[0]));
+
+            File sourceFile = new File(root, sourceFiles[0]);
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile), info.getEncoding()))) {
+                sourceModel = sourceParser.parse(br);
+            } catch (de.be.thaw.reference.citation.source.model.parser.exception.ParseException e) {
+                System.err.println(String.format(
+                        "An exception occurred while trying to parse the provided source file at '%s'.\n" +
+                                "The exception message is: '%s'",
+                        sourceFile.getAbsolutePath(),
+                        e.getMessage()
+                ));
+
+                return ErrorResult.SOURCE_FILE_PARSING_ERROR.getCode();
+            }
+        } else {
+            sourceModel = new SourceModel(); // Empty source model
+        }
+
         Document document = new DefaultDocumentBuilder().build(new DocumentBuildSource(
                 info,
                 textModel,
-                styleModel
+                styleModel,
+                sourceModel
         ));
 
         Exporter exporter = new PdfExporter();

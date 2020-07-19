@@ -22,7 +22,7 @@ public class DefaultStyleParser implements StyleParser {
         try {
             return objectReader.readValue(reader, StyleModel.class);
         } catch (IOException e) {
-            throw new ParseException("Could not parse the provided style format", e);
+            throw new ParseException(String.format("Could not parse the provided style format: %s", e.getMessage()), e);
         }
     }
 

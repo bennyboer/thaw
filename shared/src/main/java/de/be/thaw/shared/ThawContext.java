@@ -1,6 +1,7 @@
 package de.be.thaw.shared;
 
 import de.be.thaw.info.parser.InfoParser;
+import de.be.thaw.reference.citation.source.model.parser.SourceParser;
 import de.be.thaw.style.parser.StyleParser;
 import de.be.thaw.text.parser.TextParser;
 
@@ -36,6 +37,11 @@ public class ThawContext {
      * Style parser to use.
      */
     private StyleParser styleParser;
+
+    /**
+     * Style parser to use.
+     */
+    private SourceParser sourceParser;
 
     /**
      * The encoding of the current Thaw project.
@@ -142,6 +148,24 @@ public class ThawContext {
      */
     public void setStyleParser(StyleParser styleParser) {
         this.styleParser = styleParser;
+    }
+
+    /**
+     * Get the source parser to use.
+     *
+     * @return source parser
+     */
+    public SourceParser getSourceParser() {
+        return sourceParser;
+    }
+
+    /**
+     * Set the source parser to use.
+     *
+     * @param sourceParser to set
+     */
+    public void setSourceParser(SourceParser sourceParser) {
+        this.sourceParser = sourceParser;
     }
 
     /**
