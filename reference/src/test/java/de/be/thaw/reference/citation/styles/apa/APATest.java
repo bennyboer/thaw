@@ -81,7 +81,8 @@ public class APATest {
         Book book = new Book("identifier", SINGLE_AUTHOR, "My fantastic book title", 2020);
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
+        ;
 
         Assertions.assertEquals("(Mustermann, 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M. (2020). *My fantastic book title*.", referenceListEntry);
@@ -92,7 +93,8 @@ public class APATest {
         Book book = new Book("identifier", THREE_AUTHORS, "My fantastic book title", 2020);
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
+        ;
 
         Assertions.assertEquals("(Mustermann, Doe & Eder, 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J. & Eder, B. (2020). *My fantastic book title*.", referenceListEntry);
@@ -107,7 +109,7 @@ public class APATest {
         Book book = new Book("id", SINGLE_ORGANISATION_AUTHOR, "My fantastic book title", 2020);
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Thaw Inc., 2020)", inTextCitation);
         Assertions.assertEquals("Thaw Inc. (2020). *My fantastic book title*.", referenceListEntry);
@@ -118,7 +120,7 @@ public class APATest {
         Book book = new Book("id", MIXED_AUTHOR_TYPES, "My fantastic book title", 2020);
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Thaw Inc. & Mustermann, 2020)", inTextCitation);
         Assertions.assertEquals("Thaw Inc. & Mustermann, M. (2020). *My fantastic book title*.", referenceListEntry);
@@ -133,7 +135,7 @@ public class APATest {
         Book book = new Book("id", FIVE_AUTHORS, "My fantastic book title", 2020);
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Mustermann et al., 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Name, A. & Disney, W. (2020). *My fantastic book title*.", referenceListEntry);
@@ -152,7 +154,7 @@ public class APATest {
         book.setPublisher("Thaw");
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Mustermann et al., 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title*. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor) (2nd Edition). Munich, Germany: Thaw", referenceListEntry);
@@ -168,7 +170,7 @@ public class APATest {
         book.setPublisher("Thaw");
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Mustermann et al., 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title*. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor). Thaw", referenceListEntry);
@@ -185,7 +187,7 @@ public class APATest {
         book.setPublisher("Thaw");
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Mustermann et al., 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title*. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor). Germany: Thaw", referenceListEntry);
@@ -239,7 +241,7 @@ public class APATest {
         book.setFormatInformation("epub");
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Mustermann, 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M. (2020). *My fantastic ebook title* [epub]. https://doi.org/10.1109/5.771073", referenceListEntry);
@@ -261,7 +263,7 @@ public class APATest {
         book.setPublisher("Thaw");
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Mustermann, 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M. (2020). *My fantastic ebook title* [epub]. Munich, Germany: Thaw. https://doi.org/10.1109/5.771073", referenceListEntry);
@@ -277,7 +279,7 @@ public class APATest {
         book.setUrl("https://ieeexplore.ieee.org/document/771073");
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Mustermann, 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M. (2020). *My fantastic ebook title*. https://ieeexplore.ieee.org/document/771073", referenceListEntry);
@@ -298,7 +300,7 @@ public class APATest {
         book.setFormatInformation("Kindle");
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, false, "para. 5")));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Mustermann et al., 2020, para. 5)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title* [Kindle]. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor) (2nd Edition). Munich, Germany: Thaw. https://doi.org/10.1109/5.771073", referenceListEntry);
@@ -318,7 +320,7 @@ public class APATest {
         book.setDoi("10.1109/5.771073");
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, false, "para. 5")));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Mustermann et al., 2020, para. 5)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title*. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor) (2nd Edition). Munich, Germany: Thaw. https://doi.org/10.1109/5.771073", referenceListEntry);
@@ -334,7 +336,7 @@ public class APATest {
         book.setUrl("https://ieeexplore.ieee.org/document/771073");
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, false, "para. 5")));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Mustermann et al., 2020, para. 5)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title*. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor). https://ieeexplore.ieee.org/document/771073", referenceListEntry);
@@ -359,7 +361,7 @@ public class APATest {
         );
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(article, false, "p. 23")));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Paskin, 1999, p. 23)", inTextCitation);
         Assertions.assertEquals("Paskin, N. (1999). Toward unique identifiers. *Proceedings of the IEEE*, 87(7), S. 1208 - 1227. 10.1109/5.771073", referenceListEntry);
@@ -380,7 +382,7 @@ public class APATest {
         Website website = new Website("id", "My fancy website title", "https://www.example.com", retrievalDate);
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(website, false)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(\"My fancy website title\", n. d.)", inTextCitation);
         Assertions.assertEquals("My fancy website title. (n. d.). Retrieved 2020-08-19 from https://www.example.com", referenceListEntry);
@@ -408,7 +410,7 @@ public class APATest {
         website.setAuthors(Collections.singletonList(new Author(new NamedContributor("Benjamin", "Eder"))));
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(website, false)));
-        String referenceListEntry = apa.getReferenceListEntries().get(0);
+        String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Eder, 2020)", inTextCitation);
         Assertions.assertEquals("Eder, B. (2020-07-20). My fancy website title. Retrieved 2020-08-19 from https://www.example.com", referenceListEntry);
