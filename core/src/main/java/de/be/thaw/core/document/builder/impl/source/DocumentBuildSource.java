@@ -1,6 +1,7 @@
 package de.be.thaw.core.document.builder.impl.source;
 
 import de.be.thaw.info.ThawInfo;
+import de.be.thaw.reference.citation.source.model.SourceModel;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.text.model.TextModel;
 
@@ -24,10 +25,16 @@ public class DocumentBuildSource {
      */
     private final StyleModel styleModel;
 
-    public DocumentBuildSource(ThawInfo info, TextModel textModel, StyleModel styleModel) {
+    /**
+     * The source model.
+     */
+    private final SourceModel sourceModel;
+
+    public DocumentBuildSource(ThawInfo info, TextModel textModel, StyleModel styleModel, SourceModel sourceModel) {
         this.info = info;
         this.textModel = textModel;
         this.styleModel = styleModel;
+        this.sourceModel = sourceModel;
     }
 
     public ThawInfo getInfo() {
@@ -40,6 +47,10 @@ public class DocumentBuildSource {
 
     public StyleModel getStyleModel() {
         return styleModel;
+    }
+
+    public SourceModel getSourceModel() {
+        return sourceModel;
     }
 
 }

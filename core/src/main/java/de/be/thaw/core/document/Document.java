@@ -4,6 +4,7 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
+import de.be.thaw.reference.citation.source.model.SourceModel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,11 @@ public class Document {
     private final ReferenceModel referenceModel;
 
     /**
+     * Model managing sources.
+     */
+    private final SourceModel sourceModel;
+
+    /**
      * Lookup of the document nodes by their ID.
      */
     private final Map<String, DocumentNode> nodeLookup = new HashMap<>();
@@ -54,6 +60,7 @@ public class Document {
             ThawInfo info,
             DocumentNode root,
             ReferenceModel referenceModel,
+            SourceModel sourceModel,
             Map<PageRange, DocumentNode> headerNodes,
             Map<PageRange, DocumentNode> footerNodes,
             Map<String, DocumentNode> footNotes
@@ -61,6 +68,7 @@ public class Document {
         this.info = info;
         this.root = root;
         this.referenceModel = referenceModel;
+        this.sourceModel = sourceModel;
 
         this.headerNodes = headerNodes;
         this.footerNodes = footerNodes;
@@ -110,6 +118,15 @@ public class Document {
      */
     public ReferenceModel getReferenceModel() {
         return referenceModel;
+    }
+
+    /**
+     * Get the source model of the document.
+     *
+     * @return source model
+     */
+    public SourceModel getSourceModel() {
+        return sourceModel;
     }
 
     /**

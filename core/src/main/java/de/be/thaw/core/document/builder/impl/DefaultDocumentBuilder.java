@@ -15,6 +15,7 @@ import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.HeaderFooterStyle;
 import de.be.thaw.text.model.tree.Node;
+import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.BoxNode;
 import de.be.thaw.text.model.tree.impl.RootNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
@@ -30,7 +31,7 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
     @Override
     public Document build(DocumentBuildSource source) throws DocumentBuildException {
         ReferenceModel referenceModel = new DefaultReferenceModel();
-        DocumentBuildContext ctx = new DocumentBuildContext(source.getInfo(), source.getTextModel(), referenceModel, source.getStyleModel());
+        DocumentBuildContext ctx = new DocumentBuildContext(source.getInfo(), source.getTextModel(), referenceModel, source.getStyleModel(), source.getSourceModel());
 
         DocumentNode root = toRootNode(ctx);
         loadHeadersAndFooters(root, ctx);
@@ -39,6 +40,7 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
                 source.getInfo(),
                 root,
                 referenceModel,
+                ctx.getSourceModel(),
                 ctx.getHeaderNodes(),
                 ctx.getFooterNodes(),
                 ctx.getFootNotes()
@@ -121,14 +123,20 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
             String counterName = potentialReference.getCounterName();
             if (counterName == null) {
                 DocumentNode targetNode = document.getNodeForId(targetID).orElseThrow();
-                ThingyNode thingyNode = (ThingyNode) targetNode.getTextNode();
-                counterName = thingyNode.getName();
+
+                Node textNode = targetNode.getTextNode();
+                if (textNode.getType() == NodeType.THINGY) {
+                    ThingyNode thingyNode = (ThingyNode) textNode;
+                    counterName = thingyNode.getName().toLowerCase();
+                }
+            } else {
+                counterName = counterName.toLowerCase();
             }
 
             ctx.getReferenceModel().addReference(new InternalReference(
                     potentialReference.getSourceID(),
                     targetID,
-                    counterName.toLowerCase(),
+                    counterName,
                     potentialReference.getPrefix()
             ));
         }

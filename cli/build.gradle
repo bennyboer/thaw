@@ -14,6 +14,7 @@ dependencies {
     implementation project(':info')
     implementation project(':style')
     implementation project(':shared')
+    implementation project(':reference')
 
     // Command line argument parser library
     compile group: 'info.picocli', name: 'picocli', version: '4.3.2'
