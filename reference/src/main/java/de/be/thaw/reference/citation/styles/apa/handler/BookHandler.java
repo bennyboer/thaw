@@ -1,5 +1,6 @@
 package de.be.thaw.reference.citation.styles.apa.handler;
 
+import de.be.thaw.reference.citation.Citation;
 import de.be.thaw.reference.citation.source.Source;
 import de.be.thaw.reference.citation.source.SourceType;
 import de.be.thaw.reference.citation.source.contributor.Author;
@@ -7,6 +8,7 @@ import de.be.thaw.reference.citation.source.contributor.OtherContributor;
 import de.be.thaw.reference.citation.source.impl.book.Book;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,7 +35,7 @@ public class BookHandler extends AbstractAPAHandler {
                 .map(c -> (OtherContributor) c)
                 .collect(Collectors.toList());
 
-        String authorStr = authorListToString(authors, false);
+        String authorStr = authorListToString(authors, false, false);
         String contributorStr = otherContributorListToString(otherContributors);
 
         contributorStr = !contributorStr.isEmpty() ? " " + contributorStr : "";
@@ -77,20 +79,21 @@ public class BookHandler extends AbstractAPAHandler {
     }
 
     @Override
-    public String buildInTextCitation(Source source, String position) {
-        Book book = (Book) source;
-
-        List<Author> authors = book.getContributors().stream()
+    public String getCitePrefix(Citation citation) {
+        return authorListToString(((Book) citation.getSource()).getContributors().stream()
                 .filter(c -> c instanceof Author)
                 .map(c -> (Author) c)
-                .collect(Collectors.toList());
-        String authorStr = authorListToString(authors, true);
+                .collect(Collectors.toList()), true, citation.isDirect());
+    }
 
-        if (position != null) {
-            return String.format("%s, %d, %s", authorStr, book.getYear(), position);
-        } else {
-            return String.format("%s, %d", authorStr, book.getYear());
-        }
+    @Override
+    public Optional<String> getCitePosition(Citation citation) {
+        return Optional.ofNullable(citation.getPosition());
+    }
+
+    @Override
+    public Optional<Integer> getCiteYear(Citation citation) {
+        return Optional.ofNullable(((Book) citation.getSource()).getYear());
     }
 
 }

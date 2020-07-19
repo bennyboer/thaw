@@ -1,5 +1,6 @@
 package de.be.thaw.reference.citation.styles;
 
+import de.be.thaw.reference.citation.Citation;
 import de.be.thaw.reference.citation.source.Source;
 import de.be.thaw.reference.citation.source.SourceType;
 import de.be.thaw.reference.citation.styles.exception.ReferenceBuildException;
@@ -29,10 +30,9 @@ public interface SourceHandler {
     /**
      * Build an in-text-citation.
      *
-     * @param source   to build for
-     * @param position in the source (may be a page)
+     * @param citation to build in-text-citation string for
      * @return the Thaw document text formatted string
      */
-    String buildInTextCitation(Source source, String position) throws ReferenceBuildException;
+    String buildInTextCitation(Citation citation) throws ReferenceBuildException;
 
 }

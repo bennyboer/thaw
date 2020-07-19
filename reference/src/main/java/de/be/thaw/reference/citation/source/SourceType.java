@@ -8,6 +8,7 @@ public enum SourceType {
     BOOK,
     EBOOK,
     ONLINE_BOOK,
-    ARTICLE
+    ARTICLE,
+    WEBSITE
 
 }

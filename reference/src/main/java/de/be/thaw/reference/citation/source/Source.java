@@ -12,4 +12,11 @@ public interface Source {
      */
     SourceType getType();
 
+    /**
+     * Get the source identifier.
+     *
+     * @return source identifier
+     */
+    String getIdentifier();
+
 }

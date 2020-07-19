@@ -1,7 +1,6 @@
 package de.be.thaw.reference.citation.source.impl.book;
 
 import de.be.thaw.reference.citation.source.SourceType;
-import de.be.thaw.reference.citation.source.contributor.Author;
 import de.be.thaw.reference.citation.source.contributor.Contributor;
 
 import java.util.List;
@@ -21,8 +20,8 @@ public class OnlineBook extends Book {
      */
     private String doi;
 
-    public OnlineBook(List<Contributor> contributors, String title, Integer year) {
-        super(contributors, title, year);
+    public OnlineBook(String identifier, List<Contributor> contributors, String title, Integer year) {
+        super(identifier, contributors, title, year);
     }
 
     @Override

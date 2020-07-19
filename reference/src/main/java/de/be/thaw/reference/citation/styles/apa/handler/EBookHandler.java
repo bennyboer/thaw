@@ -33,7 +33,7 @@ public class EBookHandler extends BookHandler {
                 .map(c -> (OtherContributor) c)
                 .collect(Collectors.toList());
 
-        String authorStr = authorListToString(authors, false);
+        String authorStr = authorListToString(authors, false, false);
         String contributorStr = otherContributorListToString(otherContributors);
 
         contributorStr = !contributorStr.isEmpty() ? " " + contributorStr : "";

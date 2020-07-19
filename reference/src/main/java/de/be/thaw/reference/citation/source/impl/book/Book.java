@@ -1,15 +1,15 @@
 package de.be.thaw.reference.citation.source.impl.book;
 
-import de.be.thaw.reference.citation.source.Source;
 import de.be.thaw.reference.citation.source.SourceType;
 import de.be.thaw.reference.citation.source.contributor.Contributor;
+import de.be.thaw.reference.citation.source.impl.AbstractSource;
 
 import java.util.List;
 
 /**
  * A book source.
  */
-public class Book implements Source {
+public class Book extends AbstractSource {
 
     /**
      * List of contributors to the book.
@@ -46,7 +46,9 @@ public class Book implements Source {
      */
     private String edition;
 
-    public Book(List<Contributor> contributors, String title, Integer year) {
+    public Book(String identifier, List<Contributor> contributors, String title, Integer year) {
+        super(identifier);
+
         this.contributors = contributors;
         this.title = title;
         this.year = year;

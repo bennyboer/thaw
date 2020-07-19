@@ -1,9 +1,11 @@
 package de.be.thaw.reference.citation.styles.apa.handler;
 
+import de.be.thaw.reference.citation.Citation;
 import de.be.thaw.reference.citation.source.Source;
 import de.be.thaw.reference.citation.source.SourceType;
 import de.be.thaw.reference.citation.source.impl.Article;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -20,7 +22,7 @@ public class ArticleHandler extends AbstractAPAHandler {
     public String buildReferenceListEntry(Source source) {
         Article article = (Article) source;
 
-        String authorStr = authorListToString(article.getAuthors(), false);
+        String authorStr = authorListToString(article.getAuthors(), false, false);
 
         // Last name, Initials. (Year). Article title. Journal Name, Volume(issue), page range. https://doi.org/xxxx
         return String.format(
@@ -38,16 +40,18 @@ public class ArticleHandler extends AbstractAPAHandler {
     }
 
     @Override
-    public String buildInTextCitation(Source source, String position) {
-        Article article = (Article) source;
+    public String getCitePrefix(Citation citation) {
+        return authorListToString(((Article) citation.getSource()).getAuthors(), true, citation.isDirect());
+    }
 
-        String authorStr = authorListToString(article.getAuthors(), true);
+    @Override
+    public Optional<String> getCitePosition(Citation citation) {
+        return Optional.ofNullable(citation.getPosition());
+    }
 
-        if (position != null) {
-            return String.format("%s, %d, %s", authorStr, article.getYear(), position);
-        } else {
-            return String.format("%s, %d", authorStr, article.getYear());
-        }
+    @Override
+    public Optional<Integer> getCiteYear(Citation citation) {
+        return Optional.ofNullable(((Article) citation.getSource()).getYear());
     }
 
 }

@@ -1,6 +1,5 @@
 package de.be.thaw.reference.citation.source.impl;
 
-import de.be.thaw.reference.citation.source.Source;
 import de.be.thaw.reference.citation.source.SourceType;
 import de.be.thaw.reference.citation.source.contributor.Author;
 
@@ -9,7 +8,7 @@ import java.util.List;
 /**
  * An article source.
  */
-public class Article implements Source {
+public class Article extends AbstractSource {
 
     /**
      * Authors of the article.
@@ -51,7 +50,9 @@ public class Article implements Source {
      */
     private final String doi;
 
-    public Article(List<Author> authors, Integer year, String title, String journalName, int volume, int number, String pages, String doi) {
+    public Article(String identifier, List<Author> authors, Integer year, String title, String journalName, int volume, int number, String pages, String doi) {
+        super(identifier);
+
         this.authors = authors;
         this.year = year;
         this.title = title;

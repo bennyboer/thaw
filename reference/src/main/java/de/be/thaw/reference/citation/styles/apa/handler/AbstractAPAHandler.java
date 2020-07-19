@@ -1,19 +1,46 @@
 package de.be.thaw.reference.citation.styles.apa.handler;
 
+import de.be.thaw.reference.citation.Citation;
 import de.be.thaw.reference.citation.source.contributor.Author;
 import de.be.thaw.reference.citation.source.contributor.NamedContributor;
 import de.be.thaw.reference.citation.source.contributor.Organisation;
 import de.be.thaw.reference.citation.source.contributor.OtherContributor;
 import de.be.thaw.reference.citation.styles.SourceHandler;
+import de.be.thaw.reference.citation.styles.apa.APASettings;
+import de.be.thaw.reference.citation.styles.exception.ReferenceBuildException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * An abstract source handler for the APA citation style.
  */
 public abstract class AbstractAPAHandler implements SourceHandler {
+
+    /**
+     * Settings for the APA citation style.
+     */
+    private APASettings settings;
+
+    /**
+     * Get the APA citation style settings.
+     *
+     * @return citation style settings
+     */
+    public APASettings getSettings() {
+        return settings;
+    }
+
+    /**
+     * Set the APA citation style settings.
+     *
+     * @param settings to set
+     */
+    public void setSettings(APASettings settings) {
+        this.settings = settings;
+    }
 
     /**
      * Convert the passed other contributors to string.
@@ -68,9 +95,10 @@ public abstract class AbstractAPAHandler implements SourceHandler {
      *
      * @param authors to convert
      * @param inText  whether to convert for in-text-citation or reference list entry
+     * @param direct  whether we have a direct citation
      * @return the converted authors list
      */
-    public String authorListToString(List<Author> authors, boolean inText) {
+    public String authorListToString(List<Author> authors, boolean inText, boolean direct) {
         List<String> authorEntries = authors.stream()
                 .map(a -> getAPAStyleAuthorName(a, inText))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -88,7 +116,7 @@ public abstract class AbstractAPAHandler implements SourceHandler {
 
                     if (i == authorEntries.size() - 1) {
                         // Is the last entry
-                        buffer.append(" & ");
+                        buffer.append(direct ? String.format(" %s ", getSettings().getAndStr()) : " & ");
                     } else if (i != 0) {
                         // Is not the first entry
                         buffer.append(", ");
@@ -131,5 +159,42 @@ public abstract class AbstractAPAHandler implements SourceHandler {
             ));
         }
     }
+
+    @Override
+    public String buildInTextCitation(Citation citation) throws ReferenceBuildException {
+        String prefix = getCitePrefix(citation);
+        String year = getCiteYear(citation).map(String::valueOf).orElse(getSettings().getNoDateStr());
+        String position = getCitePosition(citation).map(p -> String.format(", %s", p)).orElse("");
+
+        if (citation.isDirect()) {
+            return String.format("%s (%s%s)", prefix, year, position);
+        } else {
+            return String.format("%s, %s%s", prefix, year, position);
+        }
+    }
+
+    /**
+     * Get the citation prefix.
+     *
+     * @param citation to get prefix from
+     * @return citation prefix
+     */
+    public abstract String getCitePrefix(Citation citation);
+
+    /**
+     * Get the position of the passed citation (if any).
+     *
+     * @param citation to get position of
+     * @return position or empty optional
+     */
+    public abstract Optional<String> getCitePosition(Citation citation);
+
+    /**
+     * Get the year for the passed citation.
+     *
+     * @param citation to get year from
+     * @return year or an empty optional
+     */
+    public abstract Optional<Integer> getCiteYear(Citation citation);
 
 }
