@@ -11,14 +11,17 @@ import de.be.thaw.reference.citation.styles.apa.handler.OnlineBookHandler;
 import de.be.thaw.reference.citation.styles.apa.handler.WebsiteHandler;
 import de.be.thaw.reference.citation.styles.exception.ReferenceBuildException;
 import de.be.thaw.reference.citation.styles.exception.UnsupportedSourceTypeException;
+import de.be.thaw.reference.citation.styles.referencelist.ReferenceListEntry;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * The APA citation style.
@@ -102,12 +105,12 @@ public class APA implements CitationStyle {
     }
 
     @Override
-    public List<String> getReferenceListEntries() {
-        List<String> list = new ArrayList<>(referenceListEntries.values());
-
-        Collections.sort(list);
-
-        return list;
+    public List<ReferenceListEntry> getReferenceListEntries() {
+        return referenceListEntries.entrySet()
+                .stream()
+                .map(e -> new ReferenceListEntry(e.getKey(), e.getValue()))
+                .sorted(Comparator.comparing(ReferenceListEntry::getEntry))
+                .collect(Collectors.toList());
     }
 
     @Override

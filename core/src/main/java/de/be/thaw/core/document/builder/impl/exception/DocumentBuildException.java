@@ -9,6 +9,10 @@ public class DocumentBuildException extends Exception {
         super(message);
     }
 
+    public DocumentBuildException(Throwable cause) {
+        super(cause);
+    }
+
     public DocumentBuildException(String message, Throwable cause) {
         super(message, cause);
     }

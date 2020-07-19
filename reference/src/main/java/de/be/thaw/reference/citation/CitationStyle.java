@@ -2,6 +2,7 @@ package de.be.thaw.reference.citation;
 
 import de.be.thaw.reference.citation.styles.exception.ReferenceBuildException;
 import de.be.thaw.reference.citation.styles.exception.UnsupportedSourceTypeException;
+import de.be.thaw.reference.citation.styles.referencelist.ReferenceListEntry;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public interface CitationStyle {
      *
      * @return the reference list entries in Thaw document text format
      */
-    List<String> getReferenceListEntries();
+    List<ReferenceListEntry> getReferenceListEntries();
 
     /**
      * Build a in-text-citation and the corresponding reference list entry (if not already there) for the passed citation sources.

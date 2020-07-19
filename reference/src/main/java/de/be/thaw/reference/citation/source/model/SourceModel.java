@@ -48,4 +48,13 @@ public class SourceModel {
         return Optional.ofNullable(sources.get(identifier));
     }
 
+    /**
+     * Get the citation style.
+     *
+     * @return style
+     */
+    public CitationStyle getStyle() {
+        return style;
+    }
+
 }

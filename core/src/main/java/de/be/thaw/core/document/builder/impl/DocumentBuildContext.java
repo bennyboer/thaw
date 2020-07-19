@@ -2,15 +2,18 @@ package de.be.thaw.core.document.builder.impl;
 
 import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.thingy.ThingyHandler;
+import de.be.thaw.core.document.builder.impl.thingy.impl.CiteHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.FootNoteHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.HyperRefHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.IncludeHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.RefHandler;
+import de.be.thaw.core.document.builder.impl.thingy.impl.ReferenceListHandler;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
+import de.be.thaw.reference.citation.source.model.SourceModel;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
@@ -52,6 +55,8 @@ public class DocumentBuildContext {
         initThingyHandler(new HyperRefHandler());
         initThingyHandler(new IncludeHandler());
         initThingyHandler(new FootNoteHandler());
+        initThingyHandler(new CiteHandler());
+        initThingyHandler(new ReferenceListHandler());
     }
 
     /**
@@ -90,6 +95,11 @@ public class DocumentBuildContext {
     private StyleModel styleModel;
 
     /**
+     * Source model of the document.
+     */
+    private final SourceModel sourceModel;
+
+    /**
      * Mapping of all loaded header nodes.
      */
     private final Map<PageRange, DocumentNode> headerNodes = new HashMap<>();
@@ -104,11 +114,12 @@ public class DocumentBuildContext {
      */
     private final Map<String, DocumentNode> footNotes = new HashMap<>();
 
-    public DocumentBuildContext(ThawInfo info, TextModel textModel, ReferenceModel referenceModel, StyleModel styleModel) {
+    public DocumentBuildContext(ThawInfo info, TextModel textModel, ReferenceModel referenceModel, StyleModel styleModel, SourceModel sourceModel) {
         this.info = info;
         this.textModel = textModel;
         this.referenceModel = referenceModel;
         this.styleModel = styleModel;
+        this.sourceModel = sourceModel;
     }
 
     /**
@@ -176,11 +187,16 @@ public class DocumentBuildContext {
         return footNotes;
     }
 
+    public SourceModel getSourceModel() {
+        return sourceModel;
+    }
+
     /**
      * Process a box node that represents a paragraph.
      *
-     * @param node   to process
-     * @param parent the parent document node
+     * @param node            to process
+     * @param parent          the parent document node
+     * @param parentStyleNode style node of the parent
      */
     public void processBoxNode(BoxNode node, DocumentNode parent, DocumentNodeStyle parentStyleNode) throws DocumentBuildException {
         // Find child node that may be a thingy node -> in that case we can apply special styles from the style model
