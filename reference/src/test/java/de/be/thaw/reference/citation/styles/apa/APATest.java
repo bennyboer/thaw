@@ -82,7 +82,6 @@ public class APATest {
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
         String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
-        ;
 
         Assertions.assertEquals("(Mustermann, 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M. (2020). *My fantastic book title*.", referenceListEntry);
@@ -94,11 +93,11 @@ public class APATest {
 
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
         String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
-        ;
 
         Assertions.assertEquals("(Mustermann, Doe & Eder, 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J. & Eder, B. (2020). *My fantastic book title*.", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String inTextCitationDirect = apa.addCitation(Collections.singletonList(new Citation(book, true)));
 
         Assertions.assertEquals("Mustermann, Doe and Eder (2020)", inTextCitationDirect);
@@ -125,6 +124,7 @@ public class APATest {
         Assertions.assertEquals("(Thaw Inc. & Mustermann, 2020)", inTextCitation);
         Assertions.assertEquals("Thaw Inc. & Mustermann, M. (2020). *My fantastic book title*.", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, true)));
 
         Assertions.assertEquals("Thaw Inc. and Mustermann (2020)", directInTextCitation);
@@ -140,6 +140,7 @@ public class APATest {
         Assertions.assertEquals("(Mustermann et al., 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Name, A. & Disney, W. (2020). *My fantastic book title*.", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, true)));
 
         Assertions.assertEquals("Mustermann et al. (2020)", directInTextCitation);
@@ -159,6 +160,7 @@ public class APATest {
         Assertions.assertEquals("(Mustermann et al., 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title*. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor) (2nd Edition). Munich, Germany: Thaw", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, true)));
 
         Assertions.assertEquals("Mustermann et al. (2020)", directInTextCitation);
@@ -175,6 +177,7 @@ public class APATest {
         Assertions.assertEquals("(Mustermann et al., 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title*. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor). Thaw", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, true)));
 
         Assertions.assertEquals("Mustermann et al. (2020)", directInTextCitation);
@@ -192,6 +195,7 @@ public class APATest {
         Assertions.assertEquals("(Mustermann et al., 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title*. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor). Germany: Thaw", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, true)));
 
         Assertions.assertEquals("Mustermann et al. (2020)", directInTextCitation);
@@ -204,11 +208,30 @@ public class APATest {
         String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
         Assertions.assertEquals("(Mustermann, 2020)", inTextCitation);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String inTextCitation2 = apa.addCitation(Collections.singletonList(new Citation(book, false, "p. 43")));
         Assertions.assertEquals("(Mustermann, 2020, p. 43)", inTextCitation2);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String inTextCitation3 = apa.addCitation(Collections.singletonList(new Citation(book, true, "p. 43")));
         Assertions.assertEquals("Mustermann (2020, p. 43)", inTextCitation3);
+    }
+
+    @Test
+    public void simpleInTextBookCitationWithNumbering() throws ReferenceBuildException, UnsupportedSourceTypeException {
+        Book book = new Book("id", SINGLE_AUTHOR, "My fantastic book title", 2020);
+
+        String inTextCitation = apa.addCitation(Collections.singletonList(new Citation(book)));
+        Assertions.assertEquals("(Mustermann, 2020)", inTextCitation);
+
+        String inTextCitation2 = apa.addCitation(Collections.singletonList(new Citation(book, false, "p. 43")));
+        Assertions.assertEquals("(Mustermann, 2020a, p. 43)", inTextCitation2);
+
+        String inTextCitation3 = apa.addCitation(Collections.singletonList(new Citation(book, true, "p. 43")));
+        Assertions.assertEquals("Mustermann (2020b, p. 43)", inTextCitation3);
+
+        String inTextCitation4 = apa.addCitation(Collections.singletonList(new Citation(book, true, "p. 43")));
+        Assertions.assertEquals("Mustermann (2020c, p. 43)", inTextCitation4);
     }
 
     @Test
@@ -228,6 +251,7 @@ public class APATest {
         Assertions.assertEquals("(Carroll, 2008; Mustermann et al., 2020, p. 1; Thaw Inc., 1964, p. 43)", inTextCitation);
         Assertions.assertEquals(3, apa.getReferenceListEntries().size());
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Arrays.asList(new Citation(book1, true, "p. 1"), new Citation(book2, true, "p. 43"), new Citation(book3, true)));
 
         Assertions.assertEquals("Carroll (2008); Mustermann et al. (2020, p. 1); Thaw Inc. (1964, p. 43)", directInTextCitation);
@@ -246,6 +270,7 @@ public class APATest {
         Assertions.assertEquals("(Mustermann, 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M. (2020). *My fantastic ebook title* [epub]. https://doi.org/10.1109/5.771073", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, true)));
 
         Assertions.assertEquals("Mustermann (2020)", directInTextCitation);
@@ -268,6 +293,7 @@ public class APATest {
         Assertions.assertEquals("(Mustermann, 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M. (2020). *My fantastic ebook title* [epub]. Munich, Germany: Thaw. https://doi.org/10.1109/5.771073", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, true)));
 
         Assertions.assertEquals("Mustermann (2020)", directInTextCitation);
@@ -284,6 +310,7 @@ public class APATest {
         Assertions.assertEquals("(Mustermann, 2020)", inTextCitation);
         Assertions.assertEquals("Mustermann, M. (2020). *My fantastic ebook title*. https://ieeexplore.ieee.org/document/771073", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, true)));
 
         Assertions.assertEquals("Mustermann (2020)", directInTextCitation);
@@ -305,6 +332,7 @@ public class APATest {
         Assertions.assertEquals("(Mustermann et al., 2020, para. 5)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title* [Kindle]. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor) (2nd Edition). Munich, Germany: Thaw. https://doi.org/10.1109/5.771073", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, true, "para. 5")));
 
         Assertions.assertEquals("Mustermann et al. (2020, para. 5)", directInTextCitation);
@@ -325,6 +353,7 @@ public class APATest {
         Assertions.assertEquals("(Mustermann et al., 2020, para. 5)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title*. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor) (2nd Edition). Munich, Germany: Thaw. https://doi.org/10.1109/5.771073", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, true, "para. 5")));
 
         Assertions.assertEquals("Mustermann et al. (2020, para. 5)", directInTextCitation);
@@ -341,6 +370,7 @@ public class APATest {
         Assertions.assertEquals("(Mustermann et al., 2020, para. 5)", inTextCitation);
         Assertions.assertEquals("Mustermann, M., Doe, J., Eder, B., Walt Disney Enterprises & Name, A. (2020). *My fantastic book title*. (A. Name, Translator, J. Editing, Editor, W. Disney, Editor). https://ieeexplore.ieee.org/document/771073", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(book, true, "para. 5")));
 
         Assertions.assertEquals("Mustermann et al. (2020, para. 5)", directInTextCitation);
@@ -366,6 +396,7 @@ public class APATest {
         Assertions.assertEquals("(Paskin, 1999, p. 23)", inTextCitation);
         Assertions.assertEquals("Paskin, N. (1999). Toward unique identifiers. *Proceedings of the IEEE*, 87(7), S. 1208 - 1227. 10.1109/5.771073", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(article, true, "p. 23")));
 
         Assertions.assertEquals("Paskin (1999, p. 23)", directInTextCitation);
@@ -387,6 +418,7 @@ public class APATest {
         Assertions.assertEquals("(\"My fancy website title\", n. d.)", inTextCitation);
         Assertions.assertEquals("My fancy website title. (n. d.). Retrieved 2020-08-19, from https://www.example.com", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(website, true)));
 
         Assertions.assertEquals("\"My fancy website title\" (n. d.)", directInTextCitation);
@@ -415,6 +447,7 @@ public class APATest {
         Assertions.assertEquals("(Eder, 2020)", inTextCitation);
         Assertions.assertEquals("Eder, B. (2020-07-20). My fancy website title. Retrieved 2020-08-19, from https://www.example.com", referenceListEntry);
 
+        setup(); // Re-init APA style to avoid incorrect references
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(website, true)));
 
         Assertions.assertEquals("Eder (2020)", directInTextCitation);
