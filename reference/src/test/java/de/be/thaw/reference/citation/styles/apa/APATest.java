@@ -17,12 +17,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Test of the APA citation style implementation.
@@ -70,8 +70,8 @@ public class APATest {
 
     @BeforeEach
     public void setup() {
-        APASettings settings = new APASettings();
-        settings.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
+        APASettings settings = new APASettings(new Properties());
+        settings.getProperties().setProperty("date.format", "yyyy-MM-dd");
 
         apa = new APA(settings);
     }
@@ -385,7 +385,7 @@ public class APATest {
         String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(\"My fancy website title\", n. d.)", inTextCitation);
-        Assertions.assertEquals("My fancy website title. (n. d.). Retrieved 2020-08-19 from https://www.example.com", referenceListEntry);
+        Assertions.assertEquals("My fancy website title. (n. d.). Retrieved 2020-08-19, from https://www.example.com", referenceListEntry);
 
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(website, true)));
 
@@ -413,7 +413,7 @@ public class APATest {
         String referenceListEntry = apa.getReferenceListEntries().get(0).getEntry();
 
         Assertions.assertEquals("(Eder, 2020)", inTextCitation);
-        Assertions.assertEquals("Eder, B. (2020-07-20). My fancy website title. Retrieved 2020-08-19 from https://www.example.com", referenceListEntry);
+        Assertions.assertEquals("Eder, B. (2020-07-20). My fancy website title. Retrieved 2020-08-19, from https://www.example.com", referenceListEntry);
 
         String directInTextCitation = apa.addCitation(Collections.singletonList(new Citation(website, true)));
 

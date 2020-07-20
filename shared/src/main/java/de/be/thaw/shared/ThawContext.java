@@ -46,7 +46,7 @@ public class ThawContext {
     /**
      * The current locale to use.
      */
-    private Language language;
+    private Language language = Language.OTHER;
 
     /**
      * Get the current instance of the thaw context.
