@@ -1,21 +1,29 @@
 package de.be.thaw.info.model.language;
 
+import java.util.Locale;
+
 /**
  * Enumeration of languages supported by the application.
  */
 public enum Language {
 
-    GERMAN("de"),
-    ENGLISH("en"),
-    OTHER(null);
+    GERMAN("de", Locale.GERMAN),
+    ENGLISH("en", Locale.ENGLISH),
+    OTHER(null, Locale.getDefault());
 
     /**
      * Code of the language.
      */
     private final String code;
 
-    Language(String code) {
+    /**
+     * Locale of the language.
+     */
+    private final Locale locale;
+
+    Language(String code, Locale locale) {
         this.code = code;
+        this.locale = locale;
     }
 
     /**
@@ -25,6 +33,15 @@ public enum Language {
      */
     public String getCode() {
         return code;
+    }
+
+    /**
+     * Get the languages locale.
+     *
+     * @return locale
+     */
+    public Locale getLocale() {
+        return locale;
     }
 
     /**

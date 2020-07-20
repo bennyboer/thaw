@@ -159,6 +159,7 @@ public class CLI implements Callable<Integer> {
             return ErrorResult.INFO_FILE_PARSING_ERROR.getCode();
         }
         ThawContext.getInstance().setEncoding(info.getEncoding());
+        ThawContext.getInstance().setLanguage(info.getLanguage());
 
         String[] textFiles = root.list((dir, name) -> name.endsWith(".tdt"));
 
@@ -223,7 +224,6 @@ public class CLI implements Callable<Integer> {
         String[] sourceFiles = root.list((dir, name) -> name.endsWith(".tdr"));
 
         SourceParser sourceParser = new DefaultSourceParser();
-        ThawContext.getInstance().setSourceParser(sourceParser);
         SourceModel sourceModel;
         if (sourceFiles.length > 1) {
             System.err.println(String.format("There are more than one Thaw source files (ending with *.tdr) in the folder at '%s'", root.getAbsolutePath()));

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
@@ -74,7 +75,7 @@ public class APA implements CitationStyle {
     private final Map<String, String> referenceListEntries = new HashMap<>();
 
     public APA() {
-        this(new APASettings());
+        this(new APASettings(new Properties()));
     }
 
     public APA(APASettings settings) {

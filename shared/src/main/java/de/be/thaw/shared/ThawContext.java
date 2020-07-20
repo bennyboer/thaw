@@ -1,7 +1,7 @@
 package de.be.thaw.shared;
 
+import de.be.thaw.info.model.language.Language;
 import de.be.thaw.info.parser.InfoParser;
-import de.be.thaw.reference.citation.source.model.parser.SourceParser;
 import de.be.thaw.style.parser.StyleParser;
 import de.be.thaw.text.parser.TextParser;
 
@@ -39,14 +39,14 @@ public class ThawContext {
     private StyleParser styleParser;
 
     /**
-     * Style parser to use.
-     */
-    private SourceParser sourceParser;
-
-    /**
      * The encoding of the current Thaw project.
      */
     private Charset encoding;
+
+    /**
+     * The current locale to use.
+     */
+    private Language language;
 
     /**
      * Get the current instance of the thaw context.
@@ -151,21 +151,21 @@ public class ThawContext {
     }
 
     /**
-     * Get the source parser to use.
+     * Get the language to use.
      *
-     * @return source parser
+     * @return language
      */
-    public SourceParser getSourceParser() {
-        return sourceParser;
+    public Language getLanguage() {
+        return language;
     }
 
     /**
-     * Set the source parser to use.
+     * Set the language to use.
      *
-     * @param sourceParser to set
+     * @param language to set
      */
-    public void setSourceParser(SourceParser sourceParser) {
-        this.sourceParser = sourceParser;
+    public void setLanguage(Language language) {
+        this.language = language;
     }
 
     /**

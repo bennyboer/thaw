@@ -1,6 +1,8 @@
 module de.be.thaw.reference {
     requires org.jetbrains.annotations;
     requires com.fasterxml.jackson.databind;
+    requires de.be.thaw.shared;
+    requires de.be.thaw.info;
 
     exports de.be.thaw.reference;
     exports de.be.thaw.reference.impl;

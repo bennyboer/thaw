@@ -79,9 +79,4 @@ public class Website extends AbstractSource {
         return SourceType.WEBSITE;
     }
 
-    @Override
-    public String getIdentifier() {
-        return null;
-    }
-
 }

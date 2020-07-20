@@ -3,6 +3,5 @@ module de.be.thaw.shared {
     requires de.be.thaw.info;
     requires de.be.thaw.text;
     requires de.be.thaw.style;
-    requires de.be.thaw.reference;
 
 }

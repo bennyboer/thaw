@@ -116,7 +116,7 @@ public abstract class AbstractAPAHandler implements SourceHandler {
 
                     if (i == authorEntries.size() - 1) {
                         // Is the last entry
-                        buffer.append(direct ? String.format(" %s ", getSettings().getAndStr()) : " & ");
+                        buffer.append(direct ? String.format(" %s ", getSettings().getProperties().getProperty("and.verbose", "and")) : String.format(" %s ", getSettings().getProperties().getProperty("and.short", "&")));
                     } else if (i != 0) {
                         // Is not the first entry
                         buffer.append(", ");
@@ -163,7 +163,7 @@ public abstract class AbstractAPAHandler implements SourceHandler {
     @Override
     public String buildInTextCitation(Citation citation) throws ReferenceBuildException {
         String prefix = getCitePrefix(citation);
-        String year = getCiteYear(citation).map(String::valueOf).orElse(getSettings().getNoDateStr());
+        String year = getCiteYear(citation).map(String::valueOf).orElse((String) getSettings().getProperties().getProperty("no-date", "n. d."));
         String position = getCitePosition(citation).map(p -> String.format(", %s", p)).orElse("");
 
         if (citation.isDirect()) {

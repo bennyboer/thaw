@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import de.be.thaw.info.model.language.Language;
 import de.be.thaw.reference.citation.CitationStyle;
 import de.be.thaw.reference.citation.source.Source;
 import de.be.thaw.reference.citation.source.contributor.Author;
@@ -21,8 +22,16 @@ import de.be.thaw.reference.citation.source.model.SourceModel;
 import de.be.thaw.reference.citation.styles.CitationStyles;
 import de.be.thaw.reference.citation.styles.apa.APA;
 import de.be.thaw.reference.citation.styles.apa.APASettings;
+import de.be.thaw.shared.ThawContext;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
@@ -86,10 +96,8 @@ public class SourceModelDeserializer extends StdDeserializer<SourceModel> {
 
         CitationStyle style = citationStyleOptional.get();
 
-        if (styleNode.has("settings")) {
-            switch (style.getName()) {
-                case "APA" -> parseAPASettings(style, styleNode.get("settings"));
-            }
+        switch (style.getName()) {
+            case "APA" -> parseAPASettings(style, styleNode.get("settings"));
         }
 
         return style;
@@ -102,28 +110,30 @@ public class SourceModelDeserializer extends StdDeserializer<SourceModel> {
      * @param node  to parse from
      * @throws IOException in case the settings could not be parsed
      */
-    private void parseAPASettings(CitationStyle style, JsonNode node) throws IOException {
-        APASettings settings = new APASettings();
-
-        if (node.has("noDateStr")) {
-            settings.setNoDateStr(node.get("noDateStr").asText());
-        }
-        if (node.has("startQuotationMark")) {
-            settings.setStartQuotationMark(node.get("startQuotationMark").asText());
-        }
-        if (node.has("endQuotationMark")) {
-            settings.setEndQuotationMark(node.get("endQuotationMark").asText());
-        }
-        if (node.has("andStr")) {
-            settings.setAndStr(node.get("andStr").asText());
-        }
-        if (node.has("dateFormat")) {
-            String dateFormatStr = node.get("dateFormat").asText();
-            settings.setDateFormat(new SimpleDateFormat(dateFormatStr));
-        }
-
+    private void parseAPASettings(CitationStyle style, @Nullable JsonNode node) throws IOException {
         APA apa = (APA) style;
-        apa.setSettings(settings);
+
+        Properties properties = new Properties();
+        if (node != null && node.has("properties")) {
+            // Load custom properties
+            File propsFile = new File(ThawContext.getInstance().getRootFolder(), node.get("properties").asText());
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(propsFile), StandardCharsets.UTF_8))) {
+                properties.load(br);
+            }
+        } else {
+            // Use properties for the current locale setting
+            Language language = ThawContext.getInstance().getLanguage();
+
+            String path = String.format("/i18n/apa/%s.properties", language.getCode());
+            InputStream stream = SourceModelDeserializer.class.getResourceAsStream(path);
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+                properties.load(br);
+            }
+        }
+
+        apa.setSettings(new APASettings(properties));
     }
 
     /**

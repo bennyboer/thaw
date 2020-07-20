@@ -4,7 +4,9 @@ import de.be.thaw.reference.citation.Citation;
 import de.be.thaw.reference.citation.source.Source;
 import de.be.thaw.reference.citation.source.SourceType;
 import de.be.thaw.reference.citation.source.impl.Website;
+import de.be.thaw.shared.ThawContext;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Optional;
 import java.util.Set;
@@ -27,10 +29,10 @@ public class WebsiteHandler extends AbstractAPAHandler {
         if (website.getPublicationDate() != null) {
             date = String.format(
                     "(%s)",
-                    getSettings().getDateFormat().format(website.getPublicationDate())
+                    new SimpleDateFormat(getSettings().getProperties().getProperty("date.format", "yyyy, MMMM dd"), ThawContext.getInstance().getLanguage().getLocale()).format(website.getPublicationDate())
             );
         } else {
-            date = String.format("(%s)", getSettings().getNoDateStr());
+            date = String.format("(%s)", getSettings().getProperties().getProperty("no-date", "n. d."));
         }
 
         String prefix;
@@ -50,8 +52,8 @@ public class WebsiteHandler extends AbstractAPAHandler {
         String retrieved;
         if (website.getRetrievalDate() != null) {
             retrieved = String.format(
-                    "Retrieved %s from %s",
-                    getSettings().getDateFormat().format(website.getRetrievalDate()),
+                    getSettings().getProperties().getProperty("website.retrieved", "Retrieved %s, from %s"),
+                    new SimpleDateFormat(getSettings().getProperties().getProperty("date.format", "yyyy, MMMM dd"), ThawContext.getInstance().getLanguage().getLocale()).format(website.getRetrievalDate()),
                     website.getUrl()
             );
         } else {
@@ -70,7 +72,7 @@ public class WebsiteHandler extends AbstractAPAHandler {
         Website website = (Website) citation.getSource();
 
         if (website.getAuthors().isEmpty()) {
-            return String.format("%s%s%s", getSettings().getStartQuotationMark(), website.getTitle(), getSettings().getEndQuotationMark());
+            return String.format("%s%s%s", getSettings().getProperties().getProperty("quotation.start", "\""), website.getTitle(), getSettings().getProperties().getProperty("quotation.end", "\""));
         } else {
             return authorListToString(((Website) citation.getSource()).getAuthors(), true, citation.isDirect());
         }
