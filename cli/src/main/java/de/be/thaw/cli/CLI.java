@@ -228,7 +228,7 @@ public class CLI implements Callable<Integer> {
         if (sourceFiles.length > 1) {
             System.err.println(String.format("There are more than one Thaw source files (ending with *.tdr) in the folder at '%s'", root.getAbsolutePath()));
             return ErrorResult.MORE_THAN_ONE_SOURCE_FILE.getCode();
-        } else if (styleFiles.length == 1) {
+        } else if (sourceFiles.length == 1) {
             System.out.println(String.format("Processing Thaw source file '%s'...", sourceFiles[0]));
 
             File sourceFile = new File(root, sourceFiles[0]);
