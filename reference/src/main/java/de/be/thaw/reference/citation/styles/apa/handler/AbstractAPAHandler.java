@@ -11,6 +11,7 @@ import de.be.thaw.reference.citation.styles.exception.ReferenceBuildException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,21 @@ public abstract class AbstractAPAHandler implements SourceHandler {
      * Settings for the APA citation style.
      */
     private APASettings settings;
+
+    /**
+     * The last processed year or a source.
+     */
+    private String lastYear;
+
+    /**
+     * The last prefix of the in-text-citation generated.
+     */
+    private String lastPrefix;
+
+    /**
+     * Already seen in-text-citation years mapped by the source identifier.
+     */
+    private Map<String, String> alreadySeenYears;
 
     /**
      * Get the APA citation style settings.
@@ -40,6 +56,18 @@ public abstract class AbstractAPAHandler implements SourceHandler {
      */
     public void setSettings(APASettings settings) {
         this.settings = settings;
+    }
+
+    public String getLastYear() {
+        return lastYear;
+    }
+
+    public String getLastPrefix() {
+        return lastPrefix;
+    }
+
+    public void setAlreadySeenYears(Map<String, String> alreadySeenYears) {
+        this.alreadySeenYears = alreadySeenYears;
     }
 
     /**
@@ -163,8 +191,33 @@ public abstract class AbstractAPAHandler implements SourceHandler {
     @Override
     public String buildInTextCitation(Citation citation) throws ReferenceBuildException {
         String prefix = getCitePrefix(citation);
-        String year = getCiteYear(citation).map(String::valueOf).orElse((String) getSettings().getProperties().getProperty("no-date", "n. d."));
+        lastPrefix = prefix;
+
+        String noDateStr = getSettings().getProperties().getProperty("no-date", "n. d.");
+        String year = getCiteYear(citation).map(String::valueOf).orElse(noDateStr);
+        lastYear = year;
+
         String position = getCitePosition(citation).map(p -> String.format(", %s", p)).orElse("");
+
+        String key = String.format("%s %s", prefix, year);
+        String alreadySeenYearStr = alreadySeenYears.get(key);
+        if (alreadySeenYearStr != null && !year.equals(noDateStr)) {
+            // We've seen the exact same citation string earlier!
+            char last = alreadySeenYearStr.charAt(alreadySeenYearStr.length() - 1);
+            char next;
+            if (Character.isDigit(last)) {
+                // We have not added a postfix (a, b, c, d, ...) to the year yet
+                next = 'a';
+            } else {
+                // We have already added a postfix (a, b, c, d, ...) to the year
+                next = (char) (((int) last) + 1);
+            }
+
+            year = String.format("%s%c", year, next);
+            alreadySeenYears.put(key, year);
+        } else {
+            alreadySeenYears.put(key, year);
+        }
 
         if (citation.isDirect()) {
             return String.format("%s (%s%s)", prefix, year, position);

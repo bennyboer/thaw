@@ -49,10 +49,10 @@ public class CiteHandler implements ThingyHandler {
             String id;
             String position = null;
             if (parts.length == 1) {
-                id = identifier;
+                id = identifier.trim();
             } else {
-                id = parts[0];
-                position = parts[1];
+                id = parts[0].trim();
+                position = parts[1].trim();
             }
 
             Optional<Source> sourceOptional = ctx.getSourceModel().getSource(id);

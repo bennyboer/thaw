@@ -74,6 +74,11 @@ public class APA implements CitationStyle {
      */
     private final Map<String, String> referenceListEntries = new HashMap<>();
 
+    /**
+     * Already seen in-text-citation years mapped by the source identifier.
+     */
+    private final Map<String, String> alreadySeenYears = new HashMap<>();
+
     public APA() {
         this(new APASettings(new Properties()));
     }
@@ -124,13 +129,30 @@ public class APA implements CitationStyle {
                     citation.getSource().getType().name()
             )));
             handler.setSettings(settings);
+            handler.setAlreadySeenYears(alreadySeenYears);
 
-            // Add reference list entry (if not already there)
+            String part = handler.buildInTextCitation(citation);
+
+            String referenceListEntry = null;
             if (!referenceListEntries.containsKey(citation.getSource().getIdentifier())) {
-                referenceListEntries.put(citation.getSource().getIdentifier(), handler.buildReferenceListEntry(citation.getSource()));
+                referenceListEntry = handler.buildReferenceListEntry(citation.getSource());
             }
 
-            parts.add(handler.buildInTextCitation(citation));
+            String key = String.format("%s %s", handler.getLastPrefix(), handler.getLastYear());
+            String newYearStr = alreadySeenYears.get(key);
+            if (!newYearStr.equals(handler.getLastYear())) {
+                // Change reference list entry as well
+                if (referenceListEntry != null) {
+                    referenceListEntry = referenceListEntry.replace(handler.getLastYear(), newYearStr);
+                }
+            }
+
+            // Add reference list entry (if a new one generated)
+            if (referenceListEntry != null) {
+                referenceListEntries.put(citation.getSource().getIdentifier(), referenceListEntry);
+            }
+
+            parts.add(part);
         }
 
         // Sort sources alphabetically
