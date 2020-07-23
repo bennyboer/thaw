@@ -7,6 +7,7 @@ dependencies {
     implementation project(':info')
     implementation project(':style')
     implementation project(':reference')
+    implementation project(':util')
 
     // Library used to create PDF documents
     implementation group: 'org.apache.pdfbox', name: 'pdfbox', version: '2.0.20'

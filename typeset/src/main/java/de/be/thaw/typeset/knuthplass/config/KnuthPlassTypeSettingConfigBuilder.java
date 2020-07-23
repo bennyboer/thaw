@@ -1,11 +1,11 @@
 package de.be.thaw.typeset.knuthplass.config;
 
+import de.be.thaw.util.Size;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.GlueConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
 import de.be.thaw.typeset.knuthplass.config.util.image.ImageSourceSupplier;
 import de.be.thaw.typeset.util.Insets;
-import de.be.thaw.typeset.util.Size;
 
 /**
  * Builder for the line breaking configuration.

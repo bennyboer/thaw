@@ -28,7 +28,7 @@ import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Size;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;

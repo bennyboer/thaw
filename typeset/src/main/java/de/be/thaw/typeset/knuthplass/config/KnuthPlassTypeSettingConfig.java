@@ -5,7 +5,7 @@ import de.be.thaw.typeset.knuthplass.config.util.GlueConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
 import de.be.thaw.typeset.knuthplass.config.util.image.ImageSourceSupplier;
 import de.be.thaw.typeset.util.Insets;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Size;
 
 /**
  * Configuration of the Knuth-Plass line breaking algorithm.

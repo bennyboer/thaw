@@ -11,6 +11,7 @@ module de.be.thaw.export {
     requires de.be.thaw.hyphenation;
     requires de.be.thaw.style;
     requires de.be.thaw.reference;
+    requires de.be.thaw.util;
 
     exports de.be.thaw.export;
     exports de.be.thaw.export.pdf;

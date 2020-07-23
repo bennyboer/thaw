@@ -4,11 +4,11 @@ import de.be.thaw.export.pdf.font.exception.FontParseException;
 import de.be.thaw.font.AbstractFont;
 import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.font.util.OperatingSystem;
-import de.be.thaw.font.util.Size;
 import de.be.thaw.font.util.exception.CouldNotDetermineOperatingSystemException;
 import de.be.thaw.typeset.kerning.glyph.Coordinate;
 import de.be.thaw.typeset.kerning.glyph.Glyph;
 import de.be.thaw.typeset.kerning.optical.OpticalKerningTable;
+import de.be.thaw.util.Size;
 import org.apache.fontbox.ttf.CmapSubtable;
 import org.apache.fontbox.ttf.CmapTable;
 import org.apache.fontbox.ttf.GlyphData;
@@ -318,7 +318,7 @@ public class ThawPdfFont extends AbstractFont {
      * @return glyph
      */
     private Glyph convertToGlyph(GlyphData data, int glyphID, int codePoint) {
-        de.be.thaw.typeset.util.Size size = new de.be.thaw.typeset.util.Size(data.getXMaximum() - data.getXMinimum(), data.getYMaximum() - data.getYMinimum());
+        Size size = new Size(data.getXMaximum() - data.getXMinimum(), data.getYMaximum() - data.getYMinimum());
         Coordinate position = new Coordinate(data.getXMinimum(), data.getYMinimum());
 
         List<List<Coordinate>> contours = new ArrayList<>(data.getNumberOfContours());

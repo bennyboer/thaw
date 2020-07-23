@@ -17,7 +17,7 @@ import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Size;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;

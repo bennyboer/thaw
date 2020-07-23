@@ -1,7 +1,7 @@
 package de.be.thaw.font;
 
 import de.be.thaw.font.util.KernedSize;
-import de.be.thaw.font.util.Size;
+import de.be.thaw.util.Size;
 
 /**
  * Description of a font in the Thaw project.

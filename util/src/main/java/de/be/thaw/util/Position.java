@@ -1,4 +1,4 @@
-package de.be.thaw.typeset.util;
+package de.be.thaw.util;
 
 /**
  * Object representing a position on a 2-dimensional plane.

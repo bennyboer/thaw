@@ -1,5 +1,7 @@
 package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
 
+import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.text.TextAlignment;
@@ -10,8 +12,6 @@ import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.image.ImageParagraph;
 import de.be.thaw.typeset.page.impl.ImageElement;
-import de.be.thaw.typeset.util.Position;
-import de.be.thaw.typeset.util.Size;
 
 import java.util.Optional;
 

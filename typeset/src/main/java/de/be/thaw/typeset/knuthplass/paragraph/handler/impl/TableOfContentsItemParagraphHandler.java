@@ -1,5 +1,7 @@
 package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
 
+import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.TextStyle;
@@ -9,8 +11,6 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.toc.TableOfContentsItemParagraph;
 import de.be.thaw.typeset.page.impl.PageNumberPlaceholderElement;
-import de.be.thaw.typeset.util.Position;
-import de.be.thaw.typeset.util.Size;
 
 import java.util.Optional;
 

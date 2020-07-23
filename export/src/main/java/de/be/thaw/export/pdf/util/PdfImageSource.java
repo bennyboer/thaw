@@ -1,7 +1,7 @@
 package de.be.thaw.export.pdf.util;
 
 import de.be.thaw.typeset.knuthplass.config.util.image.ImageSource;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Size;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 /**

@@ -1,4 +1,4 @@
-package de.be.thaw.typeset.util;
+package de.be.thaw.util;
 
 import java.io.Serializable;
 

@@ -1,5 +1,7 @@
 package de.be.thaw.font.util;
 
+import de.be.thaw.util.Size;
+
 /**
  * A size representation with the kerning adjustments included.
  */

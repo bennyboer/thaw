@@ -1,10 +1,10 @@
 package de.be.thaw.typeset.page.impl;
 
 import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 import de.be.thaw.typeset.page.AbstractElement;
 import de.be.thaw.typeset.page.ElementType;
-import de.be.thaw.typeset.util.Position;
-import de.be.thaw.typeset.util.Size;
 
 import java.util.Optional;
 
