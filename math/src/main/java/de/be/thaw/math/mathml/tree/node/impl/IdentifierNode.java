@@ -27,4 +27,20 @@ public class IdentifierNode extends MathMLNode {
         return text;
     }
 
+    @Override
+    public void toString(int indent, StringBuilder builder) {
+        builder.append(" ".repeat(indent));
+        builder.append('-');
+        builder.append(' ');
+        builder.append(getName());
+        builder.append(" [");
+        builder.append(getText());
+        builder.append(']');
+        builder.append('\n');
+
+        for (var child : getChildren()) {
+            child.toString(indent + 2, builder);
+        }
+    }
+
 }

@@ -20,4 +20,13 @@ public class MathMLTree {
         return root;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        getRoot().toString(0, builder);
+
+        return builder.toString();
+    }
+
 }

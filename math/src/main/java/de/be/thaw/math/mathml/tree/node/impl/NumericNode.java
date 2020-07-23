@@ -3,28 +3,28 @@ package de.be.thaw.math.mathml.tree.node.impl;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 
 /**
- * Operator <mo> node.
+ * Numeric <mn> node.
  */
-public class OperatorNode extends MathMLNode {
+public class NumericNode extends MathMLNode {
 
     /**
-     * The operator in string form.
+     * Stringified numeric value of the node.
      */
-    private final String operator;
+    private final String value;
 
-    public OperatorNode(String operator) {
-        super("mo");
+    public NumericNode(String value) {
+        super("mn");
 
-        this.operator = operator;
+        this.value = value;
     }
 
     /**
-     * Get the operator.
+     * Get the numeric value of the node.
      *
-     * @return operator
+     * @return numeric value
      */
-    public String getOperator() {
-        return operator;
+    public String getValue() {
+        return value;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class OperatorNode extends MathMLNode {
         builder.append(' ');
         builder.append(getName());
         builder.append(" [");
-        builder.append(getOperator());
+        builder.append(getValue());
         builder.append(']');
         builder.append('\n');
 

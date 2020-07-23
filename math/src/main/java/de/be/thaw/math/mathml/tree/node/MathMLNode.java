@@ -56,4 +56,22 @@ public abstract class MathMLNode {
         return name;
     }
 
+    /**
+     * To String with indent.
+     *
+     * @param indent  of the node
+     * @param builder to append string to
+     */
+    public void toString(int indent, StringBuilder builder) {
+        builder.append(" ".repeat(indent));
+        builder.append('-');
+        builder.append(' ');
+        builder.append(getName());
+        builder.append('\n');
+
+        for (var child : getChildren()) {
+            child.toString(indent + 2, builder);
+        }
+    }
+
 }
