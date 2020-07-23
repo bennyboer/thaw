@@ -22,4 +22,11 @@ public interface MathElement {
      */
     Position getPosition();
 
+    /**
+     * Get the math element type.
+     *
+     * @return type
+     */
+    MathElementType getType();
+
 }
