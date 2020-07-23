@@ -116,6 +116,11 @@ public class ExportContext {
      */
     private Map<String, ElementLocator> elementLookup;
 
+    /**
+     * The math font to use.
+     */
+    private ThawFont mathFont;
+
     public ExportContext(PDDocument pdDocument, Document document) {
         this.pdDocument = pdDocument;
         this.document = document;
@@ -348,6 +353,24 @@ public class ExportContext {
      */
     public void setElementLookup(Map<String, ElementLocator> elementLookup) {
         this.elementLookup = elementLookup;
+    }
+
+    /**
+     * Set the math font to use.
+     *
+     * @param mathFont to set
+     */
+    public void setMathFont(ThawFont mathFont) {
+        this.mathFont = mathFont;
+    }
+
+    /**
+     * Get the math font to use.
+     *
+     * @return math font
+     */
+    public ThawFont getMathFont() {
+        return mathFont;
     }
 
 }

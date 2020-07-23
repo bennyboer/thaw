@@ -9,4 +9,8 @@ public class TypesetException extends Exception {
         super(message);
     }
 
+    public TypesetException(Throwable cause) {
+        super(cause);
+    }
+
 }

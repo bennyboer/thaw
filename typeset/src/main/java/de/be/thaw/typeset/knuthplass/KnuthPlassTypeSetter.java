@@ -12,6 +12,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.ImageParagraphHandler;
+import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.MathParagraphHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.TableOfContentsItemParagraphHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.TextParagraphHandler;
 import de.be.thaw.typeset.page.Page;
@@ -36,6 +37,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
         initParagraphTypesetHandler(new TextParagraphHandler());
         initParagraphTypesetHandler(new ImageParagraphHandler());
         initParagraphTypesetHandler(new TableOfContentsItemParagraphHandler());
+        initParagraphTypesetHandler(new MathParagraphHandler());
     }
 
     /**

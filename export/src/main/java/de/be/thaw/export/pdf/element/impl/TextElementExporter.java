@@ -11,8 +11,6 @@ import de.be.thaw.reference.Reference;
 import de.be.thaw.reference.ReferenceType;
 import de.be.thaw.reference.impl.ExternalReference;
 import de.be.thaw.reference.impl.InternalReference;
-import de.be.thaw.util.Position;
-import de.be.thaw.util.Size;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.ColorStyle;
 import de.be.thaw.style.model.style.impl.FontStyle;
@@ -24,6 +22,8 @@ import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.page.impl.PageNumberPlaceholderElement;
 import de.be.thaw.typeset.page.impl.TextElement;
+import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -80,9 +80,9 @@ public class TextElementExporter implements ElementExporter {
                     PDDeviceRGB.INSTANCE
             ));
 
-            // Check if the element is really just a placeholder for the current page number
             double[] kerningAdjustments = te.getKerningAdjustments();
 
+            // Check if the element is really just a placeholder for the current page number
             if (te instanceof PageNumberPlaceholderElement) {
                 // We need to determine the page number of the target here to display as text
                 InternalReference internalReference = (InternalReference) reference;

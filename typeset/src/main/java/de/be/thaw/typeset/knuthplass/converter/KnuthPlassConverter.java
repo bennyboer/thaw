@@ -20,6 +20,7 @@ import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.FootNoteHandle
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.HeadlineHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.HyperRefHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.ImageHandler;
+import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.MathHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.PageHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.RefHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.TableOfContentsHandler;
@@ -51,6 +52,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         initThingyHandler(new TableOfContentsHandler());
         initThingyHandler(new PageHandler());
         initThingyHandler(new FootNoteHandler());
+        initThingyHandler(new MathHandler());
     }
 
     /**

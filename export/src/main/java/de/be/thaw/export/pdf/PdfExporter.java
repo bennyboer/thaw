@@ -6,9 +6,15 @@ import de.be.thaw.export.Exporter;
 import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.element.ElementExporter;
 import de.be.thaw.export.pdf.element.ElementExporters;
+import de.be.thaw.export.pdf.font.ThawPdfFont;
+import de.be.thaw.export.pdf.font.exception.FontParseException;
 import de.be.thaw.export.pdf.util.ElementLocator;
 import de.be.thaw.export.pdf.util.ExportContext;
 import de.be.thaw.export.pdf.util.PdfImageSource;
+import de.be.thaw.font.ThawFont;
+import de.be.thaw.font.util.FontFamily;
+import de.be.thaw.font.util.FontManager;
+import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.hyphenation.HyphenationDictionaries;
 import de.be.thaw.hyphenation.HyphenationDictionary;
@@ -35,6 +41,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -88,6 +95,15 @@ public class PdfExporter implements Exporter {
                     insetsStyle.getBottom() * POINTS_PER_MM,
                     insetsStyle.getRight() * POINTS_PER_MM
             ));
+
+            ThawFont mathFont;
+            try {
+                FontFamily family = FontManager.getInstance().getFamily("Cambria").orElseThrow();
+                mathFont = new ThawPdfFont("CambriaMath", new File(family.getVariantFont(FontVariant.PLAIN).orElseThrow().getFontFile().getLocation()), ctx.getPdDocument());
+            } catch (FontParseException e) {
+                throw new ExportException(e);
+            }
+            ctx.setMathFont(mathFont);
 
             // Typeset the document to individual pages
             List<Page> pages;
@@ -264,6 +280,7 @@ public class PdfExporter implements Exporter {
                     }
                 })
                 .setImageSourceSupplier(src -> new PdfImageSource(PDImageXObject.createFromFile(src, ctx.getPdDocument())))
+                .setMathFont(ctx.getMathFont())
                 .build());
     }
 

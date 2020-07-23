@@ -1,8 +1,12 @@
 package de.be.thaw.math.mathml.typeset.impl;
 
+import de.be.thaw.math.mathml.typeset.config.MathTypesetConfig;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.impl.handler.IdentifierNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.NumericNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.OperatorNodeHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,7 +25,34 @@ public class MathTypesetContext {
     private static final Map<String, MathMLNodeHandler> HANDLER_MAP = new HashMap<>();
 
     static {
+        registerHandler(new MathHandler());
         registerHandler(new IdentifierNodeHandler());
+        registerHandler(new OperatorNodeHandler());
+        registerHandler(new NumericNodeHandler());
+    }
+
+    /**
+     * Config to use during typesetting.
+     */
+    private final MathTypesetConfig config;
+
+    /**
+     * The typeset elements.
+     */
+    private final List<MathElement> elements = new ArrayList<>();
+
+    /**
+     * The current Y-coordinate.
+     */
+    private double currentY = 0;
+
+    /**
+     * The current X-coordinate.
+     */
+    private double currentX = 0;
+
+    public MathTypesetContext(MathTypesetConfig config) {
+        this.config = config;
     }
 
     /**
@@ -44,11 +75,6 @@ public class MathTypesetContext {
     }
 
     /**
-     * The typeset elements.
-     */
-    private final List<MathElement> elements = new ArrayList<>();
-
-    /**
      * Get the typeset elements.
      *
      * @return typeset elements
@@ -64,6 +90,31 @@ public class MathTypesetContext {
      */
     public void pushElement(MathElement element) {
         elements.add(element);
+    }
+
+    /**
+     * Get the configuration to use during typesetting.
+     *
+     * @return config
+     */
+    public MathTypesetConfig getConfig() {
+        return config;
+    }
+
+    public double getCurrentY() {
+        return currentY;
+    }
+
+    public void setCurrentY(double currentY) {
+        this.currentY = currentY;
+    }
+
+    public double getCurrentX() {
+        return currentX;
+    }
+
+    public void setCurrentX(double currentX) {
+        this.currentX = currentX;
     }
 
 }

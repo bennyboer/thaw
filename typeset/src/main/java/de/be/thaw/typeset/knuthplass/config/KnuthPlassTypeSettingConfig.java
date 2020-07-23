@@ -1,5 +1,6 @@
 package de.be.thaw.typeset.knuthplass.config;
 
+import de.be.thaw.font.ThawFont;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.GlueConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
@@ -70,6 +71,11 @@ public class KnuthPlassTypeSettingConfig {
      */
     private final ImageSourceSupplier imageSourceSupplier;
 
+    /**
+     * Font to use for math expressions.
+     */
+    private final ThawFont mathFont;
+
     public KnuthPlassTypeSettingConfig(
             Size pageSize,
             Insets pageInsets,
@@ -81,7 +87,8 @@ public class KnuthPlassTypeSettingConfig {
             FontDetailsSupplier fontDetailsSupplier,
             Hyphenator hyphenator,
             GlueConfig glueConfig,
-            ImageSourceSupplier imageSourceSupplier
+            ImageSourceSupplier imageSourceSupplier,
+            ThawFont mathFont
     ) {
         if (fontDetailsSupplier == null) {
             throw new NullPointerException("Cannot build line breaking configuration as the font details supplier is null which is required to properly typeset");
@@ -113,6 +120,8 @@ public class KnuthPlassTypeSettingConfig {
         this.glueConfig = glueConfig;
 
         this.imageSourceSupplier = imageSourceSupplier;
+
+        this.mathFont = mathFont;
     }
 
     /**
@@ -207,6 +216,15 @@ public class KnuthPlassTypeSettingConfig {
      */
     public double getIndentWidth() {
         return indentWidth;
+    }
+
+    /**
+     * Get the font to use for math expressions.
+     *
+     * @return font
+     */
+    public ThawFont getMathFont() {
+        return mathFont;
     }
 
     /**

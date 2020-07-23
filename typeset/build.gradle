@@ -6,4 +6,5 @@ dependencies {
     implementation project(':font')
     implementation project(':reference')
     implementation project(':util')
+    implementation project(':math')
 }
