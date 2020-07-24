@@ -2,6 +2,7 @@ package de.be.thaw.export.pdf.font;
 
 import de.be.thaw.export.pdf.font.exception.FontParseException;
 import de.be.thaw.font.AbstractFont;
+import de.be.thaw.font.util.CharacterSize;
 import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.font.util.OperatingSystem;
 import de.be.thaw.font.util.exception.CouldNotDetermineOperatingSystemException;
@@ -245,18 +246,32 @@ public class ThawPdfFont extends AbstractFont {
     }
 
     @Override
-    public Size getCharacterSize(int character, double fontSize) throws Exception {
+    public double getAscent(double fontSize) {
+        return pdFont.getFontDescriptor().getAscent() * fontSize / unitsPerEm;
+    }
+
+    @Override
+    public double getDescent(double fontSize) {
+        return pdFont.getFontDescriptor().getDescent() * fontSize / unitsPerEm;
+    }
+
+    @Override
+    public CharacterSize getCharacterSize(int character, double fontSize) throws Exception {
         int glyphID = characterMap.getGlyphId(character);
 
         double width = pdFont.getWidth(glyphID) * fontSize / 1000;
         double height = 0;
 
         GlyphData data = glyphTable.getGlyph(glyphID);
+        double descent = 0;
+        double ascent = 0;
         if (data != null) {
             height = (data.getYMaximum() - data.getYMinimum()) * fontSize / unitsPerEm;
+            ascent = data.getYMaximum() * fontSize / unitsPerEm;
+            descent = -data.getYMinimum() * fontSize / unitsPerEm;
         }
 
-        return new Size(width, height);
+        return new CharacterSize(width, height, ascent, descent);
     }
 
     @Override

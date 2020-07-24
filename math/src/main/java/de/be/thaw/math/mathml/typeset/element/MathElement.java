@@ -75,4 +75,11 @@ public interface MathElement {
      */
     void setParent(@Nullable MathElement parent);
 
+    /**
+     * Get the middle y position of the element.
+     *
+     * @return middle y
+     */
+    double getMidYPosition();
+
 }

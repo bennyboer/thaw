@@ -68,7 +68,7 @@ public abstract class AbstractMathElement implements MathElement {
      *
      * @return size
      */
-    private Size calculateTotalSize() {
+    protected Size calculateTotalSize() {
         Optional<List<MathElement>> optionalChildren = getChildren();
         if (optionalChildren.isEmpty()) {
             return new Size(0, 0);
@@ -76,10 +76,10 @@ public abstract class AbstractMathElement implements MathElement {
 
         List<MathElement> childElements = optionalChildren.get();
 
-        double minY = 0;
-        double maxY = 0;
-        double minX = 0;
-        double maxX = 0;
+        double minY = Double.MAX_VALUE;
+        double maxY = Double.MIN_VALUE;
+        double minX = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE;
 
         for (MathElement child : childElements) {
             if (child.getPosition().getY() < minY) {
@@ -132,6 +132,11 @@ public abstract class AbstractMathElement implements MathElement {
 
         children.add(element);
         element.setParent(this);
+    }
+
+    @Override
+    public double getMidYPosition() {
+        return getSize().getHeight() / 2;
     }
 
 }

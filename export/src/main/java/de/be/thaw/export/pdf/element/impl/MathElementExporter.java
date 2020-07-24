@@ -43,33 +43,39 @@ public class MathElementExporter implements ElementExporter {
 
         PDPageContentStream out = ctx.getContentStream();
 
-        double fontSize = ctx.getFontSizeForNode(element.getNode().orElseThrow());
-
-        renderElement(mee.getExpression().getRoot(), ctx, out, fontSize, y, x);
+        renderElement(mee.getExpression().getRoot(), ctx, out, y + mee.getExpression().getRoot().getSize().getHeight(), x);
     }
 
     /**
      * Render the passed elemnt.
      *
-     * @param element  to render
-     * @param ctx      the export context
-     * @param out      the output stream to the PDF document
-     * @param fontSize to render with
-     * @param y        current y offset on the document
-     * @param x        current x offset on the document
+     * @param element to render
+     * @param ctx     the export context
+     * @param out     the output stream to the PDF document
+     * @param yStart  current y offset on the document
+     * @param xStart  current x offset on the document
      * @throws ExportException in case the element could not be rendered properly
      */
-    private void renderElement(MathElement element, ExportContext ctx, PDPageContentStream out, double fontSize, double y, double x) throws ExportException {
+    private void renderElement(MathElement element, ExportContext ctx, PDPageContentStream out, double yStart, double xStart) throws ExportException {
         try {
             if (element instanceof IdentifierElement) {
-                showText(((IdentifierElement) element).getIdentifier(), ctx, out, fontSize, y - element.getPosition().getY(), x + element.getPosition().getX());
+                showText(((IdentifierElement) element).getIdentifier(), element, ctx, out, ((IdentifierElement) element).getFontSize(), yStart - element.getPosition().getY(), xStart + element.getPosition().getX());
             } else if (element instanceof OperatorElement) {
-                showText(((OperatorElement) element).getOperator(), ctx, out, fontSize, y - element.getPosition().getY(), x + element.getPosition().getX());
+                showText(((OperatorElement) element).getOperator(), element, ctx, out, ((OperatorElement) element).getFontSize(), yStart - element.getPosition().getY(), xStart + element.getPosition().getX());
             } else if (element instanceof NumericElement) {
-                showText(((NumericElement) element).getValue(), ctx, out, fontSize, y - element.getPosition().getY(), x + element.getPosition().getX());
+                showText(((NumericElement) element).getValue(), element, ctx, out, ((NumericElement) element).getFontSize(), yStart - element.getPosition().getY(), xStart + element.getPosition().getX());
             } else if (element instanceof FractionElement) {
-                // TODO
-                System.out.println("Should show fraction line...");
+                FractionElement fractionElement = (FractionElement) element;
+                MathElement numerator = fractionElement.getChildren().orElseThrow().get(0);
+
+                // Draw fraction line
+                out.setLineWidth((float) ((FractionElement) element).getLineWidth());
+
+                double lineY = yStart - element.getPosition().getY() - numerator.getSize().getHeight() - fractionElement.getLineSpacing();
+
+                out.moveTo((float) (xStart + element.getPosition().getX()), (float) lineY);
+                out.lineTo((float) (xStart + element.getPosition().getX() + element.getSize().getWidth()), (float) lineY);
+                out.stroke();
             }
         } catch (IOException e) {
             throw new ExportException(e);
@@ -79,7 +85,7 @@ public class MathElementExporter implements ElementExporter {
         Optional<List<MathElement>> children = element.getChildren();
         if (children.isPresent()) {
             for (MathElement child : children.get()) {
-                renderElement(child, ctx, out, fontSize, y, x);
+                renderElement(child, ctx, out, yStart, xStart);
             }
         }
     }
@@ -88,6 +94,7 @@ public class MathElementExporter implements ElementExporter {
      * Show the passed text on the document.
      *
      * @param str      to show
+     * @param element  the string belongs to
      * @param ctx      the export context
      * @param out      the output stream to the PDF document
      * @param fontSize to render with
@@ -95,7 +102,7 @@ public class MathElementExporter implements ElementExporter {
      * @param x        current x offset on the document
      * @throws IOException in case the string could not be shown properly
      */
-    private void showText(String str, ExportContext ctx, PDPageContentStream out, double fontSize, double y, double x) throws IOException {
+    private void showText(String str, MathElement element, ExportContext ctx, PDPageContentStream out, double fontSize, double y, double x) throws IOException {
         out.beginText();
 
         ThawPdfFont font = (ThawPdfFont) ctx.getMathFont();
@@ -104,7 +111,7 @@ public class MathElementExporter implements ElementExporter {
         out.setFont(font.getPdFont(), (float) fontSize);
 
         // Set the position of where to draw the text
-        out.newLineAtOffset((float) x, (float) (y + fontSize));
+        out.newLineAtOffset((float) x, (float) (y - element.getSize().getHeight()));
 
         out.showText(str);
 

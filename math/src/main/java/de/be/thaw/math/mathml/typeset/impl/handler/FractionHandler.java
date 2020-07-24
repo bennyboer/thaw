@@ -7,6 +7,7 @@ import de.be.thaw.math.mathml.typeset.element.impl.FractionElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
 import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 
 /**
  * Handler dealing with the fraction node.
@@ -22,15 +23,23 @@ public class FractionHandler implements MathMLNodeHandler {
     public MathElement handle(MathMLNode node, MathTypesetContext ctx) throws TypesetException {
         FractionNode fractionNode = (FractionNode) node;
 
-        double lineWidth = 1.0; // TODO Set later from the fraction node attribute!
-        double lineSpacing = ctx.getConfig().getFontSize() * 0.1; // Distance from either side of the fraction line
+        ctx.setLevel(ctx.getLevel() + 1);
+
+        double lineWidth = ctx.getConfig().getFontSize() * 0.05; // TODO Set later from the fraction node attribute!
+        double lineSpacing = ctx.getConfig().getFontSize() * 0.2; // Distance from either side of the fraction line
+        double horizontalPadding = ctx.getConfig().getFontSize() * 0.2; // Distance from either side for the fraction children
+
+        // Apply some adjustments based on the level of the math node
+        lineWidth = Math.max(lineWidth - ctx.getLevel() * 0.05, 0.3);
+        lineSpacing = Math.max(lineSpacing - ctx.getLevel() * 0.2, 1.0);
+        horizontalPadding = Math.max(horizontalPadding - ctx.getLevel() * 0.2, 1.0);
 
         // Save current position for later
         double oldX = ctx.getCurrentX();
         double oldY = ctx.getCurrentY();
 
         // Reset to new relative position context
-        ctx.setCurrentX(0);
+        ctx.setCurrentX(horizontalPadding);
         ctx.setCurrentY(0);
 
         // First typeset the numerator
@@ -40,7 +49,7 @@ public class FractionHandler implements MathMLNodeHandler {
         ))).handle(fractionNode.getChildren().get(0), ctx);
 
         // Offset the denominator
-        ctx.setCurrentX(0);
+        ctx.setCurrentX(horizontalPadding);
         ctx.setCurrentY(numerator.getSize().getHeight() + lineSpacing * 2 + lineWidth);
 
         // Then typeset the denominator
@@ -65,13 +74,19 @@ public class FractionHandler implements MathMLNodeHandler {
         }
 
         // Create fraction element and add nominator and denominator
-        FractionElement fractionElement = new FractionElement(fractionNode, lineWidth, new Position(oldX, oldY));
+        FractionElement fractionElement = new FractionElement(fractionNode, lineWidth, lineSpacing, new Position(oldX, oldY));
         fractionElement.addChild(numerator);
         fractionElement.addChild(denominator);
+
+        // Set the correct size of the fraction element (including horizontalPadding)
+        Size size = fractionElement.getSize();
+        fractionElement.setSize(new Size(size.getWidth() + horizontalPadding * 2, size.getHeight()));
 
         // Set new position to context
         ctx.setCurrentX(oldX + fractionElement.getSize().getWidth());
         ctx.setCurrentY(oldY);
+
+        ctx.setLevel(ctx.getLevel() - 1);
 
         return fractionElement;
     }

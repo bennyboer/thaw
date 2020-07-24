@@ -15,11 +15,17 @@ public class NumericElement extends AbstractMathElement {
      */
     private final String value;
 
-    public NumericElement(String value, Size size, Position position) {
+    /**
+     * Font size of the element.
+     */
+    private final double fontSize;
+
+    public NumericElement(String value, double fontSize, Size size, Position position) {
         super(position);
 
         setSize(size);
         this.value = value;
+        this.fontSize = fontSize;
     }
 
     /**
@@ -29,6 +35,10 @@ public class NumericElement extends AbstractMathElement {
      */
     public String getValue() {
         return value;
+    }
+
+    public double getFontSize() {
+        return fontSize;
     }
 
     @Override

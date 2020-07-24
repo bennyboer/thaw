@@ -232,6 +232,7 @@ public class TextElementExporter implements ElementExporter {
 
                 double lineY = y + descent;
 
+                out.setStrokingColor(0.0f, 0.0f, 0.0f); // TODO Set to same color as text
                 out.setLineWidth((float) lineWidth);
                 out.moveTo((float) lineStartX, (float) lineY);
                 out.lineTo((float) lineEndX, (float) lineY);

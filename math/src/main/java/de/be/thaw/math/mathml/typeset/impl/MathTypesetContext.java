@@ -7,6 +7,7 @@ import de.be.thaw.math.mathml.typeset.impl.handler.MathHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.NumericNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.OperatorNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.RowHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,7 @@ public class MathTypesetContext {
 
     static {
         registerHandler(new MathHandler());
+        registerHandler(new RowHandler());
         registerHandler(new IdentifierNodeHandler());
         registerHandler(new OperatorNodeHandler());
         registerHandler(new NumericNodeHandler());
@@ -44,6 +46,11 @@ public class MathTypesetContext {
      * The current X-coordinate.
      */
     private double currentX = 0;
+
+    /**
+     * Nesting level in the expression.
+     */
+    private int level = 0;
 
     public MathTypesetContext(MathTypesetConfig config) {
         this.config = config;
@@ -91,6 +98,18 @@ public class MathTypesetContext {
 
     public void setCurrentX(double currentX) {
         this.currentX = currentX;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public double getLevelAdjustedFontSize() {
+        return Math.max(getConfig().getFontSize() - getLevel(), 8.0);
     }
 
 }

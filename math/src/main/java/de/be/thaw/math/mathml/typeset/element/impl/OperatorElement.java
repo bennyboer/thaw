@@ -15,11 +15,17 @@ public class OperatorElement extends AbstractMathElement {
      */
     private final String operator;
 
-    public OperatorElement(String operator, Size size, Position position) {
+    /**
+     * Font size of the element.
+     */
+    private final double fontSize;
+
+    public OperatorElement(String operator, double fontSize, Size size, Position position) {
         super(position);
 
         setSize(size);
         this.operator = operator;
+        this.fontSize = fontSize;
     }
 
     /**
@@ -29,6 +35,10 @@ public class OperatorElement extends AbstractMathElement {
      */
     public String getOperator() {
         return operator;
+    }
+
+    public double getFontSize() {
+        return fontSize;
     }
 
     @Override

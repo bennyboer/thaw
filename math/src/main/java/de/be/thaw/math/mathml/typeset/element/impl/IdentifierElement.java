@@ -15,11 +15,17 @@ public class IdentifierElement extends AbstractMathElement {
      */
     private final String identifier;
 
-    public IdentifierElement(String identifier, Size size, Position position) {
+    /**
+     * Font size of the element.
+     */
+    private final double fontSize;
+
+    public IdentifierElement(String identifier, double fontSize, Size size, Position position) {
         super(position);
 
         setSize(size);
         this.identifier = identifier;
+        this.fontSize = fontSize;
     }
 
     /**
@@ -29,6 +35,10 @@ public class IdentifierElement extends AbstractMathElement {
      */
     public String getIdentifier() {
         return identifier;
+    }
+
+    public double getFontSize() {
+        return fontSize;
     }
 
     @Override

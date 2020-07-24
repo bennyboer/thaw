@@ -20,11 +20,17 @@ public class FractionElement extends AbstractMathElement {
      */
     private final double lineWidth;
 
-    public FractionElement(FractionNode node, double lineWidth, Position position) {
+    /**
+     * Spacing on each side of the fraction line.
+     */
+    private final double lineSpacing;
+
+    public FractionElement(FractionNode node, double lineWidth, double lineSpacing, Position position) {
         super(position);
 
         this.fractionNode = node;
         this.lineWidth = lineWidth;
+        this.lineSpacing = lineSpacing;
     }
 
     /**
@@ -34,6 +40,15 @@ public class FractionElement extends AbstractMathElement {
      */
     public FractionNode getFractionNode() {
         return fractionNode;
+    }
+
+    /**
+     * Get the spacing on each side of the fraction line.
+     *
+     * @return spacing
+     */
+    public double getLineSpacing() {
+        return lineSpacing;
     }
 
     /**
@@ -50,4 +65,12 @@ public class FractionElement extends AbstractMathElement {
         return MathElementType.FRACTION;
     }
 
+    @Override
+    public double getMidYPosition() {
+        // The mid y for fraction elements is not really the middle,
+        // but rather the offset of the numerator + line spacing + half line width
+        return getChildren().orElseThrow().get(0).getSize().getHeight()
+                + getLineSpacing()
+                + getLineWidth() / 2;
+    }
 }
