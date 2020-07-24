@@ -48,4 +48,22 @@ public class MathMLParserTest {
                 "  - mn [2]\n", tree.toString());
     }
 
+    @Test
+    public void simpleFractionTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<mfrac>\n" +
+                "\t\t<mn>1</mn>\n" +
+                "\t\t<mn>2</mn>\n" +
+                "\t</mfrac>\n" +
+                "</math>";
+
+        MathMLParser parser = new DefaultMathMLParser();
+        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+
+        Assertions.assertEquals("- math\n" +
+                "  - mfrac\n" +
+                "    - mn [1]\n" +
+                "    - mn [2]\n", tree.toString());
+    }
+
 }

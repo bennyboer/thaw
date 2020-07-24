@@ -16,8 +16,9 @@ public class IdentifierElement extends AbstractMathElement {
     private final String identifier;
 
     public IdentifierElement(String identifier, Size size, Position position) {
-        super(size, position);
+        super(position);
 
+        setSize(size);
         this.identifier = identifier;
     }
 

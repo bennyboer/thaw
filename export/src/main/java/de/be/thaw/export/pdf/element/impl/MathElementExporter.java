@@ -5,6 +5,7 @@ import de.be.thaw.export.pdf.element.ElementExporter;
 import de.be.thaw.export.pdf.font.ThawPdfFont;
 import de.be.thaw.export.pdf.util.ExportContext;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
+import de.be.thaw.math.mathml.typeset.element.impl.FractionElement;
 import de.be.thaw.math.mathml.typeset.element.impl.IdentifierElement;
 import de.be.thaw.math.mathml.typeset.element.impl.NumericElement;
 import de.be.thaw.math.mathml.typeset.element.impl.OperatorElement;
@@ -14,6 +15,8 @@ import de.be.thaw.typeset.page.impl.MathExpressionElement;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -42,26 +45,56 @@ public class MathElementExporter implements ElementExporter {
 
         double fontSize = ctx.getFontSizeForNode(element.getNode().orElseThrow());
 
+        renderElement(mee.getExpression().getRoot(), ctx, out, fontSize, y, x);
+    }
+
+    /**
+     * Render the passed elemnt.
+     *
+     * @param element  to render
+     * @param ctx      the export context
+     * @param out      the output stream to the PDF document
+     * @param fontSize to render with
+     * @param y        current y offset on the document
+     * @param x        current x offset on the document
+     * @throws ExportException in case the element could not be rendered properly
+     */
+    private void renderElement(MathElement element, ExportContext ctx, PDPageContentStream out, double fontSize, double y, double x) throws ExportException {
         try {
-            for (MathElement elm : mee.getExpression().getElements()) {
-                if (elm instanceof IdentifierElement) {
-                    showText(((IdentifierElement) elm).getIdentifier(), ctx, out, fontSize, y + elm.getPosition().getY(), x + elm.getPosition().getX());
-                } else if (elm instanceof OperatorElement) {
-                    showText(((OperatorElement) elm).getOperator(), ctx, out, fontSize, y + elm.getPosition().getY(), x + elm.getPosition().getX());
-                } else if (elm instanceof NumericElement) {
-                    showText(((NumericElement) elm).getValue(), ctx, out, fontSize, y + elm.getPosition().getY(), x + elm.getPosition().getX());
-                } else {
-                    throw new ExportException(String.format(
-                            "Could not export math element with class '%s' -> Not implemented",
-                            elm.getClass().getSimpleName()
-                    ));
-                }
+            if (element instanceof IdentifierElement) {
+                showText(((IdentifierElement) element).getIdentifier(), ctx, out, fontSize, y - element.getPosition().getY(), x + element.getPosition().getX());
+            } else if (element instanceof OperatorElement) {
+                showText(((OperatorElement) element).getOperator(), ctx, out, fontSize, y - element.getPosition().getY(), x + element.getPosition().getX());
+            } else if (element instanceof NumericElement) {
+                showText(((NumericElement) element).getValue(), ctx, out, fontSize, y - element.getPosition().getY(), x + element.getPosition().getX());
+            } else if (element instanceof FractionElement) {
+                // TODO
+                System.out.println("Should show fraction line...");
             }
         } catch (IOException e) {
             throw new ExportException(e);
         }
+
+        // Render children as well
+        Optional<List<MathElement>> children = element.getChildren();
+        if (children.isPresent()) {
+            for (MathElement child : children.get()) {
+                renderElement(child, ctx, out, fontSize, y, x);
+            }
+        }
     }
 
+    /**
+     * Show the passed text on the document.
+     *
+     * @param str      to show
+     * @param ctx      the export context
+     * @param out      the output stream to the PDF document
+     * @param fontSize to render with
+     * @param y        current y offset on the document
+     * @param x        current x offset on the document
+     * @throws IOException in case the string could not be shown properly
+     */
     private void showText(String str, ExportContext ctx, PDPageContentStream out, double fontSize, double y, double x) throws IOException {
         out.beginText();
 

@@ -16,8 +16,9 @@ public class NumericElement extends AbstractMathElement {
     private final String value;
 
     public NumericElement(String value, Size size, Position position) {
-        super(size, position);
+        super(position);
 
+        setSize(size);
         this.value = value;
     }
 

@@ -16,8 +16,9 @@ public class OperatorElement extends AbstractMathElement {
     private final String operator;
 
     public OperatorElement(String operator, Size size, Position position) {
-        super(size, position);
+        super(position);
 
+        setSize(size);
         this.operator = operator;
     }
 

@@ -3,34 +3,26 @@ package de.be.thaw.math.mathml.typeset;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.util.Size;
 
-import java.util.List;
-
 /**
  * A typeset math expression.
  */
 public class MathExpression {
 
     /**
-     * Elements the expression consists of.
+     * The root math element.
      */
-    private final List<MathElement> elements;
+    private final MathElement root;
 
-    /**
-     * Size of the math expression.
-     */
-    private final Size size;
-
-    public MathExpression(List<MathElement> elements, Size size) {
-        this.elements = elements;
-        this.size = size;
+    public MathExpression(MathElement root) {
+        this.root = root;
     }
 
-    public List<MathElement> getElements() {
-        return elements;
+    public MathElement getRoot() {
+        return root;
     }
 
     public Size getSize() {
-        return size;
+        return root.getSize();
     }
 
 }

@@ -1,16 +1,14 @@
 package de.be.thaw.math.mathml.typeset.impl;
 
 import de.be.thaw.math.mathml.typeset.config.MathTypesetConfig;
-import de.be.thaw.math.mathml.typeset.element.MathElement;
+import de.be.thaw.math.mathml.typeset.impl.handler.FractionHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.IdentifierNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.NumericNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.OperatorNodeHandler;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -29,17 +27,13 @@ public class MathTypesetContext {
         registerHandler(new IdentifierNodeHandler());
         registerHandler(new OperatorNodeHandler());
         registerHandler(new NumericNodeHandler());
+        registerHandler(new FractionHandler());
     }
 
     /**
      * Config to use during typesetting.
      */
     private final MathTypesetConfig config;
-
-    /**
-     * The typeset elements.
-     */
-    private final List<MathElement> elements = new ArrayList<>();
 
     /**
      * The current Y-coordinate.
@@ -72,24 +66,6 @@ public class MathTypesetContext {
      */
     public static Optional<MathMLNodeHandler> getHandler(String nodeName) {
         return Optional.of(HANDLER_MAP.get(nodeName));
-    }
-
-    /**
-     * Get the typeset elements.
-     *
-     * @return typeset elements
-     */
-    public List<MathElement> getElements() {
-        return elements;
-    }
-
-    /**
-     * Push an element to the typeset elements.
-     *
-     * @param element to push
-     */
-    public void pushElement(MathElement element) {
-        elements.add(element);
     }
 
     /**

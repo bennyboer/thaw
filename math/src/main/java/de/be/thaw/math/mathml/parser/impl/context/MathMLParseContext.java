@@ -1,6 +1,7 @@
 package de.be.thaw.math.mathml.parser.impl.context;
 
 import de.be.thaw.math.mathml.parser.impl.handler.MathMLNodeParseHandler;
+import de.be.thaw.math.mathml.parser.impl.handler.impl.FractionHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.IdentifierHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.MathHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.NumericHandler;
@@ -18,13 +19,14 @@ public class MathMLParseContext {
     /**
      * Mapping of parse handlers.
      */
-    private final static Map<String, MathMLNodeParseHandler> HANDLER_MAP = new HashMap<>();
+    private static final Map<String, MathMLNodeParseHandler> HANDLER_MAP = new HashMap<>();
 
     static {
         registerParseHandler(new MathHandler());
         registerParseHandler(new OperatorHandler());
         registerParseHandler(new IdentifierHandler());
         registerParseHandler(new NumericHandler());
+        registerParseHandler(new FractionHandler());
     }
 
     /**

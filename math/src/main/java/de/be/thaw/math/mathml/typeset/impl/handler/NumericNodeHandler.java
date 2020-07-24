@@ -2,6 +2,7 @@ package de.be.thaw.math.mathml.typeset.impl.handler;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.impl.NumericNode;
+import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.NumericElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
@@ -19,7 +20,7 @@ public class NumericNodeHandler implements MathMLNodeHandler {
     }
 
     @Override
-    public void handle(MathMLNode node, MathTypesetContext ctx) throws TypesetException {
+    public MathElement handle(MathMLNode node, MathTypesetContext ctx) throws TypesetException {
         NumericNode mn = (NumericNode) node;
 
         // TODO Deal with different font variants (mathvariants)
@@ -34,7 +35,7 @@ public class NumericNodeHandler implements MathMLNodeHandler {
         Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth());
 
-        ctx.pushElement(new NumericElement(mn.getValue(), size, position));
+        return new NumericElement(mn.getValue(), size, position);
     }
 
 }
