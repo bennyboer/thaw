@@ -1,6 +1,7 @@
 package de.be.thaw.math.mathml.tree.node.impl;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
+import de.be.thaw.math.mathml.tree.node.MathVariant;
 
 /**
  * Identifier <mi> node.
@@ -12,10 +13,16 @@ public class IdentifierNode extends MathMLNode {
      */
     private final String text;
 
-    public IdentifierNode(String text) {
+    /**
+     * The math variant to use to display the text.
+     */
+    private final MathVariant mathVariant;
+
+    public IdentifierNode(String text, MathVariant mathVariant) {
         super("mi");
 
         this.text = text;
+        this.mathVariant = mathVariant;
     }
 
     /**
@@ -25,6 +32,15 @@ public class IdentifierNode extends MathMLNode {
      */
     public String getText() {
         return text;
+    }
+
+    /**
+     * Get the math variant to use.
+     *
+     * @return math variant
+     */
+    public MathVariant getMathVariant() {
+        return mathVariant;
     }
 
     @Override

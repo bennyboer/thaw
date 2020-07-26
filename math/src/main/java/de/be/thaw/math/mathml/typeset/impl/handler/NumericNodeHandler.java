@@ -7,6 +7,7 @@ import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.NumericElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.util.MathVariantUtil;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
 
@@ -24,18 +25,23 @@ public class NumericNodeHandler implements MathMLNodeHandler {
     public MathElement handle(MathMLNode node, MathTypesetContext ctx) throws TypesetException {
         NumericNode mn = (NumericNode) node;
 
-        // TODO Deal with different font variants (mathvariants)
+        String value = mn.getValue();
+
+        // Convert value to the correct font variant (math variant)
+        value = MathVariantUtil.convertStringUsingMathVariant(value, mn.getMathVariant());
+
+        // TODO Deal with mathsize (once attribute is parsed)
 
         CharacterSize size;
         try {
-            size = ctx.getConfig().getFont().getStringSize(mn.getValue(), ctx.getLevelAdjustedFontSize());
+            size = ctx.getConfig().getFont().getStringSize(value, ctx.getLevelAdjustedFontSize());
         } catch (Exception e) {
             throw new TypesetException(e);
         }
         Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth());
 
-        return new NumericElement(mn.getValue(), ctx.getLevelAdjustedFontSize(), new Size(size.getWidth(), size.getAscent()), position);
+        return new NumericElement(value, ctx.getLevelAdjustedFontSize(), new Size(size.getWidth(), size.getAscent()), position);
     }
 
 }

@@ -1,6 +1,7 @@
 package de.be.thaw.math.mathml.tree.node.impl;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
+import de.be.thaw.math.mathml.tree.node.MathVariant;
 
 /**
  * Operator <mo> node.
@@ -12,10 +13,16 @@ public class OperatorNode extends MathMLNode {
      */
     private final String operator;
 
-    public OperatorNode(String operator) {
+    /**
+     * The math variant to display the operator with.
+     */
+    private final MathVariant mathVariant;
+
+    public OperatorNode(String operator, MathVariant mathVariant) {
         super("mo");
 
         this.operator = operator;
+        this.mathVariant = mathVariant;
     }
 
     /**
@@ -25,6 +32,10 @@ public class OperatorNode extends MathMLNode {
      */
     public String getOperator() {
         return operator;
+    }
+
+    public MathVariant getMathVariant() {
+        return mathVariant;
     }
 
     @Override

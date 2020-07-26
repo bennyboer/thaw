@@ -2,11 +2,13 @@ package de.be.thaw.math.mathml.typeset.impl.handler;
 
 import de.be.thaw.font.util.CharacterSize;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
+import de.be.thaw.math.mathml.tree.node.MathVariant;
 import de.be.thaw.math.mathml.tree.node.impl.IdentifierNode;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.IdentifierElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.util.MathVariantUtil;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
 
@@ -26,7 +28,10 @@ public class IdentifierNodeHandler implements MathMLNodeHandler {
 
         String text = mi.getText();
 
-        // TODO Deal with different font variants (mathvariants)
+        // Convert text to the correct font variant (math variant)
+        text = MathVariantUtil.convertStringUsingMathVariant(text, mi.getMathVariant());
+
+        // TODO Deal with mathsize (once attribute is parsed)
 
         CharacterSize size;
         try {

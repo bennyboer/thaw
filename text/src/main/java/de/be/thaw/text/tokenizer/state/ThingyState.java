@@ -21,7 +21,8 @@ public class ThingyState implements State {
     private enum InternalState {
         NAME,
         ARGUMENTS,
-        OPTIONS
+        OPTIONS,
+        IN_STRING
     }
 
     /**
@@ -54,23 +55,45 @@ public class ThingyState implements State {
      */
     private String pendingOptionKey;
 
+    /**
+     * Char that started the string.
+     */
+    private char stringStartChar = '\0';
+
+    /**
+     * State before being in the in-string state.
+     */
+    private InternalState beforeInStringState;
+
     public ThingyState(State returnState) {
         this.returnState = returnState;
     }
 
     @Override
     public State translate(char c, TokenizingContext ctx) throws InvalidStateException {
-        return switch (c) {
-            case '#' -> handleThingyEnd(ctx);
-            case ',' -> handlePushArgOption(ctx);
-            case '=' -> handleOptionKey(ctx);
-            case '\\' -> new EscapedState(this);
-            default -> {
+        if (internalState == InternalState.IN_STRING) {
+            if (c == stringStartChar) {
+                // Leave in-string state
+                internalState = beforeInStringState;
+            } else {
                 ctx.getBuffer().append(c);
-
-                yield this;
             }
-        };
+
+            return this;
+        } else {
+            return switch (c) {
+                case '#' -> handleThingyEnd(ctx);
+                case ',' -> handlePushArgOption(ctx);
+                case '=' -> handleOptionKey(ctx);
+                case '\'', '"' -> handleString(ctx, c);
+                case '\\' -> new EscapedState(this);
+                default -> {
+                    ctx.getBuffer().append(c);
+
+                    yield this;
+                }
+            };
+        }
     }
 
     @Override
@@ -89,6 +112,24 @@ public class ThingyState implements State {
         // Thingy is able to stretch over multiple lines.
         // New line is then replaced with white space character.
         ctx.getBuffer().append(' ');
+
+        return this;
+    }
+
+    /**
+     * Handle starting or ending a string.
+     *
+     * @param ctx the tokenizing context
+     * @param c   character that starts or ends the string
+     * @return the next state
+     * @throws InvalidStateException in case something went wrong
+     */
+    private State handleString(TokenizingContext ctx, char c) throws InvalidStateException {
+        // Enter the in-string state
+        stringStartChar = c;
+        beforeInStringState = internalState;
+
+        internalState = InternalState.IN_STRING;
 
         return this;
     }

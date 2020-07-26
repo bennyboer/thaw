@@ -1,6 +1,7 @@
 package de.be.thaw.math.mathml.tree.node.impl;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
+import de.be.thaw.math.mathml.tree.node.MathVariant;
 
 /**
  * Numeric <mn> node.
@@ -12,10 +13,16 @@ public class NumericNode extends MathMLNode {
      */
     private final String value;
 
-    public NumericNode(String value) {
+    /**
+     * The math variant to use when displaying the value.
+     */
+    private final MathVariant mathVariant;
+
+    public NumericNode(String value, MathVariant mathVariant) {
         super("mn");
 
         this.value = value;
+        this.mathVariant = mathVariant;
     }
 
     /**
@@ -25,6 +32,10 @@ public class NumericNode extends MathMLNode {
      */
     public String getValue() {
         return value;
+    }
+
+    public MathVariant getMathVariant() {
+        return mathVariant;
     }
 
     @Override
