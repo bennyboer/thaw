@@ -30,6 +30,7 @@ public enum MathVariant {
             Map.entry((int) 'C', new char[]{'\u2102'}),
             Map.entry((int) 'H', new char[]{'\u210D'}),
             Map.entry((int) 'N', new char[]{'\u2115'}),
+            Map.entry((int) 'P', new char[]{'\u2119'}),
             Map.entry((int) 'Q', new char[]{'\u211A'}),
             Map.entry((int) 'R', new char[]{'\u211D'}),
             Map.entry((int) 'Z', new char[]{'\u2124'})
