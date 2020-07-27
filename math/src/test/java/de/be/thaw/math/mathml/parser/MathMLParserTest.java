@@ -118,4 +118,22 @@ public class MathMLParserTest {
                 "      - mtext [Hallo Welt]\n", tree.toString());
     }
 
+    @Test
+    public void simpleSuperscriptTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<msup>\n" +
+                "\t\t<mi>x</mi>\n" +
+                "\t\t<mn>2</mn>\n" +
+                "\t</msup>\n" +
+                "</math>\n";
+
+        MathMLParser parser = new DefaultMathMLParser();
+        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+
+        Assertions.assertEquals("- math\n" +
+                "  - msup\n" +
+                "    - mi [x]\n" +
+                "    - mn [2]\n", tree.toString());
+    }
+
 }

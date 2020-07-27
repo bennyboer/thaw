@@ -10,6 +10,7 @@ public enum MathElementType {
     NUMERICAL,
     TEXT,
     FRACTION,
-    ROW
+    ROW,
+    SUPER_SCRIPT
 
 }
