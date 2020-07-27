@@ -34,7 +34,7 @@ public class RowHandler extends AbstractMathMLNodeParseHandler {
                             child.getNodeName()
                     ))).parse(child, ctx);
 
-                    rowNode.getChildren().add(childNode);
+                    rowNode.addChild(childNode);
                 }
             }
         }

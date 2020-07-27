@@ -1,19 +1,15 @@
 package de.be.thaw.math.mathml.tree.node;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 /**
  * Node of the MathMLTree.
  */
 public abstract class MathMLNode {
-
-    /**
-     * Attributes of the node.
-     */
-    private final Map<String, String> attributes = new HashMap<>();
 
     /**
      * Children of this node (if any).
@@ -25,17 +21,14 @@ public abstract class MathMLNode {
      */
     private final String name;
 
+    /**
+     * The parent of the node.
+     */
+    @Nullable
+    private MathMLNode parent;
+
     public MathMLNode(String name) {
         this.name = name;
-    }
-
-    /**
-     * Get the attributes on this node.
-     *
-     * @return attributes
-     */
-    public Map<String, String> getAttributes() {
-        return attributes;
     }
 
     /**
@@ -45,6 +38,26 @@ public abstract class MathMLNode {
      */
     public List<MathMLNode> getChildren() {
         return children;
+    }
+
+    /**
+     * Get the parent of the node.
+     *
+     * @return parent
+     */
+    public Optional<MathMLNode> getParent() {
+        return Optional.ofNullable(parent);
+    }
+
+    /**
+     * Add a child to the node.
+     *
+     * @param node to add child to
+     */
+    public void addChild(MathMLNode node) {
+        children.add(node);
+
+        node.parent = this;
     }
 
     /**

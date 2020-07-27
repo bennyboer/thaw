@@ -42,7 +42,7 @@ public class MathHandler extends AbstractMathMLNodeParseHandler {
                             child.getNodeName()
                     ))).parse(child, ctx);
 
-                    mathNode.getChildren().add(childNode);
+                    mathNode.addChild(childNode);
                 }
             }
         }

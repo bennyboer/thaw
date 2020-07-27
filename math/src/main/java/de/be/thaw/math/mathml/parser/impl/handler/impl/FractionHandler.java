@@ -48,7 +48,7 @@ public class FractionHandler extends AbstractMathMLNodeParseHandler {
                         child.getNodeName()
                 ))).parse(child, ctx);
 
-                fractionNode.getChildren().add(childNode);
+                fractionNode.addChild(childNode);
             }
         }
 

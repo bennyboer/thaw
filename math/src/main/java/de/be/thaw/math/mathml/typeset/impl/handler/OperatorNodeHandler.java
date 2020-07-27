@@ -68,11 +68,13 @@ public class OperatorNodeHandler implements MathMLNodeHandler {
             throw new TypesetException(e);
         }
 
-        // TODO Deal properly with operator padding for different operator types (see how it is done in TeX)
-        double padding = size.getWidth() * 0.2;
+        boolean isFirstNode = node.getParent().map(p -> p.getChildren().indexOf(node) == 0).orElse(false);
+        boolean isLastNode = node.getParent().map(p -> p.getChildren().indexOf(node) == p.getChildren().size() - 1).orElse(false);
+        double leftMargin = isFirstNode || isLastNode ? 0 : mo.getLeftSpaceWidth();
+        double rightMargin = isFirstNode || isLastNode ? 0 : mo.getRightSpaceWidth();
 
-        Position position = new Position(ctx.getCurrentX() + padding, ctx.getCurrentY());
-        ctx.setCurrentX(position.getX() + size.getWidth() + padding);
+        Position position = new Position(ctx.getCurrentX() + leftMargin, ctx.getCurrentY());
+        ctx.setCurrentX(position.getX() + size.getWidth() + rightMargin);
 
         return new OperatorElement(operator, new Size(size.getWidth(), size.getHeight()), ctx.getLevelAdjustedFontSize(), size.getAscent(), size.getKerningAdjustments(), position);
     }

@@ -18,11 +18,23 @@ public class OperatorNode extends MathMLNode {
      */
     private final MathVariant mathVariant;
 
-    public OperatorNode(String operator, MathVariant mathVariant) {
+    /**
+     * Width of a space to the left (if any).
+     */
+    private final double leftSpaceWidth;
+
+    /**
+     * Width of a space to the right (if any).
+     */
+    private final double rightSpaceWidth;
+
+    public OperatorNode(String operator, MathVariant mathVariant, double leftSpaceWidth, double rightSpaceWidth) {
         super("mo");
 
         this.operator = operator;
         this.mathVariant = mathVariant;
+        this.leftSpaceWidth = leftSpaceWidth;
+        this.rightSpaceWidth = rightSpaceWidth;
     }
 
     /**
@@ -36,6 +48,14 @@ public class OperatorNode extends MathMLNode {
 
     public MathVariant getMathVariant() {
         return mathVariant;
+    }
+
+    public double getLeftSpaceWidth() {
+        return leftSpaceWidth;
+    }
+
+    public double getRightSpaceWidth() {
+        return rightSpaceWidth;
     }
 
     @Override
