@@ -20,12 +20,18 @@ public class OperatorElement extends AbstractMathElement {
      */
     private final double fontSize;
 
-    public OperatorElement(String operator, double fontSize, Size size, Position position) {
+    /**
+     * Kerning adjustments.
+     */
+    private final double[] kerningAdjustments;
+
+    public OperatorElement(String operator, double fontSize, Size size, double[] kerningAdjustments, Position position) {
         super(position);
 
         setSize(size);
         this.operator = operator;
         this.fontSize = fontSize;
+        this.kerningAdjustments = kerningAdjustments;
     }
 
     /**
@@ -37,8 +43,22 @@ public class OperatorElement extends AbstractMathElement {
         return operator;
     }
 
+    /**
+     * Get the font size to display the operator with.
+     *
+     * @return font size
+     */
     public double getFontSize() {
         return fontSize;
+    }
+
+    /**
+     * Get kerning adjustments of the text.
+     *
+     * @return kerning adjustments
+     */
+    public double[] getKerningAdjustments() {
+        return kerningAdjustments;
     }
 
     @Override

@@ -20,12 +20,18 @@ public class NumericElement extends AbstractMathElement {
      */
     private final double fontSize;
 
-    public NumericElement(String value, double fontSize, Size size, Position position) {
+    /**
+     * Kerning adjustments.
+     */
+    private final double[] kerningAdjustments;
+
+    public NumericElement(String value, double fontSize, Size size, double[] kerningAdjustments, Position position) {
         super(position);
 
         setSize(size);
         this.value = value;
         this.fontSize = fontSize;
+        this.kerningAdjustments = kerningAdjustments;
     }
 
     /**
@@ -37,8 +43,22 @@ public class NumericElement extends AbstractMathElement {
         return value;
     }
 
+    /**
+     * Get the font size to display the value with.
+     *
+     * @return font size
+     */
     public double getFontSize() {
         return fontSize;
+    }
+
+    /**
+     * Get kerning adjustments of the text.
+     *
+     * @return kerning adjustments
+     */
+    public double[] getKerningAdjustments() {
+        return kerningAdjustments;
     }
 
     @Override

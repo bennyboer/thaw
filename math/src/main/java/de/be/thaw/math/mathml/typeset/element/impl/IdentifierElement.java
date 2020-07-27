@@ -20,12 +20,18 @@ public class IdentifierElement extends AbstractMathElement {
      */
     private final double fontSize;
 
-    public IdentifierElement(String identifier, double fontSize, Size size, Position position) {
+    /**
+     * Kerning adjustments.
+     */
+    private final double[] kerningAdjustments;
+
+    public IdentifierElement(String identifier, double fontSize, Size size, double[] kerningAdjustments, Position position) {
         super(position);
 
         setSize(size);
         this.identifier = identifier;
         this.fontSize = fontSize;
+        this.kerningAdjustments = kerningAdjustments;
     }
 
     /**
@@ -37,8 +43,22 @@ public class IdentifierElement extends AbstractMathElement {
         return identifier;
     }
 
+    /**
+     * Get the font size of the elements identifier.
+     *
+     * @return font size
+     */
     public double getFontSize() {
         return fontSize;
+    }
+
+    /**
+     * Get kerning adjustments of the text.
+     *
+     * @return kerning adjustments
+     */
+    public double[] getKerningAdjustments() {
+        return kerningAdjustments;
     }
 
     @Override

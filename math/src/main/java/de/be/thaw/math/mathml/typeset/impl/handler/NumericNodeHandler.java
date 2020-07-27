@@ -1,6 +1,6 @@
 package de.be.thaw.math.mathml.typeset.impl.handler;
 
-import de.be.thaw.font.util.CharacterSize;
+import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.impl.NumericNode;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
@@ -32,16 +32,16 @@ public class NumericNodeHandler implements MathMLNodeHandler {
 
         // TODO Deal with mathsize (once attribute is parsed)
 
-        CharacterSize size;
+        KernedSize size;
         try {
-            size = ctx.getConfig().getFont().getStringSize(value, ctx.getLevelAdjustedFontSize());
+            size = ctx.getConfig().getFont().getKernedStringSize(-1, value, ctx.getLevelAdjustedFontSize());
         } catch (Exception e) {
             throw new TypesetException(e);
         }
         Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth());
 
-        return new NumericElement(value, ctx.getLevelAdjustedFontSize(), new Size(size.getWidth(), size.getAscent()), position);
+        return new NumericElement(value, ctx.getLevelAdjustedFontSize(), new Size(size.getWidth(), size.getAscent()), size.getKerningAdjustments(), position);
     }
 
 }

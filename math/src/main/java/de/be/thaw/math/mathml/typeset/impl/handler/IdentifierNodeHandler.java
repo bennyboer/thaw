@@ -1,6 +1,7 @@
 package de.be.thaw.math.mathml.typeset.impl.handler;
 
 import de.be.thaw.font.util.CharacterSize;
+import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.MathVariant;
 import de.be.thaw.math.mathml.tree.node.impl.IdentifierNode;
@@ -33,9 +34,9 @@ public class IdentifierNodeHandler implements MathMLNodeHandler {
 
         // TODO Deal with mathsize (once attribute is parsed)
 
-        CharacterSize size;
+        KernedSize size;
         try {
-            size = ctx.getConfig().getFont().getStringSize(text, ctx.getLevelAdjustedFontSize());
+            size = ctx.getConfig().getFont().getKernedStringSize(-1, text, ctx.getLevelAdjustedFontSize());
         } catch (Exception e) {
             throw new TypesetException(e);
         }
@@ -43,7 +44,7 @@ public class IdentifierNodeHandler implements MathMLNodeHandler {
         Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth());
 
-        return new IdentifierElement(text, ctx.getLevelAdjustedFontSize(), new Size(size.getWidth(), size.getAscent()), position);
+        return new IdentifierElement(text, ctx.getLevelAdjustedFontSize(), new Size(size.getWidth(), size.getAscent()), size.getKerningAdjustments(), position);
     }
 
 }
