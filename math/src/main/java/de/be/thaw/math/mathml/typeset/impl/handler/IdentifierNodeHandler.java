@@ -1,9 +1,7 @@
 package de.be.thaw.math.mathml.typeset.impl.handler;
 
-import de.be.thaw.font.util.CharacterSize;
 import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
-import de.be.thaw.math.mathml.tree.node.MathVariant;
 import de.be.thaw.math.mathml.tree.node.impl.IdentifierNode;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.IdentifierElement;
@@ -44,7 +42,7 @@ public class IdentifierNodeHandler implements MathMLNodeHandler {
         Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth());
 
-        return new IdentifierElement(text, ctx.getLevelAdjustedFontSize(), new Size(size.getWidth(), size.getAscent()), size.getKerningAdjustments(), position);
+        return new IdentifierElement(text, new Size(size.getWidth(), size.getHeight()), ctx.getLevelAdjustedFontSize(), size.getAscent(), size.getKerningAdjustments(), position);
     }
 
 }

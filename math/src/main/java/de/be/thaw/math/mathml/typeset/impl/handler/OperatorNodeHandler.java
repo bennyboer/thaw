@@ -26,7 +26,7 @@ public class OperatorNodeHandler implements MathMLNodeHandler {
 
     static {
         OPERATOR_REPLACEMENT_MAP.put((int) '-', '\u2212');
-        OPERATOR_REPLACEMENT_MAP.put((int) '*', '\u2219');
+        OPERATOR_REPLACEMENT_MAP.put((int) '*', '\u2217');
         OPERATOR_REPLACEMENT_MAP.put((int) '/', '\u2236');
     }
 
@@ -71,7 +71,7 @@ public class OperatorNodeHandler implements MathMLNodeHandler {
         Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth());
 
-        return new OperatorElement(operator, ctx.getLevelAdjustedFontSize(), new Size(size.getWidth(), size.getAscent()), size.getKerningAdjustments(), position);
+        return new OperatorElement(operator, new Size(size.getWidth(), size.getHeight()), ctx.getLevelAdjustedFontSize(), size.getAscent(), size.getKerningAdjustments(), position);
     }
 
 }

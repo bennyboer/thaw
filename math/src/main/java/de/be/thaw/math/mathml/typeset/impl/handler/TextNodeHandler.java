@@ -1,6 +1,5 @@
 package de.be.thaw.math.mathml.typeset.impl.handler;
 
-import de.be.thaw.font.util.CharacterSize;
 import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.impl.TextNode;
@@ -44,7 +43,7 @@ public class TextNodeHandler implements MathMLNodeHandler {
         Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth());
 
-        return new TextElement(text, ctx.getLevelAdjustedFontSize(), new Size(size.getWidth(), size.getAscent()), size.getKerningAdjustments(), position);
+        return new TextElement(text, new Size(size.getWidth(), size.getAscent()), ctx.getLevelAdjustedFontSize(), size.getAscent(), size.getKerningAdjustments(), position);
     }
 
 }

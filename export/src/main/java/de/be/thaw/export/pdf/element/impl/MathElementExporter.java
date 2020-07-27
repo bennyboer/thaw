@@ -6,10 +6,7 @@ import de.be.thaw.export.pdf.font.ThawPdfFont;
 import de.be.thaw.export.pdf.util.ExportContext;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.FractionElement;
-import de.be.thaw.math.mathml.typeset.element.impl.IdentifierElement;
-import de.be.thaw.math.mathml.typeset.element.impl.NumericElement;
-import de.be.thaw.math.mathml.typeset.element.impl.OperatorElement;
-import de.be.thaw.math.mathml.typeset.element.impl.TextElement;
+import de.be.thaw.math.mathml.typeset.element.impl.TokenElement;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.page.impl.MathExpressionElement;
@@ -60,14 +57,8 @@ public class MathElementExporter implements ElementExporter {
      */
     private void renderElement(MathElement element, ExportContext ctx, PDPageContentStream out, double yStart, double xStart) throws ExportException {
         try {
-            if (element instanceof IdentifierElement) {
-                showText(((IdentifierElement) element).getIdentifier(), element, ctx, out, ((IdentifierElement) element).getKerningAdjustments(), ((IdentifierElement) element).getFontSize(), yStart - element.getPosition().getY(), xStart + element.getPosition().getX());
-            } else if (element instanceof OperatorElement) {
-                showText(((OperatorElement) element).getOperator(), element, ctx, out, ((OperatorElement) element).getKerningAdjustments(), ((OperatorElement) element).getFontSize(), yStart - element.getPosition().getY(), xStart + element.getPosition().getX());
-            } else if (element instanceof NumericElement) {
-                showText(((NumericElement) element).getValue(), element, ctx, out, ((NumericElement) element).getKerningAdjustments(), ((NumericElement) element).getFontSize(), yStart - element.getPosition().getY(), xStart + element.getPosition().getX());
-            } else if (element instanceof TextElement) {
-                showText(((TextElement) element).getText(), element, ctx, out, ((TextElement) element).getKerningAdjustments(), ((TextElement) element).getFontSize(), yStart - element.getPosition().getY(), xStart + element.getPosition().getX());
+            if (element instanceof TokenElement) {
+                showText((TokenElement) element, ctx, out, yStart - element.getPosition().getY(), xStart + element.getPosition().getX());
             } else if (element instanceof FractionElement) {
                 FractionElement fractionElement = (FractionElement) element;
                 MathElement numerator = fractionElement.getChildren().orElseThrow().get(0);
@@ -97,31 +88,28 @@ public class MathElementExporter implements ElementExporter {
     /**
      * Show the passed text on the document.
      *
-     * @param str                to show
-     * @param element            the string belongs to
-     * @param ctx                the export context
-     * @param out                the output stream to the PDF document
-     * @param kerningAdjustments the kerning adjustments
-     * @param fontSize           to render with
-     * @param y                  current y offset on the document
-     * @param x                  current x offset on the document
+     * @param element the string belongs to
+     * @param ctx     the export context
+     * @param out     the output stream to the PDF document
+     * @param y       current y offset on the document
+     * @param x       current x offset on the document
      * @throws IOException in case the string could not be shown properly
      */
-    private void showText(String str, MathElement element, ExportContext ctx, PDPageContentStream out, double[] kerningAdjustments, double fontSize, double y, double x) throws IOException {
+    private void showText(TokenElement element, ExportContext ctx, PDPageContentStream out, double y, double x) throws IOException {
         out.beginText();
 
         ThawPdfFont font = (ThawPdfFont) ctx.getMathFont();
 
         // Apply font
-        out.setFont(font.getPdFont(), (float) fontSize);
+        out.setFont(font.getPdFont(), (float) element.getFontSize());
 
         // Set the position of where to draw the text
-        out.newLineAtOffset((float) x, (float) (y - element.getSize().getHeight()));
+        out.newLineAtOffset((float) x, (float) (y - element.getBaseline()));
 
-        if (kerningAdjustments != null) {
-            showTextWithKerning(str, element, ctx, out, kerningAdjustments, fontSize, y, x);
+        if (element.getKerningAdjustments() != null) {
+            showTextWithKerning(element, out);
         } else {
-            out.showText(str);
+            out.showText(element.getText());
         }
 
         out.endText();
@@ -130,32 +118,26 @@ public class MathElementExporter implements ElementExporter {
     /**
      * Show the passed text for the given font with kerning adjustments applied.
      *
-     * @param text               to show
-     * @param element            the string belongs to
-     * @param ctx                the export context
-     * @param out                the output stream to the PDF document
-     * @param kerningAdjustments the kerning adjustments
-     * @param fontSize           to render with
-     * @param y                  current y offset on the document
-     * @param x                  current x offset on the document
+     * @param element the string belongs to
+     * @param out     the output stream to the PDF document
      * @throws IOException in case the string could not be shown properly
      */
-    private void showTextWithKerning(String text, MathElement element, ExportContext ctx, PDPageContentStream out, double[] kerningAdjustments, double fontSize, double y, double x) throws IOException {
+    private void showTextWithKerning(TokenElement element, PDPageContentStream out) throws IOException {
         List<Object> toPrint = new ArrayList<>();
 
         int codePointIdx = 0;
-        final int len = text.length();
+        final int len = element.getText().length();
         StringBuilder buffer = new StringBuilder();
         for (int i = 0; i < len; ) {
-            int codePoint = text.codePointAt(i);
+            int codePoint = element.getText().codePointAt(i);
             i += Character.charCount(codePoint);
 
-            double kerningAdjustment = kerningAdjustments[codePointIdx];
+            double kerningAdjustment = element.getKerningAdjustments()[codePointIdx];
             if (kerningAdjustment != 0) {
                 toPrint.add(buffer.toString());
                 buffer.setLength(0);
 
-                double adjustment = kerningAdjustment * 1000 / fontSize;
+                double adjustment = kerningAdjustment * 1000 / element.getFontSize();
                 toPrint.add((float) -adjustment);
             }
 
