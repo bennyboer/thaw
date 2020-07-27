@@ -74,7 +74,7 @@ public class MathElementExporter implements ElementExporter {
                 // Draw fraction line
                 out.setLineWidth((float) ((FractionElement) element).getLineWidth());
 
-                double lineY = yStart - element.getPosition().getY() - numerator.getSize().getHeight() - fractionElement.getLineSpacing();
+                double lineY = yStart - element.getPosition().getY() - numerator.getSize().getHeight() - fractionElement.getLineSpacing() - fractionElement.getLineWidth() / 2;
 
                 out.moveTo((float) (xStart + element.getPosition().getX()), (float) lineY);
                 out.lineTo((float) (xStart + element.getPosition().getX() + element.getSize().getWidth()), (float) lineY);
