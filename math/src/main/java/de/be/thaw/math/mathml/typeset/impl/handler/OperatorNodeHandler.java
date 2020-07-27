@@ -68,8 +68,11 @@ public class OperatorNodeHandler implements MathMLNodeHandler {
             throw new TypesetException(e);
         }
 
-        Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
-        ctx.setCurrentX(position.getX() + size.getWidth());
+        // TODO Deal properly with operator padding for different operator types (see how it is done in TeX)
+        double padding = size.getWidth() * 0.2;
+
+        Position position = new Position(ctx.getCurrentX() + padding, ctx.getCurrentY());
+        ctx.setCurrentX(position.getX() + size.getWidth() + padding);
 
         return new OperatorElement(operator, new Size(size.getWidth(), size.getHeight()), ctx.getLevelAdjustedFontSize(), size.getAscent(), size.getKerningAdjustments(), position);
     }
