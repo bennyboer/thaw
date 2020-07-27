@@ -42,6 +42,14 @@ public class MathElementExporter implements ElementExporter {
 
         PDPageContentStream out = ctx.getContentStream();
 
+        try {
+            // Reset colors
+            out.setStrokingColor(0.0f, 0.0f, 0.0f);
+            out.setNonStrokingColor(0.0f, 0.0f, 0.0f);
+        } catch (IOException e) {
+            throw new ExportException(e);
+        }
+
         renderElement(mee.getExpression().getRoot(), ctx, out, y + mee.getExpression().getRoot().getSize().getHeight(), x);
     }
 
