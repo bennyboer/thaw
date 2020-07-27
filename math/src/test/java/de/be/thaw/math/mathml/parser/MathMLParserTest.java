@@ -66,4 +66,56 @@ public class MathMLParserTest {
                 "    - mn [2]\n", tree.toString());
     }
 
+    @Test
+    public void simpleRowTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<mfrac>\n" +
+                "\t\t<mi>a</mi>\n" +
+                "\t\t<mrow>\n" +
+                "\t\t\t<mi>b</mi>\n" +
+                "\t\t\t<mo>*</mo>\n" +
+                "\t\t\t<mn>2</mn>\n" +
+                "\t\t</mrow>\n" +
+                "\t</mfrac>\n" +
+                "</math>\n";
+
+        MathMLParser parser = new DefaultMathMLParser();
+        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+
+        Assertions.assertEquals("- math\n" +
+                "  - mfrac\n" +
+                "    - mi [a]\n" +
+                "    - mrow\n" +
+                "      - mi [b]\n" +
+                "      - mo [*]\n" +
+                "      - mn [2]\n", tree.toString());
+    }
+
+    @Test
+    public void simpleTextTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<mfrac>\n" +
+                "\t\t<mi>a</mi>\n" +
+                "\t\t<mrow>\n" +
+                "\t\t\t<mi>b</mi>\n" +
+                "\t\t\t<mo>*</mo>\n" +
+                "\t\t\t<mn>2</mn>\n" +
+                "\t\t\t<mtext>Hallo Welt</mtext>\n" +
+                "\t\t</mrow>\n" +
+                "\t</mfrac>\n" +
+                "</math>\n";
+
+        MathMLParser parser = new DefaultMathMLParser();
+        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+
+        Assertions.assertEquals("- math\n" +
+                "  - mfrac\n" +
+                "    - mi [a]\n" +
+                "    - mrow\n" +
+                "      - mi [b]\n" +
+                "      - mo [*]\n" +
+                "      - mn [2]\n" +
+                "      - mtext [Hallo Welt]\n", tree.toString());
+    }
+
 }

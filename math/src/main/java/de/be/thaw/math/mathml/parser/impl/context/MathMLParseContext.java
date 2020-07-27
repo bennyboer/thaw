@@ -7,6 +7,7 @@ import de.be.thaw.math.mathml.parser.impl.handler.impl.MathHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.NumericHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.OperatorHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.RowHandler;
+import de.be.thaw.math.mathml.parser.impl.handler.impl.TextHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +30,7 @@ public class MathMLParseContext {
         registerParseHandler(new NumericHandler());
         registerParseHandler(new FractionHandler());
         registerParseHandler(new RowHandler());
+        registerParseHandler(new TextHandler());
     }
 
     /**

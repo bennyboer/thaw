@@ -9,6 +9,7 @@ import de.be.thaw.math.mathml.typeset.element.impl.FractionElement;
 import de.be.thaw.math.mathml.typeset.element.impl.IdentifierElement;
 import de.be.thaw.math.mathml.typeset.element.impl.NumericElement;
 import de.be.thaw.math.mathml.typeset.element.impl.OperatorElement;
+import de.be.thaw.math.mathml.typeset.element.impl.TextElement;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.page.impl.MathExpressionElement;
@@ -64,6 +65,8 @@ public class MathElementExporter implements ElementExporter {
                 showText(((OperatorElement) element).getOperator(), element, ctx, out, ((OperatorElement) element).getFontSize(), yStart - element.getPosition().getY(), xStart + element.getPosition().getX());
             } else if (element instanceof NumericElement) {
                 showText(((NumericElement) element).getValue(), element, ctx, out, ((NumericElement) element).getFontSize(), yStart - element.getPosition().getY(), xStart + element.getPosition().getX());
+            } else if (element instanceof TextElement) {
+                showText(((TextElement) element).getText(), element, ctx, out, ((TextElement) element).getFontSize(), yStart - element.getPosition().getY(), xStart + element.getPosition().getX());
             } else if (element instanceof FractionElement) {
                 FractionElement fractionElement = (FractionElement) element;
                 MathElement numerator = fractionElement.getChildren().orElseThrow().get(0);

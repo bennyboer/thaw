@@ -8,6 +8,7 @@ public enum MathElementType {
     IDENTIFIER,
     OPERATOR,
     NUMERICAL,
+    TEXT,
     FRACTION,
     ROW
 

@@ -8,6 +8,7 @@ import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.NumericNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.OperatorNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.RowHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.TextNodeHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ public class MathTypesetContext {
         registerHandler(new OperatorNodeHandler());
         registerHandler(new NumericNodeHandler());
         registerHandler(new FractionHandler());
+        registerHandler(new TextNodeHandler());
     }
 
     /**
