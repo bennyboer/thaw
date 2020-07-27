@@ -177,7 +177,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
             }
         });
 
-        paragraph.addItem(new EnumerationItemStartBox(symbol, metrics.getWidth(), metrics.getFontSize(), documentNode, indent)); // Adding item symbol
+        paragraph.addItem(new EnumerationItemStartBox(symbol, metrics, documentNode, indent)); // Adding item symbol
     }
 
     /**
@@ -200,9 +200,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
                 if (paragraph instanceof TextParagraph) {
                     ((TextParagraph) paragraph).addItem(new TextBox(
                             "",
-                            0,
-                            1.0,
-                            new double[]{0},
+                            FontDetailsSupplier.StringMetrics.placeholder(),
                             documentNode
                     ));
                 }

@@ -75,9 +75,7 @@ public class FootNoteHandler implements ThingyHandler {
 
         paragraph.addItem(new FootNoteBox(
                 value,
-                metrics.getWidth(),
-                metrics.getFontSize(),
-                metrics.getKerningAdjustments(),
+                metrics,
                 footNoteDocumentNode
         ));
     }

@@ -244,9 +244,11 @@ public class PdfExporter implements Exporter {
                     @Override
                     public StringMetrics measureString(DocumentNode node, int charBefore, String str) throws Exception {
                         double fontSize = ctx.getFontSizeForNode(node);
-                        KernedSize size = ctx.getFontForNode(node).getKernedStringSize(charBefore, str, fontSize);
+                        ThawFont font = ctx.getFontForNode(node);
 
-                        return new StringMetrics(size.getWidth(), size.getHeight(), size.getKerningAdjustments(), fontSize);
+                        KernedSize size = font.getKernedStringSize(charBefore, str, fontSize);
+
+                        return new StringMetrics(size.getWidth(), size.getHeight(), size.getKerningAdjustments(), fontSize, font.getAscent(fontSize));
                     }
 
                     @Override
@@ -262,7 +264,7 @@ public class PdfExporter implements Exporter {
 
                     @Override
                     public double getInterWordShrinkability(DocumentNode node, char lastChar) throws Exception {
-                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() / 2;
+                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() * 0.7;
                     }
                 })
                 .setHyphenator(new Hyphenator() {

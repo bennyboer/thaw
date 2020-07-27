@@ -1,6 +1,7 @@
 package de.be.thaw.typeset.knuthplass.item.impl.box;
 
 import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 
 /**
  * Box acting as a page number of the current page placeholder.
@@ -28,7 +29,7 @@ public class PageNumberPlaceholderBox extends TextBox {
     private double fontSize = 1;
 
     public PageNumberPlaceholderBox(DocumentNode node) {
-        super("", 0, 1, new double[0], node);
+        super("", FontDetailsSupplier.StringMetrics.placeholder(), node);
     }
 
     /**
@@ -54,16 +55,6 @@ public class PageNumberPlaceholderBox extends TextBox {
     @Override
     public double getWidth() {
         return width;
-    }
-
-    @Override
-    public double[] getKerningAdjustments() {
-        return kerningAdjustments;
-    }
-
-    @Override
-    public double getFontSize() {
-        return fontSize;
     }
 
 }

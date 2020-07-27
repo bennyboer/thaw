@@ -256,9 +256,7 @@ public class ConversionContext {
 
                     paragraph.addItem(new TextBox(
                             splitWordPart.getPart(),
-                            metrics.getWidth(),
-                            metrics.getFontSize(),
-                            metrics.getKerningAdjustments(),
+                            metrics,
                             node
                     ));
                 } else { // Is an actual word without punctuation characters
@@ -267,7 +265,7 @@ public class ConversionContext {
                     List<HyphenatedWordPart> parts = hyphenatedWord.getParts();
 
                     int len = parts.size();
-                    double hyphenWidth = len > 1 ? config.getFontDetailsSupplier().measureString(node, lastChar, "-").getWidth() : 0;
+                    FontDetailsSupplier.StringMetrics hyphenMetrics = config.getFontDetailsSupplier().measureString(node, lastChar, "-");
 
                     for (int i = 0; i < len; i++) {
                         HyphenatedWordPart part = parts.get(i);
@@ -275,9 +273,7 @@ public class ConversionContext {
                         FontDetailsSupplier.StringMetrics metrics = config.getFontDetailsSupplier().measureString(node, lastChar, part.getPart());
                         paragraph.addItem(new TextBox(
                                 part.getPart(),
-                                metrics.getWidth(),
-                                metrics.getFontSize(),
-                                metrics.getKerningAdjustments(),
+                                metrics,
                                 node
                         ));
 
@@ -286,7 +282,10 @@ public class ConversionContext {
                         boolean isLast = i == len - 1;
                         if (!isLast) {
                             // Add hyphen penalty to represent an optional hyphen
-                            paragraph.addItem(new Penalty(part.getPenalty(), hyphenWidth, true, node));
+                            Penalty penalty = new Penalty(part.getPenalty(), hyphenMetrics.getWidth(), true, node);
+                            penalty.setReplacementString("-");
+                            penalty.setMetrics(hyphenMetrics);
+                            paragraph.addItem(penalty);
                         }
                     }
                 }

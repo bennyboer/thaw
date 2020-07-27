@@ -1,10 +1,11 @@
 package de.be.thaw.typeset.page.impl;
 
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.util.Position;
-import de.be.thaw.util.Size;
+import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.page.AbstractElement;
 import de.be.thaw.typeset.page.ElementType;
+import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 
 import java.util.Optional;
 
@@ -20,14 +21,9 @@ public class TextElement extends AbstractElement {
     private String text;
 
     /**
-     * Font size of the text in the text element.
+     * Metrics of the text.
      */
-    private final double fontSize;
-
-    /**
-     * Adjustments due to kerning for each code point in the text.
-     */
-    private final double[] kerningAdjustments;
+    private final FontDetailsSupplier.StringMetrics metrics;
 
     /**
      * The original node the text belongs to in the thaw document.
@@ -37,8 +33,7 @@ public class TextElement extends AbstractElement {
 
     public TextElement(
             String text,
-            double fontSize,
-            double[] kerningAdjustments,
+            FontDetailsSupplier.StringMetrics metrics,
             DocumentNode node,
             int pageNumber,
             Size size,
@@ -47,8 +42,7 @@ public class TextElement extends AbstractElement {
         super(pageNumber, size, position);
 
         this.text = text;
-        this.fontSize = fontSize;
-        this.kerningAdjustments = kerningAdjustments;
+        this.metrics = metrics;
         this.node = node;
     }
 
@@ -81,21 +75,12 @@ public class TextElement extends AbstractElement {
     }
 
     /**
-     * Get the adjustments due to kerning.
+     * Get the metrics of the text.
      *
-     * @return kerning adjustments
+     * @return metrics
      */
-    public double[] getKerningAdjustments() {
-        return kerningAdjustments;
-    }
-
-    /**
-     * Get the font size of the text in the element.
-     *
-     * @return font size
-     */
-    public double getFontSize() {
-        return fontSize;
+    public FontDetailsSupplier.StringMetrics getMetrics() {
+        return metrics;
     }
 
 }

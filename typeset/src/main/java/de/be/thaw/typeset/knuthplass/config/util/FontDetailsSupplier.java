@@ -30,7 +30,7 @@ public interface FontDetailsSupplier {
     /**
      * Collective metrics when measuring a string.
      */
-    public static class StringMetrics {
+    class StringMetrics {
 
         /**
          * Width of the string.
@@ -52,11 +52,31 @@ public interface FontDetailsSupplier {
          */
         private final double fontSize;
 
-        public StringMetrics(double width, double height, double[] kerningAdjustments, double fontSize) {
+        /**
+         * The offset from the y-position (ascent) is the baseline.
+         */
+        private final double baseline;
+
+        public StringMetrics(double width, double height, double[] kerningAdjustments, double fontSize, double baseline) {
             this.width = width;
             this.height = height;
             this.kerningAdjustments = kerningAdjustments;
             this.fontSize = fontSize;
+            this.baseline = baseline;
+        }
+
+        /**
+         * Get placeholder string metrics.
+         *
+         * @return placeholder string metrics
+         */
+        public static StringMetrics placeholder() {
+            return new StringMetrics(0,
+                    0,
+                    new double[]{0},
+                    1.0,
+                    0.0
+            );
         }
 
         public double getWidth() {
@@ -73,6 +93,10 @@ public interface FontDetailsSupplier {
 
         public double getFontSize() {
             return fontSize;
+        }
+
+        public double getBaseline() {
+            return baseline;
         }
 
     }
