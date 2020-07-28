@@ -7,6 +7,7 @@ import de.be.thaw.math.mathml.parser.impl.handler.impl.IdentifierHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.MathHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.NumericHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.OperatorHandler;
+import de.be.thaw.math.mathml.parser.impl.handler.impl.OverHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.RootHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.RowHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.SqrtHandler;
@@ -14,6 +15,8 @@ import de.be.thaw.math.mathml.parser.impl.handler.impl.SubscriptHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.SubsupscriptHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.SuperscriptHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.TextHandler;
+import de.be.thaw.math.mathml.parser.impl.handler.impl.UnderHandler;
+import de.be.thaw.math.mathml.parser.impl.handler.impl.UnderOverHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +45,9 @@ public class MathMLParseContext {
         registerParseHandler(new SubsupscriptHandler());
         registerParseHandler(new RootHandler());
         registerParseHandler(new SqrtHandler());
+        registerParseHandler(new OverHandler());
+        registerParseHandler(new UnderHandler());
+        registerParseHandler(new UnderOverHandler());
     }
 
     /**

@@ -41,8 +41,18 @@ public abstract class AbstractMathElement implements MathElement {
 
     @Override
     public Position getPosition() {
+        return getPosition(true);
+    }
+
+    /**
+     * Get the position of the element.
+     *
+     * @param absolute whether to get the absolute position
+     * @return the position
+     */
+    public Position getPosition(boolean absolute) {
         Optional<MathElement> optionalParent = getParent();
-        if (optionalParent.isEmpty()) {
+        if (!absolute || optionalParent.isEmpty()) {
             return position;
         }
 
@@ -136,7 +146,7 @@ public abstract class AbstractMathElement implements MathElement {
 
     @Override
     public double getMidYPosition() {
-        return getSize().getHeight() / 2;
+        return getPosition(false).getY() + (getSize().getHeight()) / 2;
     }
 
 }

@@ -15,6 +15,9 @@ public enum MathElementType {
     SUB_SCRIPT,
     SUB_SUPER_SCRIPT,
     ROOT,
-    SQUARE_ROOT
+    SQUARE_ROOT,
+    OVER,
+    UNDER,
+    UNDER_OVER
 
 }

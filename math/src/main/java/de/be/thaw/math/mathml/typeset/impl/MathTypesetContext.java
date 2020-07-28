@@ -3,10 +3,11 @@ package de.be.thaw.math.mathml.typeset.impl;
 import de.be.thaw.math.mathml.typeset.config.MathTypesetConfig;
 import de.be.thaw.math.mathml.typeset.impl.handler.FractionNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.IdentifierNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.NumericNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.OperatorNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.OverNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.RootNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.RowNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.SqrtNodeHandler;
@@ -14,6 +15,8 @@ import de.be.thaw.math.mathml.typeset.impl.handler.SubscriptNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.SubsuperscriptNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.SuperscriptNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.TextNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.UnderNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.UnderOverNodeHandler;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +45,9 @@ public class MathTypesetContext {
         registerHandler(new SubsuperscriptNodeHandler());
         registerHandler(new RootNodeHandler());
         registerHandler(new SqrtNodeHandler());
+        registerHandler(new OverNodeHandler());
+        registerHandler(new UnderNodeHandler());
+        registerHandler(new UnderOverNodeHandler());
     }
 
     /**

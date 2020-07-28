@@ -6,8 +6,11 @@ import de.be.thaw.math.mathml.tree.MathMLTree;
 import de.be.thaw.math.mathml.tree.node.MathVariant;
 import de.be.thaw.math.mathml.tree.node.impl.FractionNode;
 import de.be.thaw.math.mathml.tree.node.impl.IdentifierNode;
+import de.be.thaw.math.mathml.tree.node.impl.OverNode;
 import de.be.thaw.math.mathml.tree.node.impl.SubscriptNode;
 import de.be.thaw.math.mathml.tree.node.impl.SubsuperscriptNode;
+import de.be.thaw.math.mathml.tree.node.impl.UnderNode;
+import de.be.thaw.math.mathml.tree.node.impl.UnderOverNode;
 import de.be.thaw.util.HorizontalAlignment;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -262,6 +265,101 @@ public class MathMLParserTest {
         Assertions.assertEquals("- math\n" +
                 "  - msqrt\n" +
                 "    - mi [x]\n", tree.toString());
+    }
+
+    @Test
+    public void simpleOverTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<mover>\n" +
+                "\t\t<mrow>\n" +
+                "\t\t\t<mi>x</mi>\n" +
+                "\t\t\t<mo>+</mo>\n" +
+                "\t\t\t<mi>y</mi>\n" +
+                "\t\t\t<mo>+</mo>\n" +
+                "\t\t\t<mi>z</mi>\n" +
+                "\t\t</mrow>\n" +
+                "\t\t<mo>!</mo>\n" +
+                "\t</mover>\n" +
+                "</math>\n";
+
+        MathMLTree tree = parse(src);
+
+        Assertions.assertEquals("- math\n" +
+                "  - mover\n" +
+                "    - mrow\n" +
+                "      - mi [x]\n" +
+                "      - mo [+]\n" +
+                "      - mi [y]\n" +
+                "      - mo [+]\n" +
+                "      - mi [z]\n" +
+                "    - mo [!]\n", tree.toString());
+
+        OverNode overNode = (OverNode) tree.getRoot().getChildren().get(0);
+        Assertions.assertEquals(HorizontalAlignment.CENTER, overNode.getAlignment());
+    }
+
+    @Test
+    public void simpleUnderTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<munder align=\"left\">\n" +
+                "\t\t<mrow>\n" +
+                "\t\t\t<mi>x</mi>\n" +
+                "\t\t\t<mo>+</mo>\n" +
+                "\t\t\t<mi>y</mi>\n" +
+                "\t\t\t<mo>+</mo>\n" +
+                "\t\t\t<mi>z</mi>\n" +
+                "\t\t</mrow>\n" +
+                "\t\t<mo>!</mo>\n" +
+                "\t</munder>\n" +
+                "</math>\n";
+
+        MathMLTree tree = parse(src);
+
+        Assertions.assertEquals("- math\n" +
+                "  - munder\n" +
+                "    - mrow\n" +
+                "      - mi [x]\n" +
+                "      - mo [+]\n" +
+                "      - mi [y]\n" +
+                "      - mo [+]\n" +
+                "      - mi [z]\n" +
+                "    - mo [!]\n", tree.toString());
+
+        UnderNode underNode = (UnderNode) tree.getRoot().getChildren().get(0);
+        Assertions.assertEquals(HorizontalAlignment.LEFT, underNode.getAlignment());
+    }
+
+    @Test
+    public void simpleUnderOverTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<munderover align=\"right\">\n" +
+                "\t\t<mrow>\n" +
+                "\t\t\t<mi>x</mi>\n" +
+                "\t\t\t<mo>+</mo>\n" +
+                "\t\t\t<mi>y</mi>\n" +
+                "\t\t\t<mo>+</mo>\n" +
+                "\t\t\t<mi>z</mi>\n" +
+                "\t\t</mrow>\n" +
+                "\t\t<mo>!</mo>\n" +
+                "\t\t<mi>x</mi>\n" +
+                "\t</munderover>\n" +
+                "</math>\n";
+
+        MathMLTree tree = parse(src);
+
+        Assertions.assertEquals("- math\n" +
+                "  - munderover\n" +
+                "    - mrow\n" +
+                "      - mi [x]\n" +
+                "      - mo [+]\n" +
+                "      - mi [y]\n" +
+                "      - mo [+]\n" +
+                "      - mi [z]\n" +
+                "    - mo [!]\n" +
+                "    - mi [x]\n", tree.toString());
+
+        UnderOverNode underOverNode = (UnderOverNode) tree.getRoot().getChildren().get(0);
+        Assertions.assertEquals(HorizontalAlignment.RIGHT, underOverNode.getAlignment());
     }
 
 }
