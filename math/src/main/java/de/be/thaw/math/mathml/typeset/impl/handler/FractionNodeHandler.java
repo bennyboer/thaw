@@ -6,6 +6,7 @@ import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.FractionElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
 
@@ -25,7 +26,7 @@ public class FractionNodeHandler implements MathMLNodeHandler {
 
         ctx.setLevel(ctx.getLevel() + 1);
 
-        double lineWidth = ctx.getConfig().getFontSize() * 0.05; // TODO Set later from the fraction node attribute!
+        double lineWidth = fractionNode.getLineThickness();
         double lineSpacing = ctx.getConfig().getFontSize() * 0.2; // Distance from either side of the fraction line
         double horizontalPadding = lineSpacing; // Distance from either side for the fraction children
 
@@ -58,23 +59,11 @@ public class FractionNodeHandler implements MathMLNodeHandler {
                 fractionNode.getChildren().get(1).getName()
         ))).handle(fractionNode.getChildren().get(1), ctx);
 
-        // Change the position of the smaller element (numerator or denominator) to be centered
-        if (numerator.getSize().getWidth() < denominator.getSize().getWidth()) {
-            double xOffset = (denominator.getSize().getWidth() - numerator.getSize().getWidth()) / 2;
-            numerator.setPosition(new Position(
-                    xOffset + numerator.getPosition().getX(),
-                    numerator.getPosition().getY()
-            ));
-        } else {
-            double xOffset = (numerator.getSize().getWidth() - denominator.getSize().getWidth()) / 2;
-            denominator.setPosition(new Position(
-                    xOffset + denominator.getPosition().getX(),
-                    denominator.getPosition().getY()
-            ));
-        }
+        // Change the position of the smaller element (numerator or denominator) to be either the numeratorAlignment or denominatorAlignment
+        alignElements(numerator, denominator, fractionNode.getNumeratorAlignment(), fractionNode.getDenominatorAlignment());
 
         // Create fraction element and add nominator and denominator
-        FractionElement fractionElement = new FractionElement(fractionNode, lineWidth, lineSpacing, new Position(oldX, oldY));
+        FractionElement fractionElement = new FractionElement(lineWidth, lineSpacing, new Position(oldX, oldY));
         fractionElement.addChild(numerator);
         fractionElement.addChild(denominator);
 
@@ -89,6 +78,51 @@ public class FractionNodeHandler implements MathMLNodeHandler {
         ctx.setLevel(ctx.getLevel() - 1);
 
         return fractionElement;
+    }
+
+    /**
+     * Align the passed elements accordingly to the passed alignments.
+     *
+     * @param numerator            the numerator element
+     * @param denominator          the denominator element
+     * @param numeratorAlignment   alignment of the numerator
+     * @param denominatorAlignment alignment of the denominator
+     */
+    private void alignElements(
+            MathElement numerator,
+            MathElement denominator,
+            HorizontalAlignment numeratorAlignment,
+            HorizontalAlignment denominatorAlignment
+    ) {
+        // Find smaller and greater elements (in their width)
+        MathElement smaller;
+        MathElement greater;
+        HorizontalAlignment smallerAlignment; // Alignment of the smaller element
+        if (numerator.getSize().getWidth() < denominator.getSize().getWidth()) {
+            smaller = numerator;
+            greater = denominator;
+            smallerAlignment = numeratorAlignment;
+        } else if (numerator.getSize().getWidth() > denominator.getSize().getWidth()) {
+            smaller = denominator;
+            greater = numerator;
+            smallerAlignment = denominatorAlignment;
+        } else {
+            return; // No need to align
+        }
+
+        // Align the smaller element according to the set alignment
+        double xDiff = greater.getSize().getWidth() - smaller.getSize().getWidth();
+        if (smallerAlignment == HorizontalAlignment.CENTER) {
+            smaller.setPosition(new Position(
+                    xDiff / 2 + smaller.getPosition().getX(),
+                    smaller.getPosition().getY()
+            ));
+        } else if (smallerAlignment == HorizontalAlignment.RIGHT) {
+            smaller.setPosition(new Position(
+                    xDiff + smaller.getPosition().getX(),
+                    smaller.getPosition().getY()
+            ));
+        }
     }
 
 }

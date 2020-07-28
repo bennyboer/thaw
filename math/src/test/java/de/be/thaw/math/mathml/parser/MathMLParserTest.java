@@ -4,15 +4,29 @@ import de.be.thaw.math.mathml.parser.exception.ParseException;
 import de.be.thaw.math.mathml.parser.impl.DefaultMathMLParser;
 import de.be.thaw.math.mathml.tree.MathMLTree;
 import de.be.thaw.math.mathml.tree.node.MathVariant;
+import de.be.thaw.math.mathml.tree.node.impl.FractionNode;
 import de.be.thaw.math.mathml.tree.node.impl.IdentifierNode;
 import de.be.thaw.math.mathml.tree.node.impl.SubscriptNode;
 import de.be.thaw.math.mathml.tree.node.impl.SubsuperscriptNode;
+import de.be.thaw.util.HorizontalAlignment;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 
 public class MathMLParserTest {
+
+    private MathMLParser parser;
+
+    @BeforeEach
+    public void beforeEach() {
+        parser = new DefaultMathMLParser();
+    }
+
+    private MathMLTree parse(String str) throws ParseException {
+        return parser.parse(new ByteArrayInputStream(str.getBytes()), new MathMLParserConfig(1.0));
+    }
 
     @Test
     public void simpleTest() throws ParseException {
@@ -22,8 +36,7 @@ public class MathMLParserTest {
                 "\t<mi>b</mi>\n" +
                 "</math>\n";
 
-        MathMLParser parser = new DefaultMathMLParser();
-        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+        MathMLTree tree = parse(src);
 
         Assertions.assertEquals("- math\n" +
                 "  - mi [a]\n" +
@@ -39,8 +52,7 @@ public class MathMLParserTest {
                 "\t<mi>b</mi>\n" +
                 "</math>\n";
 
-        MathMLParser parser = new DefaultMathMLParser();
-        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+        MathMLTree tree = parse(src);
 
         Assertions.assertEquals("- math\n" +
                 "  - mi [a]\n" +
@@ -62,8 +74,7 @@ public class MathMLParserTest {
                 "\t<mn>2</mn>\n" +
                 "</math>";
 
-        MathMLParser parser = new DefaultMathMLParser();
-        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+        MathMLTree tree = parse(src);
 
         Assertions.assertEquals("- math\n" +
                 "  - mn [1]\n" +
@@ -82,13 +93,35 @@ public class MathMLParserTest {
                 "\t</mfrac>\n" +
                 "</math>";
 
-        MathMLParser parser = new DefaultMathMLParser();
-        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+        MathMLTree tree = parse(src);
 
         Assertions.assertEquals("- math\n" +
                 "  - mfrac\n" +
                 "    - mn [1]\n" +
                 "    - mn [2]\n", tree.toString());
+    }
+
+    @Test
+    public void fractionAttributesTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<mfrac numalign=\"left\" denomalign=\"right\" linethickness=\"2.0\" bevelled=\"true\">\n" +
+                "\t\t<mn>1</mn>\n" +
+                "\t\t<mn>2</mn>\n" +
+                "\t</mfrac>\n" +
+                "</math>";
+
+        MathMLTree tree = parse(src);
+
+        Assertions.assertEquals("- math\n" +
+                "  - mfrac\n" +
+                "    - mn [1]\n" +
+                "    - mn [2]\n", tree.toString());
+
+        FractionNode fractionNode = (FractionNode) tree.getRoot().getChildren().get(0);
+        Assertions.assertEquals(HorizontalAlignment.LEFT, fractionNode.getNumeratorAlignment());
+        Assertions.assertEquals(HorizontalAlignment.RIGHT, fractionNode.getDenominatorAlignment());
+        Assertions.assertEquals(2.0, fractionNode.getLineThickness());
+        Assertions.assertEquals(true, fractionNode.isBevelled());
     }
 
     @Test
@@ -104,8 +137,7 @@ public class MathMLParserTest {
                 "\t</mfrac>\n" +
                 "</math>\n";
 
-        MathMLParser parser = new DefaultMathMLParser();
-        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+        MathMLTree tree = parse(src);
 
         Assertions.assertEquals("- math\n" +
                 "  - mfrac\n" +
@@ -130,8 +162,7 @@ public class MathMLParserTest {
                 "\t</mfrac>\n" +
                 "</math>\n";
 
-        MathMLParser parser = new DefaultMathMLParser();
-        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+        MathMLTree tree = parse(src);
 
         Assertions.assertEquals("- math\n" +
                 "  - mfrac\n" +
@@ -152,8 +183,7 @@ public class MathMLParserTest {
                 "\t</msup>\n" +
                 "</math>\n";
 
-        MathMLParser parser = new DefaultMathMLParser();
-        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+        MathMLTree tree = parse(src);
 
         Assertions.assertEquals("- math\n" +
                 "  - msup\n" +
@@ -170,8 +200,7 @@ public class MathMLParserTest {
                 "\t</msub>\n" +
                 "</math>\n";
 
-        MathMLParser parser = new DefaultMathMLParser();
-        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+        MathMLTree tree = parse(src);
 
         Assertions.assertEquals("- math\n" +
                 "  - msub\n" +
@@ -191,8 +220,7 @@ public class MathMLParserTest {
                 "\t</msubsup>\n" +
                 "</math>\n";
 
-        MathMLParser parser = new DefaultMathMLParser();
-        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+        MathMLTree tree = parse(src);
 
         Assertions.assertEquals("- math\n" +
                 "  - msubsup\n" +
@@ -213,8 +241,7 @@ public class MathMLParserTest {
                 "\t</mroot>\n" +
                 "</math>\n";
 
-        MathMLParser parser = new DefaultMathMLParser();
-        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+        MathMLTree tree = parse(src);
 
         Assertions.assertEquals("- math\n" +
                 "  - mroot\n" +
@@ -230,8 +257,7 @@ public class MathMLParserTest {
                 "\t</msqrt>\n" +
                 "</math>\n";
 
-        MathMLParser parser = new DefaultMathMLParser();
-        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+        MathMLTree tree = parse(src);
 
         Assertions.assertEquals("- math\n" +
                 "  - msqrt\n" +

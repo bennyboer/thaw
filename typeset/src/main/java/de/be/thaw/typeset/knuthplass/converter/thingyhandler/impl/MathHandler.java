@@ -3,6 +3,7 @@ package de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.math.mathml.parser.MathMLParser;
+import de.be.thaw.math.mathml.parser.MathMLParserConfig;
 import de.be.thaw.math.mathml.parser.exception.ParseException;
 import de.be.thaw.math.mathml.parser.impl.DefaultMathMLParser;
 import de.be.thaw.math.mathml.tree.MathMLTree;
@@ -13,7 +14,6 @@ import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.DefaultMathMLTypesetter;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.FontStyle;
-import de.be.thaw.style.model.style.text.TextAlignment;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
@@ -21,6 +21,7 @@ import de.be.thaw.typeset.knuthplass.item.impl.box.MathBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.math.MathParagraph;
+import de.be.thaw.util.HorizontalAlignment;
 
 import java.io.ByteArrayInputStream;
 import java.util.Optional;
@@ -58,11 +59,19 @@ public class MathHandler implements ThingyHandler {
 
         // TODO Check if expression is MathML or TeX -> if TeX convert to MathML
 
+        // Prepare some constants
+        final double fontSize = documentNode.getStyle().getStyleAttribute(
+                StyleType.FONT,
+                style -> Optional.ofNullable(((FontStyle) style).getSize())
+        ).orElse(11.0);
+
         // Parse MathML
         MathMLParser parser = new DefaultMathMLParser();
         MathMLTree tree;
         try {
-            tree = parser.parse(new ByteArrayInputStream(expression.getBytes()));
+            tree = parser.parse(new ByteArrayInputStream(expression.getBytes()), new MathMLParserConfig(
+                    fontSize * 0.05
+            ));
         } catch (ParseException e) {
             throw new DocumentConversionException(String.format(
                     "Could not parse math expression from MathML at #MATH# Thingy at %s. Error message was: %s",
@@ -75,11 +84,6 @@ public class MathHandler implements ThingyHandler {
         MathMLTypesetter typesetter = new DefaultMathMLTypesetter();
         MathExpression ex;
         try {
-            double fontSize = documentNode.getStyle().getStyleAttribute(
-                    StyleType.FONT,
-                    style -> Optional.ofNullable(((FontStyle) style).getSize())
-            ).orElse(11.0);
-
             ex = typesetter.typeset(tree, new MathTypesetConfig(ctx.getConfig().getMathFont(), fontSize));
         } catch (TypesetException e) {
             throw new DocumentConversionException(String.format(
@@ -96,10 +100,10 @@ public class MathHandler implements ThingyHandler {
             ctx.finalizeParagraph();
 
             // Fetch the alignment
-            TextAlignment alignment = TextAlignment.CENTER;
+            HorizontalAlignment alignment = HorizontalAlignment.CENTER;
             String alignmentStr = node.getOptions().get("alignment");
             if (alignmentStr != null) {
-                alignment = TextAlignment.valueOf(alignmentStr.toUpperCase());
+                alignment = HorizontalAlignment.valueOf(alignmentStr.toUpperCase());
             }
 
             ctx.setCurrentParagraph(new MathParagraph(

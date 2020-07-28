@@ -2,7 +2,7 @@ package de.be.thaw.style.model.style.impl;
 
 import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.text.TextAlignment;
+import de.be.thaw.util.HorizontalAlignment;
 
 /**
  * Style of a text block (paragraph).
@@ -22,7 +22,7 @@ public class TextStyle implements Style {
     /**
      * Alignment of the text.
      */
-    private final TextAlignment alignment;
+    private final HorizontalAlignment alignment;
 
     /**
      * Whether to justify the text.
@@ -32,7 +32,7 @@ public class TextStyle implements Style {
     public TextStyle(
             Double firstLineIndent,
             Double lineHeight,
-            TextAlignment alignment,
+            HorizontalAlignment alignment,
             Boolean justify
     ) {
         this.firstLineIndent = firstLineIndent;
@@ -70,7 +70,7 @@ public class TextStyle implements Style {
         return lineHeight;
     }
 
-    public TextAlignment getAlignment() {
+    public HorizontalAlignment getAlignment() {
         return alignment;
     }
 

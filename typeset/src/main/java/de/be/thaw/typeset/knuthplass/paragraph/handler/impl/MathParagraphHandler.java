@@ -1,6 +1,6 @@
 package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
 
-import de.be.thaw.style.model.style.text.TextAlignment;
+import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
@@ -29,9 +29,9 @@ public class MathParagraphHandler implements ParagraphTypesetHandler {
         double y = ctx.getPositionContext().getY();
         double maxWidth = ctx.getConfig().getPageSize().getWidth() - (ctx.getConfig().getPageInsets().getLeft() + ctx.getConfig().getPageInsets().getRight());
         double x = ctx.getConfig().getPageInsets().getLeft();
-        if (mathParagraph.getAlignment() == TextAlignment.CENTER) {
+        if (mathParagraph.getAlignment() == HorizontalAlignment.CENTER) {
             x += (maxWidth - width) / 2;
-        } else if (mathParagraph.getAlignment() == TextAlignment.RIGHT) {
+        } else if (mathParagraph.getAlignment() == HorizontalAlignment.RIGHT) {
             x += maxWidth - width;
         }
 

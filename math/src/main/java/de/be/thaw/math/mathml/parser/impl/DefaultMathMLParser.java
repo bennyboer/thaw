@@ -1,6 +1,7 @@
 package de.be.thaw.math.mathml.parser.impl;
 
 import de.be.thaw.math.mathml.parser.MathMLParser;
+import de.be.thaw.math.mathml.parser.MathMLParserConfig;
 import de.be.thaw.math.mathml.parser.exception.ParseException;
 import de.be.thaw.math.mathml.parser.impl.context.MathMLParseContext;
 import de.be.thaw.math.mathml.parser.impl.handler.MathMLNodeParseHandler;
@@ -22,7 +23,7 @@ import java.io.InputStream;
 public class DefaultMathMLParser implements MathMLParser {
 
     @Override
-    public MathMLTree parse(InputStream stream) throws ParseException {
+    public MathMLTree parse(InputStream stream, MathMLParserConfig config) throws ParseException {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
@@ -39,7 +40,7 @@ public class DefaultMathMLParser implements MathMLParser {
                 throw new ParseException("Expected the root node to have the name 'math'");
             }
 
-            MathMLParseContext ctx = new MathMLParseContext();
+            MathMLParseContext ctx = new MathMLParseContext(config);
 
             MathMLNodeParseHandler parseHandler = MathMLParseContext.getParseHandler(rootNode.getNodeName()).orElseThrow();
             MathMLNode root = parseHandler.parse(rootNode, ctx);

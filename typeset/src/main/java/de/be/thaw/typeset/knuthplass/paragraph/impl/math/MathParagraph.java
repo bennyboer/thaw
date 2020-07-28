@@ -2,7 +2,7 @@ package de.be.thaw.typeset.knuthplass.paragraph.impl.math;
 
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.math.mathml.typeset.MathExpression;
-import de.be.thaw.style.model.style.text.TextAlignment;
+import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.typeset.knuthplass.paragraph.AbstractParagraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 
@@ -19,9 +19,9 @@ public class MathParagraph extends AbstractParagraph {
     /**
      * Alignment of the paragraph.
      */
-    private final TextAlignment alignment;
+    private final HorizontalAlignment alignment;
 
-    public MathParagraph(double lineWidth, DocumentNode node, MathExpression expression, TextAlignment alignment) {
+    public MathParagraph(double lineWidth, DocumentNode node, MathExpression expression, HorizontalAlignment alignment) {
         super(lineWidth, node);
 
         this.expression = expression;
@@ -42,7 +42,7 @@ public class MathParagraph extends AbstractParagraph {
         return ParagraphType.MATH;
     }
 
-    public TextAlignment getAlignment() {
+    public HorizontalAlignment getAlignment() {
         return alignment;
     }
 

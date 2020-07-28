@@ -1,5 +1,6 @@
 package de.be.thaw.math.mathml.parser.impl.context;
 
+import de.be.thaw.math.mathml.parser.MathMLParserConfig;
 import de.be.thaw.math.mathml.parser.impl.handler.MathMLNodeParseHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.FractionHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.IdentifierHandler;
@@ -44,6 +45,15 @@ public class MathMLParseContext {
     }
 
     /**
+     * Configuration used during parsing.
+     */
+    private final MathMLParserConfig config;
+
+    public MathMLParseContext(MathMLParserConfig config) {
+        this.config = config;
+    }
+
+    /**
      * Register the passed parse handler.
      *
      * @param handler to register
@@ -60,6 +70,15 @@ public class MathMLParseContext {
      */
     public static Optional<MathMLNodeParseHandler> getParseHandler(String nodeName) {
         return Optional.ofNullable(HANDLER_MAP.get(nodeName));
+    }
+
+    /**
+     * Get the configuration used during parsing.
+     *
+     * @return configuration
+     */
+    public MathMLParserConfig getConfig() {
+        return config;
     }
 
 }

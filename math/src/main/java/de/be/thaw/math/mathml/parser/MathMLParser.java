@@ -14,9 +14,10 @@ public interface MathMLParser {
      * Parse the MathML source text given by the passed stream.
      *
      * @param stream to get MathML source text from
+     * @param config to use during parsing
      * @return the parsed MathML tree
      * @throws ParseException in case the MathML tree could not be parsed
      */
-    MathMLTree parse(InputStream stream) throws ParseException;
+    MathMLTree parse(InputStream stream, MathMLParserConfig config) throws ParseException;
 
 }

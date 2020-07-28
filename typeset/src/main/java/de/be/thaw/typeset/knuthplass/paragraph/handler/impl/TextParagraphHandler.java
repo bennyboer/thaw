@@ -5,7 +5,7 @@ import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.TextStyle;
-import de.be.thaw.style.model.style.text.TextAlignment;
+import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.KnuthPlassAlgorithm;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
@@ -57,10 +57,10 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                 StyleType.INSETS,
                 style -> Optional.ofNullable((InsetsStyle) style)
         ).orElseThrow();
-        final TextAlignment alignment = paragraph.getNode().getStyle().getStyleAttribute(
+        final HorizontalAlignment alignment = paragraph.getNode().getStyle().getStyleAttribute(
                 StyleType.TEXT,
                 style -> Optional.ofNullable(((TextStyle) style).getAlignment())
-        ).orElse(TextAlignment.LEFT);
+        ).orElse(HorizontalAlignment.LEFT);
         final boolean justify = paragraph.getNode().getStyle().getStyleAttribute(
                 StyleType.TEXT,
                 style -> Optional.ofNullable(((TextStyle) style).getJustify())
@@ -172,9 +172,9 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             if (!justifyLine) {
                 double restWidth = lineWidth - lineMetrics.getMinWidth() - lineMetrics.getWhiteSpaces() * spaceWidth;
 
-                if (alignment == TextAlignment.RIGHT) {
+                if (alignment == HorizontalAlignment.RIGHT) {
                     ctx.getPositionContext().increaseX(restWidth);
-                } else if (alignment == TextAlignment.CENTER) {
+                } else if (alignment == HorizontalAlignment.CENTER) {
                     ctx.getPositionContext().increaseX(restWidth / 2);
                 }
             }

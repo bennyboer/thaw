@@ -11,11 +11,6 @@ import de.be.thaw.util.Position;
 public class FractionElement extends AbstractMathElement {
 
     /**
-     * The original fraction node.
-     */
-    private final FractionNode fractionNode;
-
-    /**
      * Width of the fraction line.
      */
     private final double lineWidth;
@@ -25,21 +20,11 @@ public class FractionElement extends AbstractMathElement {
      */
     private final double lineSpacing;
 
-    public FractionElement(FractionNode node, double lineWidth, double lineSpacing, Position position) {
+    public FractionElement(double lineWidth, double lineSpacing, Position position) {
         super(position);
 
-        this.fractionNode = node;
         this.lineWidth = lineWidth;
         this.lineSpacing = lineSpacing;
-    }
-
-    /**
-     * Get the original fraction node.
-     *
-     * @return fraction node
-     */
-    public FractionNode getFractionNode() {
-        return fractionNode;
     }
 
     /**

@@ -2,7 +2,7 @@ package de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl;
 
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.style.model.style.text.TextAlignment;
+import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
@@ -38,10 +38,10 @@ public class ImageHandler implements ThingyHandler {
 
         boolean floating = Boolean.parseBoolean(node.getOptions().get("float"));
 
-        TextAlignment alignment = TextAlignment.CENTER;
+        HorizontalAlignment alignment = HorizontalAlignment.CENTER;
         String alignmentStr = node.getOptions().get("alignment");
         if (alignmentStr != null) {
-            alignment = TextAlignment.valueOf(alignmentStr.toUpperCase());
+            alignment = HorizontalAlignment.valueOf(alignmentStr.toUpperCase());
         }
 
         try {

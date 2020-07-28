@@ -1,7 +1,7 @@
 package de.be.thaw.typeset.knuthplass.paragraph.impl.image;
 
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.style.model.style.text.TextAlignment;
+import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.typeset.knuthplass.config.util.image.ImageSource;
 import de.be.thaw.typeset.knuthplass.paragraph.AbstractParagraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
@@ -24,9 +24,9 @@ public class ImageParagraph extends AbstractParagraph {
     /**
      * Alignment of the paragraph.
      */
-    private final TextAlignment alignment;
+    private final HorizontalAlignment alignment;
 
-    public ImageParagraph(double lineWidth, DocumentNode node, ImageSource src, boolean floating, TextAlignment alignment) {
+    public ImageParagraph(double lineWidth, DocumentNode node, ImageSource src, boolean floating, HorizontalAlignment alignment) {
         super(lineWidth, node);
 
         this.src = src;
@@ -48,7 +48,7 @@ public class ImageParagraph extends AbstractParagraph {
         return floating;
     }
 
-    public TextAlignment getAlignment() {
+    public HorizontalAlignment getAlignment() {
         return alignment;
     }
 
