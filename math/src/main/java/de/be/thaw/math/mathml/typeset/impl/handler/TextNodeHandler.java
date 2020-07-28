@@ -31,11 +31,12 @@ public class TextNodeHandler implements MathMLNodeHandler {
         // Convert text to the correct font variant (math variant)
         text = MathVariantUtil.convertStringUsingMathVariant(text, textNode.getMathVariant());
 
-        // TODO Deal with mathsize (once attribute is parsed)
+        // Deal with the size factor to scale the text (MathML attribute mathsize)
+        double fontSize = ctx.getLevelAdjustedFontSize() * textNode.getSizeFactor();
 
         KernedSize size;
         try {
-            size = ctx.getConfig().getFont().getKernedStringSize(-1, text, ctx.getLevelAdjustedFontSize());
+            size = ctx.getConfig().getFont().getKernedStringSize(-1, text, fontSize);
         } catch (Exception e) {
             throw new TypesetException(e);
         }
@@ -43,7 +44,7 @@ public class TextNodeHandler implements MathMLNodeHandler {
         Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth());
 
-        return new TextElement(text, new Size(size.getWidth(), size.getAscent()), ctx.getLevelAdjustedFontSize(), size.getAscent(), size.getKerningAdjustments(), position);
+        return new TextElement(text, new Size(size.getWidth(), size.getAscent()), fontSize, size.getAscent(), size.getKerningAdjustments(), position);
     }
 
 }

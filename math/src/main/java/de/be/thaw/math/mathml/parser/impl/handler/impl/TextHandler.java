@@ -2,19 +2,15 @@ package de.be.thaw.math.mathml.parser.impl.handler.impl;
 
 import de.be.thaw.math.mathml.parser.exception.ParseException;
 import de.be.thaw.math.mathml.parser.impl.context.MathMLParseContext;
-import de.be.thaw.math.mathml.parser.impl.handler.AbstractMathMLNodeParseHandler;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.MathVariant;
 import de.be.thaw.math.mathml.tree.node.impl.TextNode;
 import org.w3c.dom.Node;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 /**
  * Handler for <mtext> MathML identifier nodes.
  */
-public class TextHandler extends AbstractMathMLNodeParseHandler {
+public class TextHandler extends TokenNodeHandler {
 
     public TextHandler() {
         super("mtext");
@@ -32,19 +28,13 @@ public class TextHandler extends AbstractMathMLNodeParseHandler {
             mathVariant = MathVariant.ITALIC; // Default for one character identifiers!
         }
 
-        // Parse attribute from node
-        Node mathVariantNode = node.getAttributes().getNamedItem("mathvariant");
-        if (mathVariantNode != null) {
-            mathVariant = MathVariant.forName(mathVariantNode.getTextContent()).orElseThrow(() -> new ParseException(String.format(
-                    "Math variant name '%s' is unknown. Try one of the following: [%s]",
-                    mathVariantNode.getTextContent(),
-                    Arrays.stream(MathVariant.values()).sorted().map(MathVariant::getName).collect(Collectors.joining(", "))
-            )));
-        }
+        // Parse mathvariant attribute from node
+        mathVariant = parseMathVariant(node, mathVariant);
 
-        // TODO Add attributes that we want to support (mathsize, ...)
+        // Parse mathsize attribute from node
+        double mathSize = parseMathSize(node, 1.0);
 
-        return new TextNode(text, mathVariant);
+        return new TextNode(text, mathVariant, mathSize);
     }
 
 }

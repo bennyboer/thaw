@@ -25,23 +25,24 @@ public class NumericNodeHandler implements MathMLNodeHandler {
     public MathElement handle(MathMLNode node, MathTypesetContext ctx) throws TypesetException {
         NumericNode mn = (NumericNode) node;
 
-        String value = mn.getValue();
+        String value = mn.getText();
 
         // Convert value to the correct font variant (math variant)
         value = MathVariantUtil.convertStringUsingMathVariant(value, mn.getMathVariant());
 
-        // TODO Deal with mathsize (once attribute is parsed)
+        // Deal with the size factor to scale the text (MathML attribute mathsize)
+        double fontSize = ctx.getLevelAdjustedFontSize() * mn.getSizeFactor();
 
         KernedSize size;
         try {
-            size = ctx.getConfig().getFont().getKernedStringSize(-1, value, ctx.getLevelAdjustedFontSize());
+            size = ctx.getConfig().getFont().getKernedStringSize(-1, value, fontSize);
         } catch (Exception e) {
             throw new TypesetException(e);
         }
         Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth());
 
-        return new NumericElement(value, new Size(size.getWidth(), size.getAscent()), ctx.getLevelAdjustedFontSize(), size.getAscent(), size.getKerningAdjustments(), position);
+        return new NumericElement(value, new Size(size.getWidth(), size.getAscent()), fontSize, size.getAscent(), size.getKerningAdjustments(), position);
     }
 
 }

@@ -38,7 +38,7 @@ public class SqrtNodeHandler extends RootNodeHandler {
         NumericElement exponentElement = (NumericElement) MathTypesetContext.getHandler("mn").orElseThrow(() -> new TypesetException(String.format(
                 "Could not find a handler for the MathML node '%s'",
                 sqrtNode.getChildren().get(1).getName()
-        ))).handle(new NumericNode("2", MathVariant.NORMAL), ctx);
+        ))).handle(new NumericNode("2", MathVariant.NORMAL, 1.0), ctx);
         ctx.setLevel(ctx.getLevel() - 5);
 
         double padding = ctx.getConfig().getFontSize() * RootNodeHandler.BASIS_PADDING;

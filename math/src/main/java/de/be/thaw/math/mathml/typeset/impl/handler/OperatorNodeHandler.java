@@ -39,7 +39,7 @@ public class OperatorNodeHandler implements MathMLNodeHandler {
     public MathElement handle(MathMLNode node, MathTypesetContext ctx) throws TypesetException {
         OperatorNode mo = (OperatorNode) node;
 
-        String operator = mo.getOperator();
+        String operator = mo.getText();
 
         boolean isArithmeticOperator = operator.length() == 1 && MathVariantUtil.isArithmeticOperator(operator.charAt(0));
 
@@ -61,11 +61,12 @@ public class OperatorNodeHandler implements MathMLNodeHandler {
         }
         operator = builder.toString();
 
-        // TODO Deal with mathsize (once attribute is parsed)
+        // Deal with the size factor to scale the text (MathML attribute mathsize)
+        double fontSize = ctx.getLevelAdjustedFontSize() * mo.getSizeFactor();
 
         KernedSize size;
         try {
-            size = ctx.getConfig().getFont().getKernedStringSize(-1, operator, ctx.getLevelAdjustedFontSize());
+            size = ctx.getConfig().getFont().getKernedStringSize(-1, operator, fontSize);
         } catch (Exception e) {
             throw new TypesetException(e);
         }
@@ -78,7 +79,7 @@ public class OperatorNodeHandler implements MathMLNodeHandler {
         Position position = new Position(ctx.getCurrentX() + leftMargin, ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth() + rightMargin);
 
-        return new OperatorElement(operator, new Size(size.getWidth(), size.getHeight()), ctx.getLevelAdjustedFontSize(), size.getAscent(), size.getKerningAdjustments(), position);
+        return new OperatorElement(operator, new Size(size.getWidth(), size.getHeight()), fontSize, size.getAscent(), size.getKerningAdjustments(), position);
     }
 
 }

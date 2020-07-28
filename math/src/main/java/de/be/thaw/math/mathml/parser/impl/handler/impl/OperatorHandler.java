@@ -2,19 +2,15 @@ package de.be.thaw.math.mathml.parser.impl.handler.impl;
 
 import de.be.thaw.math.mathml.parser.exception.ParseException;
 import de.be.thaw.math.mathml.parser.impl.context.MathMLParseContext;
-import de.be.thaw.math.mathml.parser.impl.handler.AbstractMathMLNodeParseHandler;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.MathVariant;
 import de.be.thaw.math.mathml.tree.node.impl.OperatorNode;
 import org.w3c.dom.Node;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 /**
  * Handler for <mo> MathML operator nodes.
  */
-public class OperatorHandler extends AbstractMathMLNodeParseHandler {
+public class OperatorHandler extends TokenNodeHandler {
 
     /**
      * Default space width.
@@ -33,22 +29,15 @@ public class OperatorHandler extends AbstractMathMLNodeParseHandler {
             throw new ParseException("Encountered an <mo> node without content");
         }
 
-        // Prepare default values for attributes
-        MathVariant mathVariant = MathVariant.NORMAL;
-        double lspace = DEFAULT_SPACE_WIDTH;
-        double rspace = DEFAULT_SPACE_WIDTH;
-
         // Parse math variant from node
-        Node mathVariantNode = node.getAttributes().getNamedItem("mathvariant");
-        if (mathVariantNode != null) {
-            mathVariant = MathVariant.forName(mathVariantNode.getTextContent()).orElseThrow(() -> new ParseException(String.format(
-                    "Math variant name '%s' is unknown. Try one of the following: [%s]",
-                    mathVariantNode.getTextContent(),
-                    Arrays.stream(MathVariant.values()).sorted().map(MathVariant::getName).collect(Collectors.joining(", "))
-            )));
-        }
+        MathVariant mathVariant = MathVariant.NORMAL;
+        mathVariant = parseMathVariant(node, mathVariant);
+
+        // Parse mathsize attribute from node
+        double mathSize = parseMathSize(node, 1.0);
 
         // Parse lspace and rspace from node
+        double lspace = DEFAULT_SPACE_WIDTH;
         Node lspaceNode = node.getAttributes().getNamedItem("lspace");
         if (lspaceNode != null) {
             try {
@@ -57,6 +46,7 @@ public class OperatorHandler extends AbstractMathMLNodeParseHandler {
                 throw new ParseException("Please specify the attribute value of 'lspace' only using a number", e);
             }
         }
+        double rspace = DEFAULT_SPACE_WIDTH;
         Node rspaceNode = node.getAttributes().getNamedItem("rspace");
         if (rspaceNode != null) {
             try {
@@ -70,7 +60,7 @@ public class OperatorHandler extends AbstractMathMLNodeParseHandler {
 
         // TODO Determine the form attribute automatically based on the operator (opening parathesis, closing, semicolon, ...)
 
-        return new OperatorNode(text, mathVariant, lspace, rspace);
+        return new OperatorNode(text, mathVariant, mathSize, lspace, rspace);
     }
 
 }

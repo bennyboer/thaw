@@ -3,6 +3,8 @@ package de.be.thaw.math.mathml.parser;
 import de.be.thaw.math.mathml.parser.exception.ParseException;
 import de.be.thaw.math.mathml.parser.impl.DefaultMathMLParser;
 import de.be.thaw.math.mathml.tree.MathMLTree;
+import de.be.thaw.math.mathml.tree.node.MathVariant;
+import de.be.thaw.math.mathml.tree.node.impl.IdentifierNode;
 import de.be.thaw.math.mathml.tree.node.impl.SubscriptNode;
 import de.be.thaw.math.mathml.tree.node.impl.SubsuperscriptNode;
 import org.junit.jupiter.api.Assertions;
@@ -27,6 +29,27 @@ public class MathMLParserTest {
                 "  - mi [a]\n" +
                 "  - mo [+]\n" +
                 "  - mi [b]\n", tree.toString());
+    }
+
+    @Test
+    public void simpleIdentifierAttributesTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<mi mathsize=\"0.75\" mathvariant=\"double-struck\">a</mi>\n" +
+                "\t<mo>+</mo>\n" +
+                "\t<mi>b</mi>\n" +
+                "</math>\n";
+
+        MathMLParser parser = new DefaultMathMLParser();
+        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+
+        Assertions.assertEquals("- math\n" +
+                "  - mi [a]\n" +
+                "  - mo [+]\n" +
+                "  - mi [b]\n", tree.toString());
+
+        IdentifierNode identifierNode = (IdentifierNode) tree.getRoot().getChildren().get(0);
+        Assertions.assertEquals(0.75, identifierNode.getSizeFactor());
+        Assertions.assertEquals(MathVariant.DOUBLE_STRUCK, identifierNode.getMathVariant());
     }
 
     @Test
