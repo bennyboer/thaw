@@ -9,8 +9,15 @@ import de.be.thaw.util.Position;
  */
 public class RootElement extends AbstractMathElement {
 
-    public RootElement(Position position) {
+    /**
+     * The root line thickness.
+     */
+    private double lineThickness;
+
+    public RootElement(Position position, double lineThickness) {
         super(position);
+
+        this.lineThickness = lineThickness;
     }
 
     @Override
@@ -22,6 +29,22 @@ public class RootElement extends AbstractMathElement {
     public double getMidYPosition() {
         // Get the mid y position of the basis element
         return getChildren().orElseThrow().get(0).getMidYPosition();
+    }
+
+    /**
+     * Get the thickness of the root line.
+     *
+     * @return thickness
+     */
+    public double getLineThickness() {
+        return lineThickness;
+    }
+
+    @Override
+    public void scale(double factor) {
+        super.scale(factor);
+
+        lineThickness *= factor;
     }
 
 }

@@ -17,7 +17,7 @@ public abstract class TokenElement extends AbstractMathElement {
     /**
      * Font size of the element.
      */
-    private final double fontSize;
+    private double fontSize;
 
     /**
      * Kerning adjustments.
@@ -27,7 +27,7 @@ public abstract class TokenElement extends AbstractMathElement {
     /**
      * The offset from the y-position of the element where the text baseline is.
      */
-    private final double baseline;
+    private double baseline;
 
     public TokenElement(String text, Size size, double fontSize, double baseline, double[] kerningAdjustments, Position position) {
         super(position);
@@ -75,4 +75,14 @@ public abstract class TokenElement extends AbstractMathElement {
         return kerningAdjustments;
     }
 
+    @Override
+    public void scale(double factor) {
+        super.scale(factor);
+
+        fontSize *= factor;
+        baseline *= factor;
+        for (int i = 0; i < kerningAdjustments.length; i++) {
+            kerningAdjustments[i] *= factor;
+        }
+    }
 }

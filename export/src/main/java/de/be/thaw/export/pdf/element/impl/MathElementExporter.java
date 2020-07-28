@@ -52,7 +52,20 @@ public class MathElementExporter implements ElementExporter {
             throw new ExportException(e);
         }
 
-        renderElement(mee.getExpression().getRoot(), mee, ctx, out, y + mee.getExpression().getRoot().getSize().getHeight(), x);
+        double yStart = y + mee.getExpression().getRoot().getSize().getHeight();
+
+        if (mee.isInline()) {
+            yStart += mee.getBaseline();
+
+            if (mee.getExpression().getSize().getHeight() > mee.getBaseline()) {
+                double scaleFactor = mee.getBaseline() / mee.getExpression().getSize().getHeight();
+                System.out.println("Oh nose " + scaleFactor);
+
+                mee.getExpression().getRoot().scale(0.5);
+            }
+        }
+
+        renderElement(mee.getExpression().getRoot(), mee, ctx, out, yStart, x);
     }
 
     /**
@@ -108,7 +121,7 @@ public class MathElementExporter implements ElementExporter {
 
         // Prepare line drawing
         double fontSize = ctx.getFontSizeForNode(documentNode);
-        double rootLineWidth = fontSize * 0.05;
+        double rootLineWidth = element.getLineThickness();
 
         double basisX = basis.getPosition().getX() - element.getPosition().getX();
         double exponentY = exponent.getPosition().getY() - element.getPosition().getY();

@@ -38,16 +38,20 @@ public class TableOfContentsItemParagraphHandler extends TextParagraphHandler {
                 style -> Optional.ofNullable(((FontStyle) style).getSize())
         ).orElseThrow());
 
-        double fontSize = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.FONT,
-                style -> Optional.ofNullable(((FontStyle) style).getSize())
-        ).orElse(11.0);
-
         double pageNumberMaxX = ctx.getConfig().getPageSize().getWidth() - ctx.getConfig().getPageInsets().getRight();
+
+        FontDetailsSupplier.StringMetrics metrics;
+        try {
+            metrics = ctx.getConfig().getFontDetailsSupplier().measureString(paragraph.getNode(), -1, "99999");
+        } catch (Exception e) {
+            throw new TypeSettingException(e);
+        }
+
         ctx.pushPageElement(new PageNumberPlaceholderElement(
-                new FontDetailsSupplier.StringMetrics(p.getPageNumberWidth(), lineHeight, new double[]{0}, fontSize, 0.0),
+                metrics,
                 paragraph.getNode(),
                 ctx.getCurrentPageNumber(),
+                metrics.getBaseline(),
                 new Size(p.getPageNumberWidth(), lineHeight),
                 new Position(pageNumberMaxX, ctx.getPositionContext().getY() - lineHeight)
         ));

@@ -12,12 +12,12 @@ public class FractionElement extends AbstractMathElement {
     /**
      * Width of the fraction line.
      */
-    private final double lineWidth;
+    private double lineWidth;
 
     /**
      * Spacing on each side of the fraction line.
      */
-    private final double lineSpacing;
+    private double lineSpacing;
 
     /**
      * Whether the fraction is bevelled (diagonal line) or normal (horizontal line).
@@ -76,4 +76,13 @@ public class FractionElement extends AbstractMathElement {
                 + getLineSpacing()
                 + getLineWidth() / 2;
     }
+
+    @Override
+    public void scale(double factor) {
+        super.scale(factor);
+
+        lineWidth *= factor;
+        lineSpacing *= factor;
+    }
+
 }

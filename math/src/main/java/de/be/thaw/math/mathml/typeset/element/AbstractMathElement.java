@@ -149,4 +149,23 @@ public abstract class AbstractMathElement implements MathElement {
         return getPosition(false).getY() + (getSize().getHeight()) / 2;
     }
 
+    @Override
+    public void scale(double factor) {
+        Optional<List<MathElement>> optionalChildren = getChildren();
+        if (optionalChildren.isPresent()) {
+            for (MathElement child : optionalChildren.get()) {
+                child.scale(factor);
+            }
+        }
+
+        setPosition(new Position(
+                getPosition(false).getX() * factor,
+                getPosition(false).getY() * factor
+        ));
+        setSize(new Size(
+                getSize().getWidth() * factor,
+                getSize().getHeight() * factor
+        ));
+    }
+
 }

@@ -8,8 +8,8 @@ import de.be.thaw.util.Position;
  */
 public class SqrtElement extends RootElement {
 
-    public SqrtElement(Position position) {
-        super(position);
+    public SqrtElement(Position position, double lineThickness) {
+        super(position, lineThickness);
     }
 
     @Override

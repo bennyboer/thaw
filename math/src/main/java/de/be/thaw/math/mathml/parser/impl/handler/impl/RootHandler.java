@@ -21,7 +21,7 @@ public class RootHandler extends AbstractMathMLNodeParseHandler {
 
     @Override
     public MathMLNode parse(Node node, MathMLParseContext ctx) throws ParseException {
-        RootNode rootNode = new RootNode();
+        RootNode rootNode = new RootNode(ctx.getConfig().getDefaultLineThickness());
 
         List<Node> children = new ArrayList<>();
         int len = node.getChildNodes().getLength();

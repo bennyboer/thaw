@@ -7,8 +7,8 @@ import de.be.thaw.util.Size;
 
 public class PageNumberPlaceholderElement extends TextElement {
 
-    public PageNumberPlaceholderElement(FontDetailsSupplier.StringMetrics metrics, DocumentNode node, int pageNumber, Size size, Position position) {
-        super("", metrics, node, pageNumber, size, position);
+    public PageNumberPlaceholderElement(FontDetailsSupplier.StringMetrics metrics, DocumentNode node, int pageNumber, double baseline, Size size, Position position) {
+        super("", metrics, node, pageNumber, baseline, size, position);
     }
 
 }

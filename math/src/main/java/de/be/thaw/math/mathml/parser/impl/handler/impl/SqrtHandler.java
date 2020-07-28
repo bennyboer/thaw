@@ -21,7 +21,7 @@ public class SqrtHandler extends AbstractMathMLNodeParseHandler {
 
     @Override
     public MathMLNode parse(Node node, MathMLParseContext ctx) throws ParseException {
-        SqrtNode sqrtNode = new SqrtNode();
+        SqrtNode sqrtNode = new SqrtNode(ctx.getConfig().getDefaultLineThickness());
 
         List<Node> children = new ArrayList<>();
         int len = node.getChildNodes().getLength();

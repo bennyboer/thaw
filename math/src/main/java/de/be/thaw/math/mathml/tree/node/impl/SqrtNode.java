@@ -5,8 +5,8 @@ package de.be.thaw.math.mathml.tree.node.impl;
  */
 public class SqrtNode extends RootNode {
 
-    public SqrtNode() {
-        super("msqrt");
+    public SqrtNode(double lineThickness) {
+        super("msqrt", lineThickness);
     }
 
 }

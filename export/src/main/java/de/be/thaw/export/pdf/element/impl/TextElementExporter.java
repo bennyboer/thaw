@@ -81,7 +81,7 @@ public class TextElementExporter implements ElementExporter {
             ));
 
             double[] kerningAdjustments = te.getMetrics().getKerningAdjustments();
-            double baseline = font.getAscent(fontSize);
+            double baseline = te.getBaseline();
 
             // Check if the element is really just a placeholder for the current page number
             if (te instanceof PageNumberPlaceholderElement) {

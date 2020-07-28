@@ -58,7 +58,7 @@ public class SqrtNodeHandler extends RootNodeHandler {
         ));
 
         // Create root element and add the children
-        SqrtElement element = new SqrtElement(new Position(oldX, oldY));
+        SqrtElement element = new SqrtElement(new Position(oldX, oldY), sqrtNode.getLineThickness());
         element.addChild(basisElement);
 
         // Add fake exponent element

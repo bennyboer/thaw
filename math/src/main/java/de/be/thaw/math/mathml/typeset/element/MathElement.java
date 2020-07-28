@@ -82,4 +82,11 @@ public interface MathElement {
      */
     double getMidYPosition();
 
+    /**
+     * Scale the element.
+     *
+     * @param factor to scale the element with
+     */
+    void scale(double factor);
+
 }

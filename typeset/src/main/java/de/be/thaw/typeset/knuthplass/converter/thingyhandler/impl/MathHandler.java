@@ -113,7 +113,7 @@ public class MathHandler implements ThingyHandler {
                     alignment
             ));
         } else {
-            paragraph.addItem(new MathBox(ex));
+            paragraph.addItem(new MathBox(ex, documentNode));
         }
     }
 

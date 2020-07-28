@@ -1,5 +1,6 @@
 package de.be.thaw.typeset.knuthplass.item.impl.box;
 
+import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.math.mathml.typeset.MathExpression;
 import de.be.thaw.typeset.knuthplass.item.impl.Box;
 
@@ -13,13 +14,27 @@ public class MathBox extends Box {
      */
     private final MathExpression expression;
 
-    public MathBox(MathExpression expression) {
+    /**
+     * Original node the math expression belongs to.
+     */
+    private final DocumentNode node;
+
+    public MathBox(MathExpression expression, DocumentNode node) {
         this.expression = expression;
+        this.node = node;
     }
 
     @Override
     public double getWidth() {
         return expression.getSize().getWidth();
+    }
+
+    public MathExpression getExpression() {
+        return expression;
+    }
+
+    public DocumentNode getNode() {
+        return node;
     }
 
 }

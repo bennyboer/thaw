@@ -7,12 +7,23 @@ import de.be.thaw.math.mathml.tree.node.MathMLNode;
  */
 public class RootNode extends MathMLNode {
 
-    public RootNode() {
-        super("mroot");
+    /**
+     * The thickness of the root line.
+     */
+    private final double lineThickness;
+
+    public RootNode(double lineThickness) {
+        this("mroot", lineThickness);
     }
 
-    public RootNode(String name) {
+    public RootNode(String name, double lineThickness) {
         super(name);
+
+        this.lineThickness = lineThickness;
+    }
+
+    public double getLineThickness() {
+        return lineThickness;
     }
 
 }

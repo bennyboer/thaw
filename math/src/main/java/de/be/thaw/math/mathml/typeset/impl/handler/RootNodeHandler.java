@@ -66,7 +66,7 @@ public class RootNodeHandler implements MathMLNodeHandler {
         ));
 
         // Create root element and add the children
-        RootElement element = new RootElement(new Position(oldX, oldY));
+        RootElement element = new RootElement(new Position(oldX, oldY), rootNode.getLineThickness());
         element.addChild(basisElement);
         element.addChild(exponentElement);
 

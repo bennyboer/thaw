@@ -24,11 +24,23 @@ public class MathExpressionElement extends AbstractElement {
      */
     private final DocumentNode node;
 
-    public MathExpressionElement(MathExpression expression, int pageNumber, Size size, Position position, DocumentNode node) {
+    /**
+     * Whether the element is inline with text or a block.
+     */
+    private final boolean inline;
+
+    /**
+     * Baseline to use (if inline).
+     */
+    private final double baseline;
+
+    public MathExpressionElement(MathExpression expression, int pageNumber, Size size, Position position, DocumentNode node, boolean inline, double baseline) {
         super(pageNumber, size, position);
 
         this.expression = expression;
         this.node = node;
+        this.inline = inline;
+        this.baseline = baseline;
     }
 
     @Override
@@ -48,6 +60,24 @@ public class MathExpressionElement extends AbstractElement {
     @Override
     public Optional<DocumentNode> getNode() {
         return Optional.of(node);
+    }
+
+    /**
+     * Check if the element is inline with text or a block.
+     *
+     * @return inline
+     */
+    public boolean isInline() {
+        return inline;
+    }
+
+    /**
+     * Get the baseline to use.
+     *
+     * @return baseline
+     */
+    public double getBaseline() {
+        return baseline;
     }
 
 }

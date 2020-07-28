@@ -1,6 +1,5 @@
 package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
 
-import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
@@ -8,6 +7,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.math.MathParagraph;
 import de.be.thaw.typeset.page.impl.MathExpressionElement;
+import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.Position;
 
 /**
@@ -40,7 +40,9 @@ public class MathParagraphHandler implements ParagraphTypesetHandler {
                 ctx.getCurrentPageNumber(),
                 mathParagraph.getExpression().getSize(),
                 new Position(x, y),
-                mathParagraph.getNode()
+                mathParagraph.getNode(),
+                false,
+                0.0
         ));
 
         ctx.getPositionContext().increaseY(mathParagraph.getExpression().getSize().getHeight());

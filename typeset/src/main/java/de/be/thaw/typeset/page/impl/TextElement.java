@@ -31,11 +31,17 @@ public class TextElement extends AbstractElement {
      */
     private final DocumentNode node;
 
+    /**
+     * Baseline to use.
+     */
+    private final double baseline;
+
     public TextElement(
             String text,
             FontDetailsSupplier.StringMetrics metrics,
             DocumentNode node,
             int pageNumber,
+            double baseline,
             Size size,
             Position position
     ) {
@@ -44,6 +50,7 @@ public class TextElement extends AbstractElement {
         this.text = text;
         this.metrics = metrics;
         this.node = node;
+        this.baseline = baseline;
     }
 
     /**
@@ -81,6 +88,15 @@ public class TextElement extends AbstractElement {
      */
     public FontDetailsSupplier.StringMetrics getMetrics() {
         return metrics;
+    }
+
+    /**
+     * Get the baseline to use.
+     *
+     * @return baseline
+     */
+    public double getBaseline() {
+        return baseline;
     }
 
 }
