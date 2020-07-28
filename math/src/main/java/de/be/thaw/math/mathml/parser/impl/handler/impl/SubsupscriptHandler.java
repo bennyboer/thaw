@@ -4,41 +4,46 @@ import de.be.thaw.math.mathml.parser.exception.ParseException;
 import de.be.thaw.math.mathml.parser.impl.context.MathMLParseContext;
 import de.be.thaw.math.mathml.parser.impl.handler.AbstractMathMLNodeParseHandler;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
-import de.be.thaw.math.mathml.tree.node.impl.SuperscriptNode;
+import de.be.thaw.math.mathml.tree.node.impl.SubsuperscriptNode;
 import org.w3c.dom.Node;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handler dealing with the superscript node.
+ * Handler dealing with the subsupscript node.
  */
-public class SuperscriptHandler extends AbstractMathMLNodeParseHandler {
+public class SubsupscriptHandler extends AbstractMathMLNodeParseHandler {
 
-    /**
-     * The default superscript shift.
-     * 0.5 means 50 % above the baseline.
-     */
-    static final double DEFAULT_SUPERSCRIPT_SHIFT = 0.6;
-
-    public SuperscriptHandler() {
-        super("msup");
+    public SubsupscriptHandler() {
+        super("msubsup");
     }
 
     @Override
     public MathMLNode parse(Node node, MathMLParseContext ctx) throws ParseException {
+        // Parse subscriptshift attribute
+        double subscriptShift = SubscriptHandler.DEFAULT_SUBSCRIPT_SHIFT;
+        Node subscriptshiftNode = node.getAttributes().getNamedItem("subscriptshift");
+        if (subscriptshiftNode != null) {
+            try {
+                subscriptShift = Double.parseDouble(subscriptshiftNode.getTextContent());
+            } catch (NumberFormatException e) {
+                throw new ParseException("Please only specify a number without unit in the subscriptshift attribute of a <msubsup> node");
+            }
+        }
+
         // Parse superscriptshift attribute
-        double superscriptShift = DEFAULT_SUPERSCRIPT_SHIFT;
+        double superscriptShift = SuperscriptHandler.DEFAULT_SUPERSCRIPT_SHIFT;
         Node superscriptshiftNode = node.getAttributes().getNamedItem("superscriptshift");
         if (superscriptshiftNode != null) {
             try {
                 superscriptShift = Double.parseDouble(superscriptshiftNode.getTextContent());
             } catch (NumberFormatException e) {
-                throw new ParseException("Please only specify a number without unit in the superscriptshift attribute of a <msup> node");
+                throw new ParseException("Please only specify a number without unit in the superscriptshift attribute of a <msubsup> node");
             }
         }
 
-        SuperscriptNode superscriptNode = new SuperscriptNode(superscriptShift);
+        SubsuperscriptNode subsuperscriptNode = new SubsuperscriptNode(subscriptShift, superscriptShift);
 
         List<Node> children = new ArrayList<>();
         int len = node.getChildNodes().getLength();
@@ -50,9 +55,9 @@ public class SuperscriptHandler extends AbstractMathMLNodeParseHandler {
             }
         }
 
-        // We expect exactly two child elements here!
-        if (!node.hasChildNodes() || children.size() != 2) {
-            throw new ParseException("A <msup> node is expected to have exactly 2 child nodes");
+        // We expect exactly three child elements here!
+        if (!node.hasChildNodes() || children.size() != 3) {
+            throw new ParseException("A <msubsup> node is expected to have exactly 3 child nodes: <msubsup> base subscript superscript </msubsup>");
         }
 
         // Parse children
@@ -63,11 +68,11 @@ public class SuperscriptHandler extends AbstractMathMLNodeParseHandler {
                         child.getNodeName()
                 ))).parse(child, ctx);
 
-                superscriptNode.addChild(childNode);
+                subsuperscriptNode.addChild(childNode);
             }
         }
 
-        return superscriptNode;
+        return subsuperscriptNode;
     }
 
 }

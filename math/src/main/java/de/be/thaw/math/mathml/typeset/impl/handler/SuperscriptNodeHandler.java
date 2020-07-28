@@ -37,7 +37,7 @@ public class SuperscriptNodeHandler implements MathMLNodeHandler {
         ))).handle(superscriptNode.getChildren().get(0), ctx);
 
         // Shift the superscript element
-        ctx.setLevel(ctx.getLevel() + 5);
+        ctx.setLevel(ctx.getLevel() + 3);
         ctx.setCurrentX(baseElement.getSize().getWidth());
         ctx.setCurrentY(0);
 
@@ -48,7 +48,7 @@ public class SuperscriptNodeHandler implements MathMLNodeHandler {
         ))).handle(superscriptNode.getChildren().get(1), ctx);
 
         // Reset level
-        ctx.setLevel(ctx.getLevel() - 5);
+        ctx.setLevel(ctx.getLevel() - 3);
 
         // Shift the position of the superscript element according to the superscriptShift attribute
         superscriptElement.setPosition(new Position(

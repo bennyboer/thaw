@@ -8,6 +8,8 @@ import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.NumericNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.OperatorNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.RowHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.SubscriptNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.SubsuperscriptNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.SuperscriptNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.TextNodeHandler;
 
@@ -34,6 +36,8 @@ public class MathTypesetContext {
         registerHandler(new FractionHandler());
         registerHandler(new TextNodeHandler());
         registerHandler(new SuperscriptNodeHandler());
+        registerHandler(new SubscriptNodeHandler());
+        registerHandler(new SubsuperscriptNodeHandler());
     }
 
     /**
@@ -113,7 +117,7 @@ public class MathTypesetContext {
     }
 
     public double getLevelAdjustedFontSize() {
-        return Math.max(getConfig().getFontSize() - getLevel(), 8.0);
+        return Math.max(getConfig().getFontSize() - getConfig().getFontSize() * 0.1 * getLevel(), 4);
     }
 
 }

@@ -11,6 +11,8 @@ public enum MathElementType {
     TEXT,
     FRACTION,
     ROW,
-    SUPER_SCRIPT
+    SUPER_SCRIPT,
+    SUB_SCRIPT,
+    SUB_SUPER_SCRIPT
 
 }

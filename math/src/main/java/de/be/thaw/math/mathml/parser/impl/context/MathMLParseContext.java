@@ -7,6 +7,8 @@ import de.be.thaw.math.mathml.parser.impl.handler.impl.MathHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.NumericHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.OperatorHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.RowHandler;
+import de.be.thaw.math.mathml.parser.impl.handler.impl.SubscriptHandler;
+import de.be.thaw.math.mathml.parser.impl.handler.impl.SubsupscriptHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.SuperscriptHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.TextHandler;
 
@@ -33,6 +35,8 @@ public class MathMLParseContext {
         registerParseHandler(new RowHandler());
         registerParseHandler(new TextHandler());
         registerParseHandler(new SuperscriptHandler());
+        registerParseHandler(new SubscriptHandler());
+        registerParseHandler(new SubsupscriptHandler());
     }
 
     /**

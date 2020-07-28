@@ -3,6 +3,8 @@ package de.be.thaw.math.mathml.parser;
 import de.be.thaw.math.mathml.parser.exception.ParseException;
 import de.be.thaw.math.mathml.parser.impl.DefaultMathMLParser;
 import de.be.thaw.math.mathml.tree.MathMLTree;
+import de.be.thaw.math.mathml.tree.node.impl.SubscriptNode;
+import de.be.thaw.math.mathml.tree.node.impl.SubsuperscriptNode;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -134,6 +136,49 @@ public class MathMLParserTest {
                 "  - msup\n" +
                 "    - mi [x]\n" +
                 "    - mn [2]\n", tree.toString());
+    }
+
+    @Test
+    public void simpleSubscriptTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<msub subscriptshift=\"0.2\">\n" +
+                "\t\t<mi>x</mi>\n" +
+                "\t\t<mn>2</mn>\n" +
+                "\t</msub>\n" +
+                "</math>\n";
+
+        MathMLParser parser = new DefaultMathMLParser();
+        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+
+        Assertions.assertEquals("- math\n" +
+                "  - msub\n" +
+                "    - mi [x]\n" +
+                "    - mn [2]\n", tree.toString());
+
+        Assertions.assertEquals(0.2, ((SubscriptNode) tree.getRoot().getChildren().get(0)).getSubscriptShift());
+    }
+
+    @Test
+    public void simpleSubsupTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<msubsup subscriptshift=\"0.2\" superscriptshift=\"0.3\">\n" +
+                "\t\t<mi>x</mi>\n" +
+                "\t\t<mn>2</mn>\n" +
+                "\t\t<mn>3</mn>\n" +
+                "\t</msubsup>\n" +
+                "</math>\n";
+
+        MathMLParser parser = new DefaultMathMLParser();
+        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+
+        Assertions.assertEquals("- math\n" +
+                "  - msubsup\n" +
+                "    - mi [x]\n" +
+                "    - mn [2]\n" +
+                "    - mn [3]\n", tree.toString());
+
+        Assertions.assertEquals(0.2, ((SubsuperscriptNode) tree.getRoot().getChildren().get(0)).getSubscriptShift());
+        Assertions.assertEquals(0.3, ((SubsuperscriptNode) tree.getRoot().getChildren().get(0)).getSuperscriptShift());
     }
 
 }
