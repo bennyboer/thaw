@@ -13,6 +13,7 @@ public enum MathElementType {
     ROW,
     SUPER_SCRIPT,
     SUB_SCRIPT,
-    SUB_SUPER_SCRIPT
+    SUB_SUPER_SCRIPT,
+    ROOT
 
 }

@@ -12,7 +12,7 @@ import de.be.thaw.util.Size;
 /**
  * Handler dealing with the fraction node.
  */
-public class FractionHandler implements MathMLNodeHandler {
+public class FractionNodeHandler implements MathMLNodeHandler {
 
     @Override
     public String supportedNodeName() {
@@ -27,7 +27,7 @@ public class FractionHandler implements MathMLNodeHandler {
 
         double lineWidth = ctx.getConfig().getFontSize() * 0.05; // TODO Set later from the fraction node attribute!
         double lineSpacing = ctx.getConfig().getFontSize() * 0.2; // Distance from either side of the fraction line
-        double horizontalPadding = ctx.getConfig().getFontSize() * 0.2; // Distance from either side for the fraction children
+        double horizontalPadding = lineSpacing; // Distance from either side for the fraction children
 
         // Apply some adjustments based on the level of the math node
         lineWidth = Math.max(lineWidth - ctx.getLevel() * 0.05, 0.3);

@@ -19,12 +19,12 @@ public class OperatorNode extends MathMLNode {
     private final MathVariant mathVariant;
 
     /**
-     * Width of a space to the left (if any).
+     * Width of a space to the left of an arithmetic operator (if any).
      */
     private final double leftSpaceWidth;
 
     /**
-     * Width of a space to the right (if any).
+     * Width of a space to the right of an arithmetic operator (if any).
      */
     private final double rightSpaceWidth;
 

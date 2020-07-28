@@ -4,6 +4,7 @@ import de.be.thaw.math.mathml.tree.node.MathVariant;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Utility methods dealing with math variants.
@@ -54,6 +55,11 @@ public class MathVariantUtil {
      * Supported digits offset lookup
      */
     private static final Map<Integer, Integer> LATIN_DIGITS_OFFSET = new HashMap<>();
+
+    /**
+     * Set of arithmetic operators.
+     */
+    private static final Set<Character> ARITHMETIC_OPERATORS = Set.of('+', '-', '*', '/');
 
     static {
         int offset = 0;
@@ -131,6 +137,16 @@ public class MathVariantUtil {
         }
 
         return builder.toString();
+    }
+
+    /**
+     * Check if the passed character is an arithmetic operator.
+     *
+     * @param c to check
+     * @return whether c represents an arithmetic operator
+     */
+    public static boolean isArithmeticOperator(char c) {
+        return ARITHMETIC_OPERATORS.contains(c);
     }
 
 }

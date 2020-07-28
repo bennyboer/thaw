@@ -10,7 +10,7 @@ import de.be.thaw.util.Position;
 /**
  * Handler dealing with the row node.
  */
-public class RowHandler implements MathMLNodeHandler {
+public class RowNodeHandler implements MathMLNodeHandler {
 
     @Override
     public String supportedNodeName() {

@@ -41,6 +41,8 @@ public class OperatorNodeHandler implements MathMLNodeHandler {
 
         String operator = mo.getOperator();
 
+        boolean isArithmeticOperator = operator.length() == 1 && MathVariantUtil.isArithmeticOperator(operator.charAt(0));
+
         // Convert operator to the correct font variant (math variant)
         operator = MathVariantUtil.convertStringUsingMathVariant(operator, mo.getMathVariant());
 
@@ -70,8 +72,8 @@ public class OperatorNodeHandler implements MathMLNodeHandler {
 
         boolean isFirstNode = node.getParent().map(p -> p.getChildren().indexOf(node) == 0).orElse(false);
         boolean isLastNode = node.getParent().map(p -> p.getChildren().indexOf(node) == p.getChildren().size() - 1).orElse(false);
-        double leftMargin = isFirstNode || isLastNode ? 0 : mo.getLeftSpaceWidth();
-        double rightMargin = isFirstNode || isLastNode ? 0 : mo.getRightSpaceWidth();
+        double leftMargin = isFirstNode || isLastNode || !isArithmeticOperator ? 0 : mo.getLeftSpaceWidth();
+        double rightMargin = isFirstNode || isLastNode || !isArithmeticOperator ? 0 : mo.getRightSpaceWidth();
 
         Position position = new Position(ctx.getCurrentX() + leftMargin, ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth() + rightMargin);

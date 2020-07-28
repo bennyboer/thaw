@@ -5,22 +5,22 @@ import de.be.thaw.math.mathml.typeset.element.MathElementType;
 import de.be.thaw.util.Position;
 
 /**
- * A subsupscript element.
+ * A root element.
  */
-public class SubsuperscriptElement extends AbstractMathElement {
+public class RootElement extends AbstractMathElement {
 
-    public SubsuperscriptElement(Position position) {
+    public RootElement(Position position) {
         super(position);
     }
 
     @Override
     public MathElementType getType() {
-        return MathElementType.SUB_SUPER_SCRIPT;
+        return MathElementType.ROOT;
     }
 
     @Override
     public double getMidYPosition() {
+        // Get the mid y position of the basis element
         return getChildren().orElseThrow().get(0).getMidYPosition();
     }
-
 }

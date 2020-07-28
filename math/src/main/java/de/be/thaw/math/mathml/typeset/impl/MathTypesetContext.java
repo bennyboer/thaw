@@ -1,13 +1,14 @@
 package de.be.thaw.math.mathml.typeset.impl;
 
 import de.be.thaw.math.mathml.typeset.config.MathTypesetConfig;
-import de.be.thaw.math.mathml.typeset.impl.handler.FractionHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.FractionNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.IdentifierNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.MathHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.NumericNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.OperatorNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.RowHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.RootNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.RowNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.SubscriptNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.SubsuperscriptNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.SuperscriptNodeHandler;
@@ -28,16 +29,17 @@ public class MathTypesetContext {
     private static final Map<String, MathMLNodeHandler> HANDLER_MAP = new HashMap<>();
 
     static {
-        registerHandler(new MathHandler());
-        registerHandler(new RowHandler());
+        registerHandler(new MathNodeHandler());
+        registerHandler(new RowNodeHandler());
         registerHandler(new IdentifierNodeHandler());
         registerHandler(new OperatorNodeHandler());
         registerHandler(new NumericNodeHandler());
-        registerHandler(new FractionHandler());
+        registerHandler(new FractionNodeHandler());
         registerHandler(new TextNodeHandler());
         registerHandler(new SuperscriptNodeHandler());
         registerHandler(new SubscriptNodeHandler());
         registerHandler(new SubsuperscriptNodeHandler());
+        registerHandler(new RootNodeHandler());
     }
 
     /**

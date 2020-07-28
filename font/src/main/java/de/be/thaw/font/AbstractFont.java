@@ -66,7 +66,7 @@ public abstract class AbstractFont implements ThawFont {
 
             CharacterSize characterSize = getCharacterSize(character, fontSize);
             width += characterSize.getWidth() + kerningAdjustment;
-            height += Math.max(characterSize.getHeight(), height);
+            height = Math.max(characterSize.getHeight(), height);
 
             maxAscent = Math.max(characterSize.getAscent(), maxAscent);
             maxDescent = Math.max(characterSize.getDescent(), maxDescent);

@@ -181,4 +181,22 @@ public class MathMLParserTest {
         Assertions.assertEquals(0.3, ((SubsuperscriptNode) tree.getRoot().getChildren().get(0)).getSuperscriptShift());
     }
 
+    @Test
+    public void simpleRootTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<mroot>\n" +
+                "\t\t<mi>x</mi>\n" +
+                "\t\t<mn>3</mn>\n" +
+                "\t</mroot>\n" +
+                "</math>\n";
+
+        MathMLParser parser = new DefaultMathMLParser();
+        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+
+        Assertions.assertEquals("- math\n" +
+                "  - mroot\n" +
+                "    - mi [x]\n" +
+                "    - mn [3]\n", tree.toString());
+    }
+
 }
