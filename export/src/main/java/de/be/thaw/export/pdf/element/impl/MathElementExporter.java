@@ -156,17 +156,30 @@ public class MathElementExporter implements ElementExporter {
      */
     private void showFractionLine(FractionElement element, ExportContext ctx, PDPageContentStream out, double y, double x) throws IOException {
         MathElement numerator = element.getChildren().orElseThrow().get(0);
+        MathElement denominator = element.getChildren().orElseThrow().get(1);
 
-        // Draw fraction line
         out.setLineCapStyle(1);
         out.setLineWidth((float) element.getLineWidth());
 
-        double lineY = y - numerator.getSize().getHeight() - element.getLineSpacing() - element.getLineWidth() / 2;
-        double margin = element.getLineSpacing() / 2;
+        if (element.isBevelled()) {
+            double xDiff = (denominator.getPosition().getX() - element.getPosition().getX())
+                    - (numerator.getPosition().getX() - element.getPosition().getX() + numerator.getSize().getWidth());
 
-        out.moveTo((float) (x + margin), (float) lineY);
-        out.lineTo((float) (x + element.getSize().getWidth() - margin), (float) lineY);
-        out.stroke();
+            double startX = x + numerator.getSize().getWidth() + xDiff / 10 * 9;
+            double endY = y - element.getSize().getHeight();
+            double endX = x + numerator.getSize().getWidth() + xDiff / 10;
+
+            out.moveTo((float) startX, (float) y);
+            out.lineTo((float) endX, (float) endY);
+            out.stroke();
+        } else {
+            double lineY = y - numerator.getSize().getHeight() - element.getLineSpacing() - element.getLineWidth() / 2;
+            double margin = element.getLineSpacing() / 2;
+
+            out.moveTo((float) (x + margin), (float) lineY);
+            out.lineTo((float) (x + element.getSize().getWidth() - margin), (float) lineY);
+            out.stroke();
+        }
     }
 
     /**

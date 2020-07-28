@@ -1,6 +1,5 @@
 package de.be.thaw.math.mathml.typeset.element.impl;
 
-import de.be.thaw.math.mathml.tree.node.impl.FractionNode;
 import de.be.thaw.math.mathml.typeset.element.AbstractMathElement;
 import de.be.thaw.math.mathml.typeset.element.MathElementType;
 import de.be.thaw.util.Position;
@@ -20,11 +19,26 @@ public class FractionElement extends AbstractMathElement {
      */
     private final double lineSpacing;
 
-    public FractionElement(double lineWidth, double lineSpacing, Position position) {
+    /**
+     * Whether the fraction is bevelled (diagonal line) or normal (horizontal line).
+     */
+    private final boolean bevelled;
+
+    public FractionElement(boolean bevelled, double lineWidth, double lineSpacing, Position position) {
         super(position);
 
+        this.bevelled = bevelled;
         this.lineWidth = lineWidth;
         this.lineSpacing = lineSpacing;
+    }
+
+    /**
+     * Check whether the fraction is bevelled (diagonal line) or normal (horizontal line).
+     *
+     * @return bevelled
+     */
+    public boolean isBevelled() {
+        return bevelled;
     }
 
     /**
@@ -52,6 +66,10 @@ public class FractionElement extends AbstractMathElement {
 
     @Override
     public double getMidYPosition() {
+        if (isBevelled()) {
+            return super.getMidYPosition();
+        }
+
         // The mid y for fraction elements is not really the middle,
         // but rather the offset of the numerator + line spacing + half line width
         return getChildren().orElseThrow().get(0).getSize().getHeight()

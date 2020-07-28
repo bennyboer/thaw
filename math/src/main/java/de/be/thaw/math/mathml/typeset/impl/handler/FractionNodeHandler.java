@@ -15,6 +15,11 @@ import de.be.thaw.util.Size;
  */
 public class FractionNodeHandler implements MathMLNodeHandler {
 
+    /**
+     * Relative vertical offset of both numerator and denominator when the fraction is bevelled.
+     */
+    private static final double BEVELLED_VERTICAL_OFFSET = 0.25;
+
     @Override
     public String supportedNodeName() {
         return "mfrac";
@@ -24,9 +29,109 @@ public class FractionNodeHandler implements MathMLNodeHandler {
     public MathElement handle(MathMLNode node, MathTypesetContext ctx) throws TypesetException {
         FractionNode fractionNode = (FractionNode) node;
 
+        if (fractionNode.isBevelled()) {
+            return buildBevelled(fractionNode, ctx);
+        } else {
+            return buildDefault(fractionNode, ctx);
+        }
+    }
+
+    /**
+     * Build a bevelled fraction with horizontal line.
+     *
+     * @param node of the fraction
+     * @param ctx  the typeset context
+     * @return the built element
+     * @throws TypesetException in case the fraction element could not be typeset
+     */
+    private MathElement buildBevelled(FractionNode node, MathTypesetContext ctx) throws TypesetException {
+        ctx.setLevel(ctx.getLevel() + 2);
+
+        double lineWidth = node.getLineThickness();
+        double lineSpacing = ctx.getConfig().getFontSize() * 0.2; // Distance from either side of the fraction line (horizontally)
+
+        // Apply some adjustments based on the level of the math node
+        lineWidth = Math.max(lineWidth - ctx.getLevel() * 0.05, 0.3);
+        lineSpacing = Math.max(lineSpacing - ctx.getLevel() * 0.2, 1.0);
+
+        // Save current position for later
+        double oldX = ctx.getCurrentX();
+        double oldY = ctx.getCurrentY();
+
+        // Reset to new relative position context
+        ctx.setCurrentX(0);
+        ctx.setCurrentY(0);
+
+        // First typeset the numerator
+        MathElement numerator = MathTypesetContext.getHandler(node.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
+                "Could not find a handler for the MathML node '%s'",
+                node.getChildren().get(0).getName()
+        ))).handle(node.getChildren().get(0), ctx);
+
+        // Offset the denominator
+        ctx.setCurrentX(numerator.getSize().getWidth() + lineSpacing * 2 + lineWidth);
+        ctx.setCurrentY(0);
+
+        // Then typeset the denominator
+        MathElement denominator = MathTypesetContext.getHandler(node.getChildren().get(1).getName()).orElseThrow(() -> new TypesetException(String.format(
+                "Could not find a handler for the MathML node '%s'",
+                node.getChildren().get(1).getName()
+        ))).handle(node.getChildren().get(1), ctx);
+
+        // Fraction element height is determined by the bigger of the two.
+        // Vertically align the smaller centered and offset both numerator and denominator a little.
+        if (numerator.getSize().getHeight() < denominator.getSize().getHeight()) {
+            double yDiff = denominator.getSize().getHeight() - numerator.getSize().getHeight();
+            double yOffset = denominator.getSize().getHeight() * BEVELLED_VERTICAL_OFFSET;
+
+            numerator.setPosition(new Position(
+                    numerator.getPosition().getX(),
+                    numerator.getPosition().getY() + yDiff / 2
+            ));
+            denominator.setPosition(new Position(
+                    denominator.getPosition().getX(),
+                    denominator.getPosition().getY() + yOffset
+            ));
+        } else {
+            double yDiff = numerator.getSize().getHeight() - denominator.getSize().getHeight();
+            double yOffset = numerator.getSize().getHeight() * BEVELLED_VERTICAL_OFFSET;
+
+            denominator.setPosition(new Position(
+                    denominator.getPosition().getX(),
+                    denominator.getPosition().getY() + yDiff / 2 + yOffset
+            ));
+            numerator.setPosition(new Position(
+                    numerator.getPosition().getX(),
+                    numerator.getPosition().getY()
+            ));
+        }
+
+        // Create fraction element and add nominator and denominator
+        FractionElement fractionElement = new FractionElement(true, lineWidth, lineSpacing, new Position(oldX, oldY));
+        fractionElement.addChild(numerator);
+        fractionElement.addChild(denominator);
+
+        // Set new position to context
+        ctx.setCurrentX(oldX + fractionElement.getSize().getWidth());
+        ctx.setCurrentY(oldY);
+
+        ctx.setLevel(ctx.getLevel() - 2);
+
+        return fractionElement;
+    }
+
+    /**
+     * Build a default fraction with horizontal line.
+     *
+     * @param node of the fraction
+     * @param ctx  the typeset context
+     * @return the built element
+     * @throws TypesetException in case the fraction element could not be typeset
+     */
+    private FractionElement buildDefault(FractionNode node, MathTypesetContext ctx) throws TypesetException {
         ctx.setLevel(ctx.getLevel() + 1);
 
-        double lineWidth = fractionNode.getLineThickness();
+        double lineWidth = node.getLineThickness();
         double lineSpacing = ctx.getConfig().getFontSize() * 0.2; // Distance from either side of the fraction line
         double horizontalPadding = lineSpacing; // Distance from either side for the fraction children
 
@@ -44,26 +149,26 @@ public class FractionNodeHandler implements MathMLNodeHandler {
         ctx.setCurrentY(0);
 
         // First typeset the numerator
-        MathElement numerator = MathTypesetContext.getHandler(fractionNode.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
+        MathElement numerator = MathTypesetContext.getHandler(node.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
                 "Could not find a handler for the MathML node '%s'",
-                fractionNode.getChildren().get(0).getName()
-        ))).handle(fractionNode.getChildren().get(0), ctx);
+                node.getChildren().get(0).getName()
+        ))).handle(node.getChildren().get(0), ctx);
 
         // Offset the denominator
         ctx.setCurrentX(horizontalPadding);
         ctx.setCurrentY(numerator.getSize().getHeight() + lineSpacing * 2 + lineWidth);
 
         // Then typeset the denominator
-        MathElement denominator = MathTypesetContext.getHandler(fractionNode.getChildren().get(1).getName()).orElseThrow(() -> new TypesetException(String.format(
+        MathElement denominator = MathTypesetContext.getHandler(node.getChildren().get(1).getName()).orElseThrow(() -> new TypesetException(String.format(
                 "Could not find a handler for the MathML node '%s'",
-                fractionNode.getChildren().get(1).getName()
-        ))).handle(fractionNode.getChildren().get(1), ctx);
+                node.getChildren().get(1).getName()
+        ))).handle(node.getChildren().get(1), ctx);
 
         // Change the position of the smaller element (numerator or denominator) to be either the numeratorAlignment or denominatorAlignment
-        alignElements(numerator, denominator, fractionNode.getNumeratorAlignment(), fractionNode.getDenominatorAlignment());
+        alignElements(numerator, denominator, node.getNumeratorAlignment(), node.getDenominatorAlignment());
 
         // Create fraction element and add nominator and denominator
-        FractionElement fractionElement = new FractionElement(lineWidth, lineSpacing, new Position(oldX, oldY));
+        FractionElement fractionElement = new FractionElement(false, lineWidth, lineSpacing, new Position(oldX, oldY));
         fractionElement.addChild(numerator);
         fractionElement.addChild(denominator);
 
