@@ -199,4 +199,20 @@ public class MathMLParserTest {
                 "    - mn [3]\n", tree.toString());
     }
 
+    @Test
+    public void simpleSqrtTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<msqrt>\n" +
+                "\t\t<mi>x</mi>\n" +
+                "\t</msqrt>\n" +
+                "</math>\n";
+
+        MathMLParser parser = new DefaultMathMLParser();
+        MathMLTree tree = parser.parse(new ByteArrayInputStream(src.getBytes()));
+
+        Assertions.assertEquals("- math\n" +
+                "  - msqrt\n" +
+                "    - mi [x]\n", tree.toString());
+    }
+
 }

@@ -1,9 +1,12 @@
 package de.be.thaw.math.mathml.typeset.impl.handler;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
-import de.be.thaw.math.mathml.tree.node.impl.RootNode;
+import de.be.thaw.math.mathml.tree.node.MathVariant;
+import de.be.thaw.math.mathml.tree.node.impl.NumericNode;
+import de.be.thaw.math.mathml.tree.node.impl.SqrtNode;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
-import de.be.thaw.math.mathml.typeset.element.impl.RootElement;
+import de.be.thaw.math.mathml.typeset.element.impl.NumericElement;
+import de.be.thaw.math.mathml.typeset.element.impl.SqrtElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
 import de.be.thaw.util.Position;
@@ -11,27 +14,16 @@ import de.be.thaw.util.Position;
 /**
  * Handler dealing with a root node.
  */
-public class RootNodeHandler implements MathMLNodeHandler {
-
-    /**
-     * Margin from exponent to basis.
-     */
-    static final double EXPONENT_TO_BASIS_MARGIN = 0.3;
-
-    /**
-     * Padding to add to the basis element under the root.
-     * This value is multiplied with the font size.
-     */
-    static final double BASIS_PADDING = 0.2;
+public class SqrtNodeHandler extends RootNodeHandler {
 
     @Override
     public String supportedNodeName() {
-        return "mroot";
+        return "msqrt";
     }
 
     @Override
     public MathElement handle(MathMLNode node, MathTypesetContext ctx) throws TypesetException {
-        RootNode rootNode = (RootNode) node;
+        SqrtNode sqrtNode = (SqrtNode) node;
 
         // Save current position for later
         double oldX = ctx.getCurrentX();
@@ -41,23 +33,23 @@ public class RootNodeHandler implements MathMLNodeHandler {
         ctx.setCurrentX(0);
         ctx.setCurrentY(0);
 
-        // First typeset the exponent element
+        // First typeset the fake exponent element (only to get the size of it basically).
         ctx.setLevel(ctx.getLevel() + 5);
-        MathElement exponentElement = MathTypesetContext.getHandler(rootNode.getChildren().get(1).getName()).orElseThrow(() -> new TypesetException(String.format(
+        NumericElement exponentElement = (NumericElement) MathTypesetContext.getHandler("mn").orElseThrow(() -> new TypesetException(String.format(
                 "Could not find a handler for the MathML node '%s'",
-                rootNode.getChildren().get(1).getName()
-        ))).handle(rootNode.getChildren().get(1), ctx);
+                sqrtNode.getChildren().get(1).getName()
+        ))).handle(new NumericNode("2", MathVariant.NORMAL), ctx);
         ctx.setLevel(ctx.getLevel() - 5);
 
-        double padding = ctx.getConfig().getFontSize() * BASIS_PADDING;
-        ctx.setCurrentX(ctx.getCurrentX() + ctx.getCurrentX() * EXPONENT_TO_BASIS_MARGIN + padding);
+        double padding = ctx.getConfig().getFontSize() * RootNodeHandler.BASIS_PADDING;
+        ctx.setCurrentX(ctx.getCurrentX() + ctx.getCurrentX() * RootNodeHandler.EXPONENT_TO_BASIS_MARGIN + padding);
         ctx.setCurrentY(padding);
 
         // Then typeset the basis element
-        MathElement basisElement = MathTypesetContext.getHandler(rootNode.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
+        MathElement basisElement = MathTypesetContext.getHandler(sqrtNode.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
                 "Could not find a handler for the MathML node '%s'",
-                rootNode.getChildren().get(0).getName()
-        ))).handle(rootNode.getChildren().get(0), ctx);
+                sqrtNode.getChildren().get(0).getName()
+        ))).handle(sqrtNode.getChildren().get(0), ctx);
 
         // Shift exponent element to be as low as possible based on the size of the basis element
         exponentElement.setPosition(new Position(
@@ -66,9 +58,11 @@ public class RootNodeHandler implements MathMLNodeHandler {
         ));
 
         // Create root element and add the children
-        RootElement element = new RootElement(new Position(oldX, oldY));
+        SqrtElement element = new SqrtElement(new Position(oldX, oldY));
         element.addChild(basisElement);
-        element.addChild(exponentElement);
+
+        // Add fake exponent element
+        element.addChild(new NumericElement(" ", exponentElement.getSize(), exponentElement.getFontSize(), exponentElement.getBaseline(), exponentElement.getKerningAdjustments(), exponentElement.getPosition()));
 
         // Set new position to context
         ctx.setCurrentX(oldX + element.getSize().getWidth() + padding);

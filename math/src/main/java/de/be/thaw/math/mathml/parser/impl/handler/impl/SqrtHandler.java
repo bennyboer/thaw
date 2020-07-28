@@ -4,24 +4,24 @@ import de.be.thaw.math.mathml.parser.exception.ParseException;
 import de.be.thaw.math.mathml.parser.impl.context.MathMLParseContext;
 import de.be.thaw.math.mathml.parser.impl.handler.AbstractMathMLNodeParseHandler;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
-import de.be.thaw.math.mathml.tree.node.impl.RootNode;
+import de.be.thaw.math.mathml.tree.node.impl.SqrtNode;
 import org.w3c.dom.Node;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handler dealing with a root node.
+ * Handler dealing with a sqrt node.
  */
-public class RootHandler extends AbstractMathMLNodeParseHandler {
+public class SqrtHandler extends AbstractMathMLNodeParseHandler {
 
-    public RootHandler() {
-        super("mroot");
+    public SqrtHandler() {
+        super("msqrt");
     }
 
     @Override
     public MathMLNode parse(Node node, MathMLParseContext ctx) throws ParseException {
-        RootNode rootNode = new RootNode();
+        SqrtNode sqrtNode = new SqrtNode();
 
         List<Node> children = new ArrayList<>();
         int len = node.getChildNodes().getLength();
@@ -33,9 +33,9 @@ public class RootHandler extends AbstractMathMLNodeParseHandler {
             }
         }
 
-        // We expect exactly two child elements here!
-        if (!node.hasChildNodes() || children.size() != 2) {
-            throw new ParseException("A <mroot> node is expected to have exactly 2 child nodes: <mroot> basis exponent </mroot>");
+        // We expect exactly one child elements here!
+        if (!node.hasChildNodes() || children.size() != 1) {
+            throw new ParseException("A <msqrt> node is expected to have exactly 1 child node: <msqrt> basis </msqrt>");
         }
 
         // Parse children
@@ -46,11 +46,11 @@ public class RootHandler extends AbstractMathMLNodeParseHandler {
                         child.getNodeName()
                 ))).parse(child, ctx);
 
-                rootNode.addChild(childNode);
+                sqrtNode.addChild(childNode);
             }
         }
 
-        return rootNode;
+        return sqrtNode;
     }
 
 }

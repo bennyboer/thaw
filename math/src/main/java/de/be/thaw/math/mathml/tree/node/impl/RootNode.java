@@ -11,4 +11,8 @@ public class RootNode extends MathMLNode {
         super("mroot");
     }
 
+    public RootNode(String name) {
+        super(name);
+    }
+
 }

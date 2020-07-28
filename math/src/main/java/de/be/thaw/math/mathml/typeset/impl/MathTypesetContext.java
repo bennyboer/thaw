@@ -9,6 +9,7 @@ import de.be.thaw.math.mathml.typeset.impl.handler.NumericNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.OperatorNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.RootNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.RowNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.SqrtNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.SubscriptNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.SubsuperscriptNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.SuperscriptNodeHandler;
@@ -40,6 +41,7 @@ public class MathTypesetContext {
         registerHandler(new SubscriptNodeHandler());
         registerHandler(new SubsuperscriptNodeHandler());
         registerHandler(new RootNodeHandler());
+        registerHandler(new SqrtNodeHandler());
     }
 
     /**
