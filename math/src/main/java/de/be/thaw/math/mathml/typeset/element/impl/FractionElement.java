@@ -85,4 +85,9 @@ public class FractionElement extends AbstractMathElement {
         lineSpacing *= factor;
     }
 
+    @Override
+    public double getBaseline() {
+        return getPosition(false).getY() + (getSize().getHeight() + super.getBaseline()) / 2;
+    }
+
 }

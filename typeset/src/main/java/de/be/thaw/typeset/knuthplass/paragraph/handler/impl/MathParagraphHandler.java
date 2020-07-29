@@ -26,6 +26,12 @@ public class MathParagraphHandler implements ParagraphTypesetHandler {
 
         double width = mathParagraph.getExpression().getSize().getWidth();
 
+        // Check if there is enough space for the paragraph
+        if (ctx.getAvailableHeight() < mathParagraph.getExpression().getSize().getHeight()) {
+            // Not enough space for this expression left on the current page -> Create next page
+            ctx.pushPage();
+        }
+
         double y = ctx.getPositionContext().getY();
         double maxWidth = ctx.getConfig().getPageSize().getWidth() - (ctx.getConfig().getPageInsets().getLeft() + ctx.getConfig().getPageInsets().getRight());
         double x = ctx.getConfig().getPageInsets().getLeft();

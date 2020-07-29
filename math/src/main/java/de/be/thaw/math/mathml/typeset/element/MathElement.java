@@ -89,4 +89,11 @@ public interface MathElement {
      */
     void scale(double factor);
 
+    /**
+     * Get the baseline of the element.
+     *
+     * @return baseline
+     */
+    double getBaseline();
+
 }

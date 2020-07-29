@@ -134,7 +134,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                     // Push foot note to be included on the page
                     ctx.pushFootNote(((FootNoteBox) item).getNode());
 
-                    if (getAvailableHeight(ctx) < lineHeight) {
+                    if (ctx.getAvailableHeight() < lineHeight) {
                         // Create new page first as foot note and foot note reference do not fit on the same page anymore
                         List<Element> footNoteElements = ctx.popFootNote(); // Pop the last foot note again from the current page
                         ctx.pushPage(); // Push the next page
@@ -144,7 +144,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             }
 
             // Check if there is enough space for the line
-            double availableHeight = getAvailableHeight(ctx);
+            double availableHeight = ctx.getAvailableHeight();
             if (availableHeight < lineHeight) {
                 // Not enough space for this line left on the current page -> Create next page
                 ctx.pushPage();
@@ -271,10 +271,6 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         }
 
         ctx.getPositionContext().increaseY(insetsStyle.getBottom());
-    }
-
-    private double getAvailableHeight(TypeSettingContext ctx) {
-        return (ctx.getConfig().getPageSize().getHeight() - ctx.getConfig().getPageInsets().getBottom()) - ctx.getPositionContext().getY() - ctx.getCurrentFootNoteElementsHeight();
     }
 
     /**

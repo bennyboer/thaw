@@ -168,4 +168,9 @@ public abstract class AbstractMathElement implements MathElement {
         ));
     }
 
+    @Override
+    public double getBaseline() {
+        return ((AbstractMathElement) getChildren().orElseThrow().get(0)).getPosition(false).getY() + getChildren().orElseThrow().get(0).getBaseline();
+    }
+
 }

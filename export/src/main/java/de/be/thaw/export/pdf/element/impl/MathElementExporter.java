@@ -55,14 +55,7 @@ public class MathElementExporter implements ElementExporter {
         double yStart = y + mee.getExpression().getRoot().getSize().getHeight();
 
         if (mee.isInline()) {
-            yStart += mee.getBaseline();
-
-            if (mee.getExpression().getSize().getHeight() > mee.getBaseline()) {
-                double scaleFactor = mee.getBaseline() / mee.getExpression().getSize().getHeight();
-                System.out.println("Oh nose " + scaleFactor);
-
-                mee.getExpression().getRoot().scale(0.5);
-            }
+            yStart += mee.getExpression().getRoot().getBaseline() - mee.getBaseline();
         }
 
         renderElement(mee.getExpression().getRoot(), mee, ctx, out, yStart, x);

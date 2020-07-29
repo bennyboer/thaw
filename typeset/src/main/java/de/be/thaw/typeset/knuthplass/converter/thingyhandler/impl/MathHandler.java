@@ -14,6 +14,7 @@ import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.DefaultMathMLTypesetter;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.FontStyle;
+import de.be.thaw.style.model.style.impl.TextStyle;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
@@ -113,6 +114,18 @@ public class MathHandler implements ThingyHandler {
                     alignment
             ));
         } else {
+            // Math expression is in-line with text -> scale it properly and add it to the text paragraph.
+            double lineHeight = documentNode.getStyle().getStyleAttribute(
+                    StyleType.TEXT,
+                    style -> Optional.ofNullable(((TextStyle) style).getLineHeight())
+            ).orElseThrow();
+
+            if (ex.getSize().getHeight() > lineHeight) {
+                double scaleFactor = lineHeight / ex.getSize().getHeight();
+
+                ex.getRoot().scale(scaleFactor);
+            }
+
             paragraph.addItem(new MathBox(ex, documentNode));
         }
     }

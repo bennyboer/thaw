@@ -3,7 +3,6 @@ package de.be.thaw.typeset.knuthplass;
 import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.util.PageRange;
-import de.be.thaw.util.Position;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
@@ -11,6 +10,7 @@ import de.be.thaw.typeset.knuthplass.util.RethrowingBiFunction;
 import de.be.thaw.typeset.page.AbstractElement;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
+import de.be.thaw.util.Position;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -120,6 +120,15 @@ public class TypeSettingContext {
         this.typesettingFunction = typesettingFunction;
 
         positionContext.setY(config.getPageInsets().getTop()); // Initialize y-offset
+    }
+
+    /**
+     * Get available height on the page.
+     *
+     * @return available height
+     */
+    public double getAvailableHeight() {
+        return (getConfig().getPageSize().getHeight() - getConfig().getPageInsets().getBottom()) - getPositionContext().getY() - getCurrentFootNoteElementsHeight();
     }
 
     /**

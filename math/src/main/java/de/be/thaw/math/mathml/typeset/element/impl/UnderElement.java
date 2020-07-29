@@ -22,4 +22,9 @@ public class UnderElement extends VerticalElement {
         return getChildren().orElseThrow().get(0).getMidYPosition();
     }
 
+    @Override
+    public double getBaseline() {
+        return getChildren().orElseThrow().get(0).getBaseline();
+    }
+
 }

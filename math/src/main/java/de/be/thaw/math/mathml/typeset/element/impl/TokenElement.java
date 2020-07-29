@@ -48,11 +48,7 @@ public abstract class TokenElement extends AbstractMathElement {
         return text;
     }
 
-    /**
-     * Get the offset from the y-position of the element where the baselien is.
-     *
-     * @return baseline
-     */
+    @Override
     public double getBaseline() {
         return baseline;
     }
@@ -85,4 +81,5 @@ public abstract class TokenElement extends AbstractMathElement {
             kerningAdjustments[i] *= factor;
         }
     }
+
 }
