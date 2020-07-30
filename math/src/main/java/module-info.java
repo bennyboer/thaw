@@ -10,7 +10,7 @@ module de.be.thaw.math {
     exports de.be.thaw.math.mathml.typeset.config;
     exports de.be.thaw.math.mathml.typeset.element.impl;
 
-    requires java.xml;
+    requires org.jsoup;
     requires de.be.thaw.util;
     requires de.be.thaw.font;
     requires org.jetbrains.annotations;

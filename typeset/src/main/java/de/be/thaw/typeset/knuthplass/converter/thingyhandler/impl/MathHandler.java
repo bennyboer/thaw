@@ -25,6 +25,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.impl.math.MathParagraph;
 import de.be.thaw.util.HorizontalAlignment;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Set;
 
@@ -70,9 +71,13 @@ public class MathHandler implements ThingyHandler {
         MathMLParser parser = new DefaultMathMLParser();
         MathMLTree tree;
         try {
-            tree = parser.parse(new ByteArrayInputStream(expression.getBytes()), new MathMLParserConfig(
-                    fontSize * 0.05
-            ));
+            tree = parser.parse(
+                    new ByteArrayInputStream(expression.getBytes(StandardCharsets.UTF_16)),
+                    StandardCharsets.UTF_16,
+                    new MathMLParserConfig(
+                            fontSize * 0.05
+                    )
+            );
         } catch (ParseException e) {
             throw new DocumentConversionException(String.format(
                     "Could not parse math expression from MathML at #MATH# Thingy at %s. Error message was: %s",

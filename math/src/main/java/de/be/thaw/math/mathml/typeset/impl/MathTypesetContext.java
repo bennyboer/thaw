@@ -1,54 +1,11 @@
 package de.be.thaw.math.mathml.typeset.impl;
 
 import de.be.thaw.math.mathml.typeset.config.MathTypesetConfig;
-import de.be.thaw.math.mathml.typeset.impl.handler.FractionNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.IdentifierNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.NumericNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.OperatorNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.OverNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.RootNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.RowNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.SqrtNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.SubscriptNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.SubsuperscriptNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.SuperscriptNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.TextNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.UnderNodeHandler;
-import de.be.thaw.math.mathml.typeset.impl.handler.UnderOverNodeHandler;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Context used during typesetting.
  */
 public class MathTypesetContext {
-
-    /**
-     * Mapping of handlers by their supported node names.
-     */
-    private static final Map<String, MathMLNodeHandler> HANDLER_MAP = new HashMap<>();
-
-    static {
-        registerHandler(new MathNodeHandler());
-        registerHandler(new RowNodeHandler());
-        registerHandler(new IdentifierNodeHandler());
-        registerHandler(new OperatorNodeHandler());
-        registerHandler(new NumericNodeHandler());
-        registerHandler(new FractionNodeHandler());
-        registerHandler(new TextNodeHandler());
-        registerHandler(new SuperscriptNodeHandler());
-        registerHandler(new SubscriptNodeHandler());
-        registerHandler(new SubsuperscriptNodeHandler());
-        registerHandler(new RootNodeHandler());
-        registerHandler(new SqrtNodeHandler());
-        registerHandler(new OverNodeHandler());
-        registerHandler(new UnderNodeHandler());
-        registerHandler(new UnderOverNodeHandler());
-    }
 
     /**
      * Config to use during typesetting.
@@ -72,25 +29,6 @@ public class MathTypesetContext {
 
     public MathTypesetContext(MathTypesetConfig config) {
         this.config = config;
-    }
-
-    /**
-     * Register the passed handler.
-     *
-     * @param handler to register
-     */
-    private static void registerHandler(MathMLNodeHandler handler) {
-        HANDLER_MAP.put(handler.supportedNodeName(), handler);
-    }
-
-    /**
-     * Get a handler for the passed MathML node name.
-     *
-     * @param nodeName to get handler for
-     * @return an optional handler
-     */
-    public static Optional<MathMLNodeHandler> getHandler(String nodeName) {
-        return Optional.of(HANDLER_MAP.get(nodeName));
     }
 
     /**

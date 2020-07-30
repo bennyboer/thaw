@@ -1,4 +1,4 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 /**
  * Handler dealing with the root math node.

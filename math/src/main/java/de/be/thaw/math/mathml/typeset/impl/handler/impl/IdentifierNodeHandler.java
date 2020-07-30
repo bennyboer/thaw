@@ -1,12 +1,13 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
-import de.be.thaw.math.mathml.tree.node.impl.TextNode;
+import de.be.thaw.math.mathml.tree.node.impl.IdentifierNode;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
-import de.be.thaw.math.mathml.typeset.element.impl.TextElement;
+import de.be.thaw.math.mathml.typeset.element.impl.IdentifierElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
 import de.be.thaw.math.mathml.typeset.util.MathVariantUtil;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
@@ -14,25 +15,24 @@ import de.be.thaw.util.Size;
 /**
  * Handler dealing with identifier nodes.
  */
-public class TextNodeHandler implements MathMLNodeHandler {
+public class IdentifierNodeHandler implements MathMLNodeHandler {
 
     @Override
     public String supportedNodeName() {
-        return "mtext";
+        return "mi";
     }
 
     @Override
     public MathElement handle(MathMLNode node, MathTypesetContext ctx) throws TypesetException {
-        TextNode textNode
-                = (TextNode) node;
+        IdentifierNode mi = (IdentifierNode) node;
 
-        String text = textNode.getText();
+        String text = mi.getText();
 
         // Convert text to the correct font variant (math variant)
-        text = MathVariantUtil.convertStringUsingMathVariant(text, textNode.getMathVariant());
+        text = MathVariantUtil.convertStringUsingMathVariant(text, mi.getMathVariant());
 
         // Deal with the size factor to scale the text (MathML attribute mathsize)
-        double fontSize = ctx.getLevelAdjustedFontSize() * textNode.getSizeFactor();
+        double fontSize = ctx.getLevelAdjustedFontSize() * mi.getSizeFactor();
 
         KernedSize size;
         try {
@@ -44,7 +44,7 @@ public class TextNodeHandler implements MathMLNodeHandler {
         Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth());
 
-        return new TextElement(text, new Size(size.getWidth(), size.getAscent()), fontSize, size.getAscent(), size.getKerningAdjustments(), position);
+        return new IdentifierElement(text, new Size(size.getWidth(), size.getHeight()), fontSize, size.getAscent(), size.getKerningAdjustments(), position);
     }
 
 }

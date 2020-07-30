@@ -1,4 +1,4 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.impl.OverNode;
@@ -6,6 +6,7 @@ import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.OverElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
 
 /**
@@ -34,10 +35,8 @@ public class OverNodeHandler extends VerticalNodeHandler {
 
         // First typeset the over element
         ctx.setLevel(ctx.getLevel() + 2);
-        MathElement overElement = MathTypesetContext.getHandler(overNode.getChildren().get(1).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                overNode.getChildren().get(1).getName()
-        ))).handle(overNode.getChildren().get(1), ctx);
+        MathElement overElement = MathNodeHandlers.getHandler(overNode.getChildren().get(1).getName())
+                .handle(overNode.getChildren().get(1), ctx);
         ctx.setLevel(ctx.getLevel() - 2);
 
         // Shift the basis element
@@ -45,10 +44,8 @@ public class OverNodeHandler extends VerticalNodeHandler {
         ctx.setCurrentY(overElement.getSize().getHeight() + spacing);
 
         // Then typeset the basis element
-        MathElement basisElement = MathTypesetContext.getHandler(overNode.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                overNode.getChildren().get(0).getName()
-        ))).handle(overNode.getChildren().get(0), ctx);
+        MathElement basisElement = MathNodeHandlers.getHandler(overNode.getChildren().get(0).getName())
+                .handle(overNode.getChildren().get(0), ctx);
 
         // Align elements according to the alignment attribute
         alignElements(overNode.getAlignment(), overElement, basisElement);

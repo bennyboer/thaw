@@ -18,6 +18,7 @@ public enum MathElementType {
     SQUARE_ROOT,
     OVER,
     UNDER,
-    UNDER_OVER
+    UNDER_OVER,
+    SPACE
 
 }

@@ -5,7 +5,7 @@ import de.be.thaw.math.mathml.parser.impl.context.MathMLParseContext;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.MathVariant;
 import de.be.thaw.math.mathml.tree.node.impl.TextNode;
-import org.w3c.dom.Node;
+import org.jsoup.nodes.Element;
 
 /**
  * Handler for <mtext> MathML identifier nodes.
@@ -17,8 +17,8 @@ public class TextHandler extends TokenNodeHandler {
     }
 
     @Override
-    public MathMLNode parse(Node node, MathMLParseContext ctx) throws ParseException {
-        String text = node.getTextContent();
+    public MathMLNode parse(Element element, MathMLParseContext ctx) throws ParseException {
+        String text = element.text();
         if (text.isBlank()) {
             throw new ParseException("Encountered an <mtext> node without content");
         }
@@ -29,10 +29,10 @@ public class TextHandler extends TokenNodeHandler {
         }
 
         // Parse mathvariant attribute from node
-        mathVariant = parseMathVariant(node, mathVariant);
+        mathVariant = parseMathVariant(element, mathVariant);
 
         // Parse mathsize attribute from node
-        double mathSize = parseMathSize(node, 1.0);
+        double mathSize = parseMathSize(element, 1.0);
 
         return new TextNode(text, mathVariant, mathSize);
     }

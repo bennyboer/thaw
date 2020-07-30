@@ -1,49 +1,49 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
-import de.be.thaw.math.mathml.tree.node.impl.IdentifierNode;
+import de.be.thaw.math.mathml.tree.node.impl.NumericNode;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
-import de.be.thaw.math.mathml.typeset.element.impl.IdentifierElement;
+import de.be.thaw.math.mathml.typeset.element.impl.NumericElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
 import de.be.thaw.math.mathml.typeset.util.MathVariantUtil;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
 
 /**
- * Handler dealing with identifier nodes.
+ * Handler dealing with numerical nodes.
  */
-public class IdentifierNodeHandler implements MathMLNodeHandler {
+public class NumericNodeHandler implements MathMLNodeHandler {
 
     @Override
     public String supportedNodeName() {
-        return "mi";
+        return "mn";
     }
 
     @Override
     public MathElement handle(MathMLNode node, MathTypesetContext ctx) throws TypesetException {
-        IdentifierNode mi = (IdentifierNode) node;
+        NumericNode mn = (NumericNode) node;
 
-        String text = mi.getText();
+        String value = mn.getText();
 
-        // Convert text to the correct font variant (math variant)
-        text = MathVariantUtil.convertStringUsingMathVariant(text, mi.getMathVariant());
+        // Convert value to the correct font variant (math variant)
+        value = MathVariantUtil.convertStringUsingMathVariant(value, mn.getMathVariant());
 
         // Deal with the size factor to scale the text (MathML attribute mathsize)
-        double fontSize = ctx.getLevelAdjustedFontSize() * mi.getSizeFactor();
+        double fontSize = ctx.getLevelAdjustedFontSize() * mn.getSizeFactor();
 
         KernedSize size;
         try {
-            size = ctx.getConfig().getFont().getKernedStringSize(-1, text, fontSize);
+            size = ctx.getConfig().getFont().getKernedStringSize(-1, value, fontSize);
         } catch (Exception e) {
             throw new TypesetException(e);
         }
-
         Position position = new Position(ctx.getCurrentX(), ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth());
 
-        return new IdentifierElement(text, new Size(size.getWidth(), size.getHeight()), fontSize, size.getAscent(), size.getKerningAdjustments(), position);
+        return new NumericElement(value, new Size(size.getWidth(), size.getAscent()), fontSize, size.getAscent(), size.getKerningAdjustments(), position);
     }
 
 }

@@ -1,10 +1,12 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.RowElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
 
 /**
@@ -30,10 +32,8 @@ public class RowNodeHandler implements MathMLNodeHandler {
         ctx.setCurrentY(0);
 
         for (MathMLNode child : node.getChildren()) {
-            row.addChild(MathTypesetContext.getHandler(child.getName()).orElseThrow(() -> new TypesetException(String.format(
-                    "Could not find a handler for the MathML node '%s'",
-                    child.getName()
-            ))).handle(child, ctx));
+            row.addChild(MathNodeHandlers.getHandler(child.getName())
+                    .handle(child, ctx));
 
             ctx.setCurrentY(0);
         }

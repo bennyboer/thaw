@@ -1,4 +1,4 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.impl.SubsuperscriptNode;
@@ -6,6 +6,8 @@ import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.SubsuperscriptElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
 
 /**
@@ -31,10 +33,8 @@ public class SubsuperscriptNodeHandler implements MathMLNodeHandler {
         ctx.setCurrentY(0);
 
         // First typeset the base element
-        MathElement baseElement = MathTypesetContext.getHandler(subsuperscriptNode.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                subsuperscriptNode.getChildren().get(0).getName()
-        ))).handle(subsuperscriptNode.getChildren().get(0), ctx);
+        MathElement baseElement = MathNodeHandlers.getHandler(subsuperscriptNode.getChildren().get(0).getName())
+                .handle(subsuperscriptNode.getChildren().get(0), ctx);
 
         // Shift the subscript element
         ctx.setLevel(ctx.getLevel() + 3);
@@ -42,19 +42,15 @@ public class SubsuperscriptNodeHandler implements MathMLNodeHandler {
         ctx.setCurrentY(0);
 
         // Then typeset the subscript element
-        MathElement subscriptElement = MathTypesetContext.getHandler(subsuperscriptNode.getChildren().get(1).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                subsuperscriptNode.getChildren().get(1).getName()
-        ))).handle(subsuperscriptNode.getChildren().get(1), ctx);
+        MathElement subscriptElement = MathNodeHandlers.getHandler(subsuperscriptNode.getChildren().get(1).getName())
+                .handle(subsuperscriptNode.getChildren().get(1), ctx);
 
         ctx.setCurrentX(baseElement.getSize().getWidth());
         ctx.setCurrentY(0);
 
         // Then typeset the superscript element
-        MathElement superscriptElement = MathTypesetContext.getHandler(subsuperscriptNode.getChildren().get(2).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                subsuperscriptNode.getChildren().get(2).getName()
-        ))).handle(subsuperscriptNode.getChildren().get(2), ctx);
+        MathElement superscriptElement = MathNodeHandlers.getHandler(subsuperscriptNode.getChildren().get(2).getName())
+                .handle(subsuperscriptNode.getChildren().get(2), ctx);
 
         // Reset level
         ctx.setLevel(ctx.getLevel() - 3);

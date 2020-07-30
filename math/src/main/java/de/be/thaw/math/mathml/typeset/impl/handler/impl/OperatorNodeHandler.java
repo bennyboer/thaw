@@ -1,4 +1,4 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
@@ -7,6 +7,7 @@ import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.OperatorElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
 import de.be.thaw.math.mathml.typeset.util.MathVariantUtil;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;

@@ -1,4 +1,4 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.impl.UnderNode;
@@ -6,6 +6,7 @@ import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.UnderElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
 
 /**
@@ -33,10 +34,8 @@ public class UnderNodeHandler extends VerticalNodeHandler {
         ctx.setCurrentY(0);
 
         // First typeset the basis element
-        MathElement basisElement = MathTypesetContext.getHandler(underNode.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                underNode.getChildren().get(0).getName()
-        ))).handle(underNode.getChildren().get(0), ctx);
+        MathElement basisElement = MathNodeHandlers.getHandler(underNode.getChildren().get(0).getName())
+                .handle(underNode.getChildren().get(0), ctx);
 
         // Shift the under element
         ctx.setCurrentX(0);
@@ -44,10 +43,8 @@ public class UnderNodeHandler extends VerticalNodeHandler {
 
         // Then typeset the under element
         ctx.setLevel(ctx.getLevel() + 2);
-        MathElement underElement = MathTypesetContext.getHandler(underNode.getChildren().get(1).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                underNode.getChildren().get(1).getName()
-        ))).handle(underNode.getChildren().get(1), ctx);
+        MathElement underElement = MathNodeHandlers.getHandler(underNode.getChildren().get(1).getName())
+                .handle(underNode.getChildren().get(1), ctx);
         ctx.setLevel(ctx.getLevel() - 2);
 
         // Align elements according to the alignment attribute

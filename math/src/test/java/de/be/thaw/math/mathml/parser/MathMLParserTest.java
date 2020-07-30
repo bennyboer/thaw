@@ -7,6 +7,7 @@ import de.be.thaw.math.mathml.tree.node.MathVariant;
 import de.be.thaw.math.mathml.tree.node.impl.FractionNode;
 import de.be.thaw.math.mathml.tree.node.impl.IdentifierNode;
 import de.be.thaw.math.mathml.tree.node.impl.OverNode;
+import de.be.thaw.math.mathml.tree.node.impl.SpaceNode;
 import de.be.thaw.math.mathml.tree.node.impl.SubscriptNode;
 import de.be.thaw.math.mathml.tree.node.impl.SubsuperscriptNode;
 import de.be.thaw.math.mathml.tree.node.impl.UnderNode;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
 public class MathMLParserTest {
 
@@ -28,7 +30,11 @@ public class MathMLParserTest {
     }
 
     private MathMLTree parse(String str) throws ParseException {
-        return parser.parse(new ByteArrayInputStream(str.getBytes()), new MathMLParserConfig(1.0));
+        return parser.parse(
+                new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_16)),
+                StandardCharsets.UTF_16,
+                new MathMLParserConfig(1.0)
+        );
     }
 
     @Test
@@ -360,6 +366,27 @@ public class MathMLParserTest {
 
         UnderOverNode underOverNode = (UnderOverNode) tree.getRoot().getChildren().get(0);
         Assertions.assertEquals(HorizontalAlignment.RIGHT, underOverNode.getAlignment());
+    }
+
+    @Test
+    public void simpleSpaceTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<mi>x</mi>\n" +
+                "\t<mspace depth=\"2\" height=\"4\" width=\"5\" />\n" +
+                "\t<mi>y</mi>\n" +
+                "</math>\n";
+
+        MathMLTree tree = parse(src);
+
+        Assertions.assertEquals("- math\n" +
+                "  - mi [x]\n" +
+                "  - mspace\n" +
+                "  - mi [y]\n", tree.toString());
+
+        SpaceNode spaceNode = (SpaceNode) tree.getRoot().getChildren().get(1);
+        Assertions.assertEquals(2, spaceNode.getDepth());
+        Assertions.assertEquals(4, spaceNode.getHeight());
+        Assertions.assertEquals(5, spaceNode.getWidth());
     }
 
 }

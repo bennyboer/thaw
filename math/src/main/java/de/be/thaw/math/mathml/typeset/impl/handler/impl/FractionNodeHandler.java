@@ -1,4 +1,4 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.impl.FractionNode;
@@ -6,6 +6,8 @@ import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.FractionElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
@@ -63,20 +65,16 @@ public class FractionNodeHandler implements MathMLNodeHandler {
         ctx.setCurrentY(0);
 
         // First typeset the numerator
-        MathElement numerator = MathTypesetContext.getHandler(node.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                node.getChildren().get(0).getName()
-        ))).handle(node.getChildren().get(0), ctx);
+        MathElement numerator = MathNodeHandlers.getHandler(node.getChildren().get(0).getName())
+                .handle(node.getChildren().get(0), ctx);
 
         // Offset the denominator
         ctx.setCurrentX(numerator.getSize().getWidth() + lineSpacing * 2 + lineWidth);
         ctx.setCurrentY(0);
 
         // Then typeset the denominator
-        MathElement denominator = MathTypesetContext.getHandler(node.getChildren().get(1).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                node.getChildren().get(1).getName()
-        ))).handle(node.getChildren().get(1), ctx);
+        MathElement denominator = MathNodeHandlers.getHandler(node.getChildren().get(1).getName())
+                .handle(node.getChildren().get(1), ctx);
 
         // Fraction element height is determined by the bigger of the two.
         // Vertically align the smaller centered and offset both numerator and denominator a little.
@@ -149,20 +147,16 @@ public class FractionNodeHandler implements MathMLNodeHandler {
         ctx.setCurrentY(0);
 
         // First typeset the numerator
-        MathElement numerator = MathTypesetContext.getHandler(node.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                node.getChildren().get(0).getName()
-        ))).handle(node.getChildren().get(0), ctx);
+        MathElement numerator = MathNodeHandlers.getHandler(node.getChildren().get(0).getName())
+                .handle(node.getChildren().get(0), ctx);
 
         // Offset the denominator
         ctx.setCurrentX(horizontalPadding);
         ctx.setCurrentY(numerator.getSize().getHeight() + lineSpacing * 2 + lineWidth);
 
         // Then typeset the denominator
-        MathElement denominator = MathTypesetContext.getHandler(node.getChildren().get(1).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                node.getChildren().get(1).getName()
-        ))).handle(node.getChildren().get(1), ctx);
+        MathElement denominator = MathNodeHandlers.getHandler(node.getChildren().get(1).getName())
+                .handle(node.getChildren().get(1), ctx);
 
         // Change the position of the smaller element (numerator or denominator) to be either the numeratorAlignment or denominatorAlignment
         alignElements(numerator, denominator, node.getNumeratorAlignment(), node.getDenominatorAlignment());

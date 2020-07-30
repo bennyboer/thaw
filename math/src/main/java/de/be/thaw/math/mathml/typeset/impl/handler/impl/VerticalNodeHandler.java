@@ -1,6 +1,7 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 import de.be.thaw.math.mathml.typeset.element.MathElement;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
 import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.Position;
 

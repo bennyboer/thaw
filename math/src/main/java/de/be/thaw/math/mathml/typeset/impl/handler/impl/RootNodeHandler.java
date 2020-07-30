@@ -1,4 +1,4 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.impl.RootNode;
@@ -6,6 +6,8 @@ import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.RootElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
 
 /**
@@ -43,10 +45,8 @@ public class RootNodeHandler implements MathMLNodeHandler {
 
         // First typeset the exponent element
         ctx.setLevel(ctx.getLevel() + 5);
-        MathElement exponentElement = MathTypesetContext.getHandler(rootNode.getChildren().get(1).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                rootNode.getChildren().get(1).getName()
-        ))).handle(rootNode.getChildren().get(1), ctx);
+        MathElement exponentElement = MathNodeHandlers.getHandler(rootNode.getChildren().get(1).getName())
+                .handle(rootNode.getChildren().get(1), ctx);
         ctx.setLevel(ctx.getLevel() - 5);
 
         double padding = ctx.getConfig().getFontSize() * BASIS_PADDING;
@@ -54,10 +54,8 @@ public class RootNodeHandler implements MathMLNodeHandler {
         ctx.setCurrentY(padding);
 
         // Then typeset the basis element
-        MathElement basisElement = MathTypesetContext.getHandler(rootNode.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                rootNode.getChildren().get(0).getName()
-        ))).handle(rootNode.getChildren().get(0), ctx);
+        MathElement basisElement = MathNodeHandlers.getHandler(rootNode.getChildren().get(0).getName())
+                .handle(rootNode.getChildren().get(0), ctx);
 
         // Shift exponent element to be as low as possible based on the size of the basis element
         exponentElement.setPosition(new Position(

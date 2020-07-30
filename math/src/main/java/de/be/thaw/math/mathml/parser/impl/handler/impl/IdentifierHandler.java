@@ -5,7 +5,7 @@ import de.be.thaw.math.mathml.parser.impl.context.MathMLParseContext;
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.MathVariant;
 import de.be.thaw.math.mathml.tree.node.impl.IdentifierNode;
-import org.w3c.dom.Node;
+import org.jsoup.nodes.Element;
 
 /**
  * Handler for <mi> MathML identifier nodes.
@@ -17,9 +17,9 @@ public class IdentifierHandler extends TokenNodeHandler {
     }
 
     @Override
-    public MathMLNode parse(Node node, MathMLParseContext ctx) throws ParseException {
+    public MathMLNode parse(Element element, MathMLParseContext ctx) throws ParseException {
         // This node does only accept text content (function names, variable, ...).
-        String text = node.getTextContent();
+        String text = element.text();
         if (text.isBlank()) {
             throw new ParseException("Encountered an <mi> node without content");
         }
@@ -29,10 +29,10 @@ public class IdentifierHandler extends TokenNodeHandler {
         if (text.length() == 1) {
             mathVariant = MathVariant.ITALIC; // Default for one character identifiers!
         }
-        mathVariant = parseMathVariant(node, mathVariant);
+        mathVariant = parseMathVariant(element, mathVariant);
 
         // Parse mathsize attribute from node
-        double mathSize = parseMathSize(node, 1.0);
+        double mathSize = parseMathSize(element, 1.0);
 
         return new IdentifierNode(text, mathVariant, mathSize);
     }

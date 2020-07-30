@@ -1,4 +1,4 @@
-package de.be.thaw.math.mathml.typeset.impl.handler;
+package de.be.thaw.math.mathml.typeset.impl.handler.impl;
 
 import de.be.thaw.math.mathml.tree.node.MathMLNode;
 import de.be.thaw.math.mathml.tree.node.MathVariant;
@@ -9,6 +9,7 @@ import de.be.thaw.math.mathml.typeset.element.impl.NumericElement;
 import de.be.thaw.math.mathml.typeset.element.impl.SqrtElement;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
+import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
 
 /**
@@ -35,10 +36,8 @@ public class SqrtNodeHandler extends RootNodeHandler {
 
         // First typeset the fake exponent element (only to get the size of it basically).
         ctx.setLevel(ctx.getLevel() + 5);
-        NumericElement exponentElement = (NumericElement) MathTypesetContext.getHandler("mn").orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                sqrtNode.getChildren().get(1).getName()
-        ))).handle(new NumericNode("2", MathVariant.NORMAL, 1.0), ctx);
+        NumericElement exponentElement = (NumericElement) MathNodeHandlers.getHandler("mn")
+                .handle(new NumericNode("2", MathVariant.NORMAL, 1.0), ctx);
         ctx.setLevel(ctx.getLevel() - 5);
 
         double padding = ctx.getConfig().getFontSize() * RootNodeHandler.BASIS_PADDING;
@@ -46,10 +45,8 @@ public class SqrtNodeHandler extends RootNodeHandler {
         ctx.setCurrentY(padding);
 
         // Then typeset the basis element
-        MathElement basisElement = MathTypesetContext.getHandler(sqrtNode.getChildren().get(0).getName()).orElseThrow(() -> new TypesetException(String.format(
-                "Could not find a handler for the MathML node '%s'",
-                sqrtNode.getChildren().get(0).getName()
-        ))).handle(sqrtNode.getChildren().get(0), ctx);
+        MathElement basisElement = MathNodeHandlers.getHandler(sqrtNode.getChildren().get(0).getName())
+                .handle(sqrtNode.getChildren().get(0), ctx);
 
         // Shift exponent element to be as low as possible based on the size of the basis element
         exponentElement.setPosition(new Position(
