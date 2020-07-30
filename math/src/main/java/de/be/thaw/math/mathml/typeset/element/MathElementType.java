@@ -19,6 +19,7 @@ public enum MathElementType {
     OVER,
     UNDER,
     UNDER_OVER,
-    SPACE
+    SPACE,
+    PADDED
 
 }

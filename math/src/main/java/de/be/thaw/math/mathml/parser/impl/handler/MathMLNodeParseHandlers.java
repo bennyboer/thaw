@@ -7,6 +7,7 @@ import de.be.thaw.math.mathml.parser.impl.handler.impl.MathHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.NumericHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.OperatorHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.OverHandler;
+import de.be.thaw.math.mathml.parser.impl.handler.impl.PaddedHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.RootHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.RowHandler;
 import de.be.thaw.math.mathml.parser.impl.handler.impl.SpaceHandler;
@@ -49,6 +50,7 @@ public class MathMLNodeParseHandlers {
         registerParseHandler(new UnderHandler());
         registerParseHandler(new UnderOverHandler());
         registerParseHandler(new SpaceHandler());
+        registerParseHandler(new PaddedHandler());
     }
 
     /**

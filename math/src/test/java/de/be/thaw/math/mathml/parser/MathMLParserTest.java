@@ -7,6 +7,7 @@ import de.be.thaw.math.mathml.tree.node.MathVariant;
 import de.be.thaw.math.mathml.tree.node.impl.FractionNode;
 import de.be.thaw.math.mathml.tree.node.impl.IdentifierNode;
 import de.be.thaw.math.mathml.tree.node.impl.OverNode;
+import de.be.thaw.math.mathml.tree.node.impl.PaddedNode;
 import de.be.thaw.math.mathml.tree.node.impl.SpaceNode;
 import de.be.thaw.math.mathml.tree.node.impl.SubscriptNode;
 import de.be.thaw.math.mathml.tree.node.impl.SubsuperscriptNode;
@@ -387,6 +388,32 @@ public class MathMLParserTest {
         Assertions.assertEquals(2, spaceNode.getDepth());
         Assertions.assertEquals(4, spaceNode.getHeight());
         Assertions.assertEquals(5, spaceNode.getWidth());
+    }
+
+    @Test
+    public void simplePaddedTest() throws ParseException {
+        String src = "<math>\n" +
+                "\t<mi>x</mi>\n" +
+                "\t<mpadded depth=\"+2\" height=\"-4\" width=\"2width\" lspace=\"+1\" voffset=\"+5\">\n" +
+                "\t\t<mi>pi</mi>\n" +
+                "\t</mpadded>\n" +
+                "\t<mi>y</mi>\n" +
+                "</math>\n";
+
+        MathMLTree tree = parse(src);
+
+        Assertions.assertEquals("- math\n" +
+                "  - mi [x]\n" +
+                "  - mpadded\n" +
+                "    - mi [pi]\n" +
+                "  - mi [y]\n", tree.toString());
+
+        PaddedNode paddedNode = (PaddedNode) tree.getRoot().getChildren().get(1);
+        Assertions.assertEquals("2width", paddedNode.getWidthAdjustment());
+        Assertions.assertEquals("-4", paddedNode.getHeightAdjustment());
+        Assertions.assertEquals("+2", paddedNode.getDepthAdjustment());
+        Assertions.assertEquals("+1", paddedNode.getXAdjustment());
+        Assertions.assertEquals("+5", paddedNode.getYAdjustment());
     }
 
 }

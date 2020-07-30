@@ -7,6 +7,7 @@ import de.be.thaw.math.mathml.typeset.impl.handler.impl.MathNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.impl.NumericNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.impl.OperatorNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.impl.OverNodeHandler;
+import de.be.thaw.math.mathml.typeset.impl.handler.impl.PaddedNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.impl.RootNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.impl.RowNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.impl.SpaceNodeHandler;
@@ -49,6 +50,7 @@ public class MathNodeHandlers {
         registerHandler(new UnderNodeHandler());
         registerHandler(new UnderOverNodeHandler());
         registerHandler(new SpaceNodeHandler());
+        registerHandler(new PaddedNodeHandler());
     }
 
     /**
