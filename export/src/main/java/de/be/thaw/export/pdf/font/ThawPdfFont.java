@@ -95,6 +95,19 @@ public class ThawPdfFont extends AbstractFont {
     }
 
     /**
+     * Create new PDF font.
+     *
+     * @param ttf      the true type font to use
+     * @param document to embed font in
+     * @throws IOException in case the font could not be loaded properly
+     */
+    public ThawPdfFont(TrueTypeFont ttf, PDDocument document) throws IOException {
+        pdFont = PDType0Font.load(document, ttf, true);
+
+        initForTTF(ttf);
+    }
+
+    /**
      * Parse the font.
      *
      * @param fontName name of the font

@@ -7,18 +7,15 @@ import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.element.ElementExporter;
 import de.be.thaw.export.pdf.element.ElementExporters;
 import de.be.thaw.export.pdf.font.ThawPdfFont;
-import de.be.thaw.export.pdf.font.exception.FontParseException;
 import de.be.thaw.export.pdf.util.ElementLocator;
 import de.be.thaw.export.pdf.util.ExportContext;
 import de.be.thaw.export.pdf.util.PdfImageSource;
 import de.be.thaw.font.ThawFont;
-import de.be.thaw.font.util.FontFamily;
-import de.be.thaw.font.util.FontManager;
-import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.hyphenation.HyphenationDictionaries;
 import de.be.thaw.hyphenation.HyphenationDictionary;
 import de.be.thaw.info.model.language.Language;
+import de.be.thaw.math.util.MathFont;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
@@ -35,13 +32,14 @@ import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Size;
+import org.apache.fontbox.ttf.TTFParser;
+import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -98,9 +96,11 @@ public class PdfExporter implements Exporter {
 
             ThawFont mathFont;
             try {
-                FontFamily family = FontManager.getInstance().getFamily("Cambria").orElseThrow();
-                mathFont = new ThawPdfFont("CambriaMath", new File(family.getVariantFont(FontVariant.PLAIN).orElseThrow().getFontFile().getLocation()), ctx.getPdDocument());
-            } catch (FontParseException e) {
+                TTFParser ttfParser = new TTFParser();
+                TrueTypeFont ttf = ttfParser.parse(MathFont.getMathFontStream());
+
+                mathFont = new ThawPdfFont(ttf, ctx.getPdDocument());
+            } catch (IOException e) {
                 throw new ExportException(e);
             }
             ctx.setMathFont(mathFont);

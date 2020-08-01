@@ -1,6 +1,7 @@
 module de.be.thaw.math {
     exports de.be.thaw.math.mathml.parser.impl;
     exports de.be.thaw.math.mathml.parser;
+    exports de.be.thaw.math.util;
     exports de.be.thaw.math.mathml.parser.exception;
     exports de.be.thaw.math.mathml.tree;
     exports de.be.thaw.math.mathml.typeset;
