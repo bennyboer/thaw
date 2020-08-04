@@ -16,6 +16,7 @@ import de.be.thaw.hyphenation.HyphenationDictionaries;
 import de.be.thaw.hyphenation.HyphenationDictionary;
 import de.be.thaw.info.model.language.Language;
 import de.be.thaw.math.util.MathFont;
+import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
@@ -40,6 +41,7 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -68,6 +70,11 @@ public class PdfExporter implements Exporter {
      * Printer points per millimeter.
      */
     private static final double POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
+
+    /**
+     * Points per pixel to calculate size with.
+     */
+    private static final double POINTS_PER_PX = 0.75;
 
     @Override
     public void export(Document document, Path path) throws ExportException {
@@ -281,7 +288,12 @@ public class PdfExporter implements Exporter {
                         return HyphenatedWordPart.DEFAULT_PENALTY;
                     }
                 })
-                .setImageSourceSupplier(src -> new PdfImageSource(PDImageXObject.createFromFile(src, ctx.getPdDocument())))
+                .setImageSourceSupplier(src -> {
+                    File currentProcessingFolder = ThawContext.getInstance().getCurrentFolder();
+                    File imgFile = new File(currentProcessingFolder, src);
+
+                    return new PdfImageSource(PDImageXObject.createFromFile(imgFile.getAbsolutePath(), ctx.getPdDocument()), POINTS_PER_PX);
+                })
                 .setMathFont(ctx.getMathFont())
                 .build());
     }

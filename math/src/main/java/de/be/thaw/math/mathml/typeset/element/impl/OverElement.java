@@ -19,13 +19,8 @@ public class OverElement extends VerticalElement {
     }
 
     @Override
-    public double getMidYPosition() {
-        return getChildren().orElseThrow().get(1).getMidYPosition();
-    }
-
-    @Override
     public double getBaseline() {
-        return ((AbstractMathElement) getChildren().orElseThrow().get(1)).getPosition(false).getY() + getChildren().orElseThrow().get(1).getBaseline();
+        return getChildren().orElseThrow().get(1).getPosition(false).getY() + getChildren().orElseThrow().get(1).getBaseline();
     }
 
 }

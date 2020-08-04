@@ -18,9 +18,4 @@ public class SubsuperscriptElement extends AbstractMathElement {
         return MathElementType.SUB_SUPER_SCRIPT;
     }
 
-    @Override
-    public double getMidYPosition() {
-        return getChildren().orElseThrow().get(0).getMidYPosition();
-    }
-
 }

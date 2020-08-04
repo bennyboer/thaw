@@ -1,6 +1,7 @@
 package de.be.thaw.math.mathml.typeset.element.impl;
 
 import de.be.thaw.math.mathml.typeset.element.AbstractMathElement;
+import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.MathElementType;
 import de.be.thaw.util.Position;
 
@@ -65,19 +66,6 @@ public class FractionElement extends AbstractMathElement {
     }
 
     @Override
-    public double getMidYPosition() {
-        if (isBevelled()) {
-            return super.getMidYPosition();
-        }
-
-        // The mid y for fraction elements is not really the middle,
-        // but rather the offset of the numerator + line spacing + half line width
-        return getChildren().orElseThrow().get(0).getSize().getHeight()
-                + getLineSpacing()
-                + getLineWidth() / 2;
-    }
-
-    @Override
     public void scale(double factor) {
         super.scale(factor);
 
@@ -87,7 +75,23 @@ public class FractionElement extends AbstractMathElement {
 
     @Override
     public double getBaseline() {
-        return getPosition(false).getY() + (getSize().getHeight() + super.getBaseline()) / 2;
+        double baseline = super.getBaseline();
+        if (isBevelled()) {
+            return (baseline + getSize().getHeight()) / 2;
+        }
+
+        double lineHeight = getChildren().orElseThrow().get(0).getSize().getHeight() + getLineSpacing() + getLineWidth() / 2;
+
+        MathElement parent = getParent().orElseThrow();
+        for (MathElement child : parent.getChildren().orElseThrow()) {
+            if (!(child instanceof FractionElement)) {
+                double otherBaseline = child.getBaseline();
+
+                return lineHeight + otherBaseline / 2;
+            }
+        }
+
+        return lineHeight + baseline / 2;
     }
 
 }

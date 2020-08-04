@@ -2,11 +2,12 @@ package de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl;
 
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
+import de.be.thaw.typeset.knuthplass.config.util.image.ImageSource;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.image.ImageParagraph;
+import de.be.thaw.util.HorizontalAlignment;
 
 import java.io.IOException;
 import java.util.Set;
@@ -26,7 +27,18 @@ public class ImageHandler implements ThingyHandler {
         // Finalize the current paragraph
         ctx.finalizeParagraph();
 
-        double imageWidth = ctx.getLineWidth();
+        // Load the image
+        ImageSource imgSrc;
+        try {
+            imgSrc = ctx.getConfig().getImageSourceSupplier().load(node.getOptions().get("src"));
+        } catch (IOException e) {
+            throw new DocumentConversionException(e);
+        }
+
+        String scaleStr = node.getOptions().get("scale");
+        boolean scale = scaleStr == null || Boolean.parseBoolean(scaleStr);
+
+        double imageWidth = scale ? ctx.getLineWidth() : imgSrc.getSize().getWidth();
         String imageWidthStr = node.getOptions().get("width");
         if (imageWidthStr != null) {
             try {
@@ -44,17 +56,13 @@ public class ImageHandler implements ThingyHandler {
             alignment = HorizontalAlignment.valueOf(alignmentStr.toUpperCase());
         }
 
-        try {
-            ctx.setCurrentParagraph(new ImageParagraph(
-                    imageWidth,
-                    documentNode,
-                    ctx.getConfig().getImageSourceSupplier().load(node.getOptions().get("src")),
-                    floating,
-                    alignment
-            ));
-        } catch (IOException e) {
-            throw new DocumentConversionException(e);
-        }
+        ctx.setCurrentParagraph(new ImageParagraph(
+                imageWidth,
+                documentNode,
+                imgSrc,
+                floating,
+                alignment
+        ));
     }
 
 }

@@ -1,0 +1,727 @@
+#H1, numbered=false# Math support torture test
+
+
+#H3, numbered=false# Superscript
+
+#IMAGE, src="img/ex1.png", scale=false#
+
+#MATH, '
+<math>
+    <msup>
+        <mi>x</mi>
+        <mn>2</mn>
+    </msup>
+    <msup>
+        <mi>y</mi>
+        <mn>2</mn>
+    </msup>
+</math>
+'#
+
+
+#H3, numbered=false# Multiscripts
+
+#IMAGE, src="img/ex2.png", scale=false#
+
+**NOT POSSIBLE YET**, we still need the `<mmultiscripts>` element.
+
+
+#H3, numbered=false# Fraction
+
+#IMAGE, src="img/ex21.png", scale=false#
+
+#MATH, '
+<math>
+    <mfrac>
+        <mrow>
+            <mi>x</mi>
+            <mo>+</mo>
+            <msup>
+                <mi>y</mi>
+                <mn>2</mn>
+            </msup>
+        </mrow>
+        <mrow>
+            <mi>k</mi>
+            <mo>+</mo>
+            <mn>1</mn>
+        </mrow>
+    </mfrac>
+</math>
+'#
+
+
+#H3, numbered=false# Fraction in superscript
+
+#IMAGE, src="img/ex22.png", scale=false#
+
+#MATH, '
+<math>
+    <mi>x</mi>
+    <mo>+</mo>
+    <msup>
+        <mi>y</mi>
+        <mfrac>
+            <mn>2</mn>
+            <mrow>
+                <mi>k</mi>
+                <mo>+</mo>
+                <mn>1</mn>
+            </mrow>
+        </mfrac>
+    </msup>
+</math>
+'#
+
+
+#H3, numbered=false# Fraction with bevelled fraction in denominator
+
+#IMAGE, src="img/ex23.png", scale=false#
+
+#MATH, '
+<math>
+    <mfrac>
+        <mi>a</mi>
+        <mfrac bevelled="true">
+            <mi>b</mi>
+            <mn>2</mn>
+        </mfrac>
+    </mfrac>
+</math>
+'#
+
+
+#H3, numbered=false# Nested fractions without shrinking font sizes per level
+
+#IMAGE, src="img/ex24.png", scale=false#
+
+**NOT POSSIBLE YET**, we still need the `<mstyle>` element.
+
+
+#H3, numbered=false# Nested fractions with shrinking font sizes per level
+
+#IMAGE, src="img/ex25.png", scale=false#
+
+#MATH, '
+<math>
+    <msub>
+        <mi>a</mi>
+        <mn>0</mn>
+    </msub>
+    <mo>+</mo>
+    <mfrac>
+        <mn>1</mn>
+        <mrow>
+            <msub>
+                <mi>a</mi>
+                <mn>1</mn>
+            </msub>
+            <mo>+</mo>
+            <mfrac>
+                <mn>1</mn>
+                <mrow>
+                    <msub>
+                        <mi>a</mi>
+                        <mn>2</mn>
+                    </msub>
+                    <mo>+</mo>
+                    <mfrac>
+                        <mn>1</mn>
+                        <mrow>
+                            <msub>
+                                <mi>a</mi>
+                                <mn>3</mn>
+                            </msub>
+                            <mo>+</mo>
+                            <mfrac>
+                                <mn>1</mn>
+                                <mrow>
+                                    <msub>
+                                        <mi>a</mi>
+                                        <mn>4</mn>
+                                    </msub>
+                                </mrow>
+                            </mfrac>
+                        </mrow>
+                    </mfrac>
+                </mrow>
+            </mfrac>
+        </mrow>
+    </mfrac>
+</math>
+'#
+
+
+#H3, numbered=false# Vector notation
+
+#IMAGE, src="img/ex26.png", scale=false#
+
+**NOT POSSIBLE YET**, we still need the `<mtable>` element.
+
+
+#H3, numbered=false# Complex term with binomial coefficient
+
+#IMAGE, src="img/ex27.png", scale=false#
+
+**NOT POSSIBLE YET**, we still need the `<mtable>` element.
+
+
+#H3, numbered=false# Sum
+
+#IMAGE, src="img/ex29.png", scale=false#
+
+#MATH, '
+<math>
+    <munder>
+        <mo>&sum;</mo>
+        <mfrac linethickness="0">
+            <mrow>
+                <mn>0</mn>
+                <mo>&le;</mo>
+                <mi>i</mi>
+                <mo>&le;</mo>
+                <mi>m</mi>
+            </mrow>
+            <mrow>
+                <mn>0</mn>
+                <mo>&lt;</mo>
+                <mi>j</mi>
+                <mo>&lt;</mo>
+                <mi>n</mi>
+            </mrow>
+        </mfrac>
+    </munder>
+    <mi>P</mi>
+    <mrow>
+        <mo>(</mo>
+        <mi>i</mi>
+        <mo>,</mo>
+        <mi>j</mi>
+        <mo>)</mo>
+    </mrow>
+</math>
+'#
+
+
+#H3, numbered=false# Multiple elements in superscript
+
+#IMAGE, src="img/ex3.png", scale=false#
+
+#MATH, '
+<math>
+    <msup>
+        <mi>x</mi>
+        <mrow>
+            <mn>2</mn>
+            <mi>y</mi>
+        </mrow>
+    </msup>
+</math>
+'#
+
+
+#H3, numbered=false# Multiple sums
+
+#IMAGE, src="img/ex30.png", scale=false#
+
+#MATH, '
+<math>
+    <munderover>
+        <mo>&sum;</mo>
+        <mrow>
+            <mi>i</mi>
+            <mo>=</mo>
+            <mn>1</mn>
+        </mrow>
+        <mi>p</mi>
+    </munderover>
+    <munderover>
+        <mo>&sum;</mo>
+        <mrow>
+            <mi>j</mi>
+            <mo>=</mo>
+            <mn>1</mn>
+        </mrow>
+        <mi>q</mi>
+    </munderover>
+    <munderover>
+        <mo>&sum;</mo>
+        <mrow>
+            <mi>k</mi>
+            <mo>=</mo>
+            <mn>1</mn>
+        </mrow>
+        <mi>r</mi>
+    </munderover>
+    <msub>
+        <mi>a</mi>
+        <mrow>
+            <mi>i</mi>
+            <mi>j</mi>
+        </mrow>
+    </msub>
+    <msub>
+        <mi>b</mi>
+        <mrow>
+            <mi>j</mi>
+            <mi>k</mi>
+        </mrow>
+    </msub>
+    <msub>
+        <mi>c</mi>
+        <mrow>
+            <mi>k</mi>
+            <mi>i</mi>
+        </mrow>
+    </msub>
+</math>
+'#
+
+
+#H3, numbered=false# Nested square roots
+
+#IMAGE, src="img/ex31.png", scale=false#
+
+#MATH, '
+<math>
+    <msqrt>
+        <mrow>
+            <mn>1</mn>
+            <mo>+</mo>
+            <msqrt>
+                <mrow>
+                    <mn>1</mn>
+                    <mo>+</mo>
+                    <msqrt>
+                        <mrow>
+                            <mn>1</mn>
+                            <mo>+</mo>
+                            <msqrt>
+                                <mrow>
+                                    <mn>1</mn>
+                                    <mo>+</mo>
+                                    <msqrt>
+                                        <mrow>
+                                            <mn>1</mn>
+                                            <mo>+</mo>
+                                            <msqrt>
+                                                <mrow>
+                                                    <mn>1</mn>
+                                                    <mo>+</mo>
+                                                    <msqrt>
+                                                        <mrow>
+                                                            <mn>1</mn>
+                                                            <mo>+</mo>
+                                                            <mi>x</mi>
+                                                        </mrow>
+                                                    </msqrt>
+                                                </mrow>
+                                            </msqrt>
+                                        </mrow>
+                                    </msqrt>
+                                </mrow>
+                            </msqrt>
+                        </mrow>
+                    </msqrt>
+                </mrow>
+            </msqrt>
+        </mrow>
+    </msqrt>
+</math>
+'#
+
+
+#H3, numbered=false# Complex equation
+
+#IMAGE, src="img/ex34.png", scale=false#
+
+#MATH, '
+<math>
+    <mrow>
+        <mrow>
+            <mo>(</mo>
+            <mfrac>
+                <msup>
+                    <mo>∂</mo>
+                    <mn>2</mn>
+                </msup>
+                <mrow>
+                    <mo>∂</mo>
+                    <msup>
+                        <mi>x</mi>
+                        <mn>2</mn>
+                    </msup>
+                </mrow>
+            </mfrac>
+            <mo>+</mo>
+            <mfrac>
+                <msup>
+                    <mo>∂</mo>
+                    <mn>2</mn>
+                </msup>
+                <mrow>
+                    <mo>∂</mo>
+                    <msup>
+                        <mi>y</mi>
+                        <mn>2</mn>
+                    </msup>
+                </mrow>
+            </mfrac>
+            <mo>)</mo>
+        </mrow>
+        <msup>
+            <mrow>
+                <mo>|</mo>
+                <mi>φ</mi>
+                <mo>(</mo>
+                <mi>x</mi>
+                <mo>+</mo>
+                <mi>i</mi>
+                <mi>y</mi>
+                <mo>)</mo>
+                <mo>|</mo>
+            </mrow>
+            <mn>2</mn>
+        </msup>
+        <mo>=</mo>
+        <mn>0</mn>
+    </mrow>
+</math>
+'#
+
+
+#H3, numbered=false# Nested superscripts
+
+#IMAGE, src="img/ex4.png", scale=false#
+
+#MATH, '
+<math>
+    <msup>
+        <mn>2</mn>
+        <msup>
+            <mn>2</mn>
+            <msup>
+                <mn>2</mn>
+                <mi>x</mi>
+            </msup>
+        </msup>
+    </msup>
+</math>
+'#
+
+
+#H3, numbered=false# Simple integral
+
+#IMAGE, src="img/ex40.png", scale=false#
+
+#MATH, '
+<math>
+    <msubsup>
+        <mo>&int;</mo>
+        <mn>1</mn>
+        <mi>x</mi>
+    </msubsup>
+    <mfrac>
+        <mrow>
+            <mi>d</mi>
+            <mi>t</mi>
+        </mrow>
+        <mi>t</mi>
+    </mfrac>
+</math>
+'#
+
+
+#H3, numbered=false# Multiple integrals
+
+#IMAGE, src="img/ex41.png", scale=false#
+
+#MATH, '
+<math>
+    <mo>&int;</mo>
+    <msub>
+        <mo>&int;</mo>
+        <mi>D</mi>
+    </msub>
+    <mi>d</mi>
+    <mi>x</mi>
+    <mspace width="3" />
+    <mi>d</mi>
+    <mi>y</mi>
+</math>
+'#
+
+
+#H3, numbered=false# Function definition
+
+#IMAGE, src="img/ex43.png", scale=false#
+
+**NOT POSSIBLE YET**, we still need the `<mtable>` element.
+
+
+#H3, numbered=false# Curly bracket as over element
+
+#IMAGE, src="img/ex44.png", scale=false#
+
+#MATH, '
+<math>
+    <mover>
+        <mrow>
+            <mi>x</mi>
+            <mo>+</mo>
+            <mtext>&#x2026;</mtext>
+            <mo>+</mo>
+            <mi>x</mi>
+        </mrow>
+        <mover>
+            <mo>&#9182;</mo>
+            <mrow>
+                <mi>k</mi>
+                <mspace width="3" />
+                <mtext>times</mtext>
+            </mrow>
+        </mover>
+    </mover>
+</math>
+'#
+
+
+#H3, numbered=false# Complex equation 2
+
+#IMAGE, src="img/ex51.png", scale=false#
+
+#MATH, '
+<math>
+    <munder>
+        <mo>&sum;</mo>
+        <mrow>
+            <mi>p</mi>
+            <mspace width="3" />
+            <mtext>prime</mtext>
+        </mrow>
+    </munder>
+    <mi>f</mi>
+    <mrow>
+        <mo>(</mo>
+        <mi>p</mi>
+        <mo>)</mo>
+    </mrow>
+    <mo>=</mo>
+    <msub>
+        <mo>&int;</mo>
+        <mrow>
+            <mi>t</mi>
+            <mo>&gt;</mo>
+            <mn>1</mn>
+        </mrow>
+    </msub>
+    <mi>f</mi>
+    <mrow>
+        <mo>(</mo>
+        <mi>t</mi>
+        <mo>)</mo>
+    </mrow>
+    <mspace width="3" />
+    <mi>d</mi>
+    <mi>&pi;</mi>
+    <mrow>
+        <mo>(</mo>
+        <mi>t</mi>
+        <mo>)</mo>
+    </mrow>
+</math>
+'#
+
+
+#H3, numbered=false# A lot of brackets!
+
+#IMAGE, src="img/ex52.png", scale=false#
+
+*TODO*
+
+
+#H3, numbered=false# Nested matrices!
+
+#IMAGE, src="img/ex53.png", scale=false#
+
+**NOT POSSIBLE YET**, we still need the `<mtable>` element.
+
+
+#H3, numbered=false# Determinant
+
+#IMAGE, src="img/ex54.png", scale=false#
+
+**NOT POSSIBLE YET**, we still need the `<mtable>` element.
+
+
+#H3, numbered=false# Nested subscripts
+
+#IMAGE, src="img/ex6.png", scale=false#
+
+#MATH, '
+<math>
+    <msub>
+        <mi>y</mi>
+        <msub>
+            <mi>x</mi>
+            <mn>2</mn>
+        </msub>
+    </msub>
+</math>
+'#
+
+
+#H3, numbered=false# Long super- and subscripts
+
+#IMAGE, src="img/ex7.png", scale=false#
+
+#MATH, '
+<math>
+    <msubsup>
+        <mi>x</mi>
+        <mn>92</mn>
+        <mn>31415</mn>
+    </msubsup>
+    <mo>+</mo>
+    <mi>&pi;</mi>
+</math>
+'#
+
+
+#H3, numbered=false# Nested super- and subscripts
+
+#IMAGE, src="img/ex8.png", scale=false#
+
+#MATH, '
+<math>
+    <msubsup>
+        <mi>x</mi>
+        <msubsup>
+            <mi>y</mi>
+            <mi>b</mi>
+            <mi>a</mi>
+        </msubsup>
+        <msubsup>
+            <mi>z</mi>
+            <mi>c</mi>
+            <mi>d</mi>
+        </msubsup>
+    </msubsup>
+</math>
+'#
+
+
+#H3, numbered=false# Another super- and subscript
+
+#IMAGE, src="img/ex9.png", scale=false#
+
+#MATH, '
+<math>
+    <msubsup>
+        <mi>x</mi>
+        <mn>3</mn>
+        <mo>‴</mo>
+    </msubsup>
+</math>
+'#
+
+
+#H3, numbered=false# Limit
+
+#IMAGE, src="img/stirling29.png", scale=false#
+
+#MATH, '
+<math>
+    <munder>
+        <mi>lim</mi>
+        <mrow>
+            <mi>n</mi>
+            <mo>→</mo>
+            <mo rspace="0">+</mo>
+            <mi>∞</mi>
+        </mrow>
+    </munder>
+    <mfrac>
+        <msqrt>
+            <mrow>
+                <mn>2</mn>
+                <mi>&pi;</mi>
+                <mi>n</mi>
+            </mrow>
+        </msqrt>
+        <mrow>
+            <mn>n</mn>
+            <mo>!</mo>
+        </mrow>
+    </mfrac>
+    <msup>
+        <mrow>
+            <mo>(</mo>
+            <mfrac>
+                <mi>n</mi>
+                <mi>e</mi>
+            </mfrac>
+            <mo>)</mo>
+        </mrow>
+        <mi>n</mi>
+    </msup>
+    <mo>=</mo>
+    <mn>1</mn>
+</math>
+'#
+
+
+#H3, numbered=false# Complex equation 3
+
+#IMAGE, src="img/determinant30.png", scale=false#
+
+#MATH, '
+<math>
+    <mrow>
+        <mi>det</mi>
+        <mrow>
+            <mo>(</mo>
+            <mi>A</mi>
+            <mo>)</mo>
+        </mrow>
+    </mrow>
+    <mo>=</mo>
+    <munder>
+        <mo>&sum;</mo>
+        <mrow>
+            <mi>&sigma;</mi>
+            <mo>&isinv;</mo>
+            <msub>
+                <mi>S</mi>
+                <mi>n</mi>
+            </msub>
+        </mrow>
+    </munder>
+    <mi>ϵ</mi>
+    <mrow>
+        <mo>(</mo>
+        <mi>&sigma;</mi>
+        <mo>)</mo>
+    </mrow>
+    <munderover>
+        <mo>&prod;</mo>
+        <mrow>
+            <mi>i</mi>
+            <mo>=</mo>
+            <mn>1</mn>
+        </mrow>
+        <mi>n</mi>
+    </munderover>
+    <msub>
+        <mi>a</mi>
+        <mrow>
+            <mi>i</mi>
+            <mo>,</mo>
+            <msub>
+                <mi>&sigma;</mi>
+                <mi>i</mi>
+            </msub>
+        </mrow>
+    </msub>
+</math>
+'#

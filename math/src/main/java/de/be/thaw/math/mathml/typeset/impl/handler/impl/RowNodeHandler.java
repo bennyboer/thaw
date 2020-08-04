@@ -38,15 +38,15 @@ public class RowNodeHandler implements MathMLNodeHandler {
             ctx.setCurrentY(0);
         }
 
-        // Vertical align children centered -> Get max middle y position of the row children first
-        double maxMidY = 0;
+        // Align children by their baseline
+        double maxBaseline = 0;
         for (MathElement child : row.getChildren().orElseThrow()) {
-            maxMidY = Math.max(maxMidY, child.getMidYPosition());
+            maxBaseline = Math.max(maxBaseline, child.getBaseline());
         }
 
         for (MathElement child : row.getChildren().orElseThrow()) {
-            double midY = child.getMidYPosition();
-            double diff = maxMidY - midY;
+            double baseline = child.getBaseline();
+            double diff = maxBaseline - baseline;
 
             child.setPosition(new Position(
                     child.getPosition().getX() - row.getPosition().getX(),

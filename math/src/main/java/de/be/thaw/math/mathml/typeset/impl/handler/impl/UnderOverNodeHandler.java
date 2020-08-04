@@ -55,7 +55,7 @@ public class UnderOverNodeHandler extends VerticalNodeHandler {
         ctx.setLevel(ctx.getLevel() + 2);
         MathElement underElement = MathNodeHandlers.getHandler(underOverNode.getChildren().get(1).getName())
                 .handle(underOverNode.getChildren().get(1), ctx);
-        ctx.setLevel(ctx.getLevel() + 2);
+        ctx.setLevel(ctx.getLevel() - 2);
 
         // Align elements according to the alignment attribute
         alignElements(underOverNode.getAlignment(), overElement, basisElement, underElement);

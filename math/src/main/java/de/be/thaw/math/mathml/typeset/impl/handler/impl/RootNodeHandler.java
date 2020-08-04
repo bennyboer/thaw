@@ -9,6 +9,7 @@ import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 
 /**
  * Handler dealing with a root node.
@@ -21,10 +22,16 @@ public class RootNodeHandler implements MathMLNodeHandler {
     static final double EXPONENT_TO_BASIS_MARGIN = 0.3;
 
     /**
-     * Padding to add to the basis element under the root.
+     * Vertical padding to add to the basis element under the root.
      * This value is multiplied with the font size.
      */
-    static final double BASIS_PADDING = 0.2;
+    static final double VERTICAL_PADDING = 0.2;
+
+    /**
+     * Horizontal padding to add to the basis element under the root.
+     * This value is multiplied with the font size.
+     */
+    static final double HORIZONTAL_PADDING = 0.1;
 
     @Override
     public String supportedNodeName() {
@@ -49,9 +56,11 @@ public class RootNodeHandler implements MathMLNodeHandler {
                 .handle(rootNode.getChildren().get(1), ctx);
         ctx.setLevel(ctx.getLevel() - 5);
 
-        double padding = ctx.getConfig().getFontSize() * BASIS_PADDING;
-        ctx.setCurrentX(ctx.getCurrentX() + ctx.getCurrentX() * EXPONENT_TO_BASIS_MARGIN + padding);
-        ctx.setCurrentY(padding);
+        double verticalPadding = ctx.getConfig().getFontSize() * VERTICAL_PADDING;
+        double horizontalPadding = ctx.getConfig().getFontSize() * HORIZONTAL_PADDING;
+
+        ctx.setCurrentX(ctx.getCurrentX() + ctx.getCurrentX() * EXPONENT_TO_BASIS_MARGIN + horizontalPadding);
+        ctx.setCurrentY(verticalPadding);
 
         // Then typeset the basis element
         MathElement basisElement = MathNodeHandlers.getHandler(rootNode.getChildren().get(0).getName())
@@ -68,8 +77,12 @@ public class RootNodeHandler implements MathMLNodeHandler {
         element.addChild(basisElement);
         element.addChild(exponentElement);
 
+        // Set the correct size of the root element (including horizontal padding)
+        Size size = element.getSize();
+        element.setSize(new Size(size.getWidth() + horizontalPadding, size.getHeight()));
+
         // Set new position to context
-        ctx.setCurrentX(oldX + element.getSize().getWidth() + padding);
+        ctx.setCurrentX(oldX + element.getSize().getWidth() + horizontalPadding);
         ctx.setCurrentY(oldY);
 
         return element;

@@ -44,12 +44,7 @@ public abstract class AbstractMathElement implements MathElement {
         return getPosition(true);
     }
 
-    /**
-     * Get the position of the element.
-     *
-     * @param absolute whether to get the absolute position
-     * @return the position
-     */
+    @Override
     public Position getPosition(boolean absolute) {
         Optional<MathElement> optionalParent = getParent();
         if (!absolute || optionalParent.isEmpty()) {
@@ -86,27 +81,19 @@ public abstract class AbstractMathElement implements MathElement {
 
         List<MathElement> childElements = optionalChildren.get();
 
-        double minY = Double.MAX_VALUE;
         double maxY = Double.MIN_VALUE;
-        double minX = Double.MAX_VALUE;
         double maxX = Double.MIN_VALUE;
 
         for (MathElement child : childElements) {
-            if (child.getPosition().getY() < minY) {
-                minY = child.getPosition().getY();
+            if (child.getPosition(false).getY() + child.getSize().getHeight() > maxY) {
+                maxY = child.getPosition(false).getY() + child.getSize().getHeight();
             }
-            if (child.getPosition().getX() < minX) {
-                minX = child.getPosition().getX();
-            }
-            if (child.getPosition().getY() + child.getSize().getHeight() > maxY) {
-                maxY = child.getPosition().getY() + child.getSize().getHeight();
-            }
-            if (child.getPosition().getX() + child.getSize().getWidth() > maxX) {
-                maxX = child.getPosition().getX() + child.getSize().getWidth();
+            if (child.getPosition(false).getX() + child.getSize().getWidth() > maxX) {
+                maxX = child.getPosition(false).getX() + child.getSize().getWidth();
             }
         }
 
-        return new Size(maxX - minX, maxY - minY);
+        return new Size(maxX, maxY);
     }
 
     @Override
@@ -142,11 +129,7 @@ public abstract class AbstractMathElement implements MathElement {
 
         children.add(element);
         element.setParent(this);
-    }
-
-    @Override
-    public double getMidYPosition() {
-        return getPosition(false).getY() + (getSize().getHeight()) / 2;
+        size = null; // Invalidate size
     }
 
     @Override
@@ -170,7 +153,7 @@ public abstract class AbstractMathElement implements MathElement {
 
     @Override
     public double getBaseline() {
-        return ((AbstractMathElement) getChildren().orElseThrow().get(0)).getPosition(false).getY() + getChildren().orElseThrow().get(0).getBaseline();
+        return getChildren().orElseThrow().get(0).getPosition(false).getY() + getChildren().orElseThrow().get(0).getBaseline();
     }
 
 }

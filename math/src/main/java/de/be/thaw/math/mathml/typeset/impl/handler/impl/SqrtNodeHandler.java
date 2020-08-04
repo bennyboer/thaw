@@ -11,6 +11,7 @@ import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 
 /**
  * Handler dealing with a root node.
@@ -40,9 +41,10 @@ public class SqrtNodeHandler extends RootNodeHandler {
                 .handle(new NumericNode("2", MathVariant.NORMAL, 1.0), ctx);
         ctx.setLevel(ctx.getLevel() - 5);
 
-        double padding = ctx.getConfig().getFontSize() * RootNodeHandler.BASIS_PADDING;
-        ctx.setCurrentX(ctx.getCurrentX() + ctx.getCurrentX() * RootNodeHandler.EXPONENT_TO_BASIS_MARGIN + padding);
-        ctx.setCurrentY(padding);
+        double verticalPadding = ctx.getConfig().getFontSize() * RootNodeHandler.VERTICAL_PADDING;
+        double horizontalPadding = ctx.getConfig().getFontSize() * RootNodeHandler.HORIZONTAL_PADDING;
+        ctx.setCurrentX(ctx.getCurrentX() + ctx.getCurrentX() * RootNodeHandler.EXPONENT_TO_BASIS_MARGIN + horizontalPadding);
+        ctx.setCurrentY(verticalPadding);
 
         // Then typeset the basis element
         MathElement basisElement = MathNodeHandlers.getHandler(sqrtNode.getChildren().get(0).getName())
@@ -61,8 +63,12 @@ public class SqrtNodeHandler extends RootNodeHandler {
         // Add fake exponent element
         element.addChild(new NumericElement(" ", exponentElement.getSize(), exponentElement.getFontSize(), exponentElement.getBaseline(), exponentElement.getKerningAdjustments(), exponentElement.getPosition()));
 
+        // Set the correct size of the root element (including horizontal padding)
+        Size size = element.getSize();
+        element.setSize(new Size(size.getWidth() + horizontalPadding, size.getHeight()));
+
         // Set new position to context
-        ctx.setCurrentX(oldX + element.getSize().getWidth() + padding);
+        ctx.setCurrentX(oldX + element.getSize().getWidth() + verticalPadding);
         ctx.setCurrentY(oldY);
 
         return element;

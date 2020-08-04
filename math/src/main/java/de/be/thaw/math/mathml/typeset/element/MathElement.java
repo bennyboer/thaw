@@ -34,6 +34,14 @@ public interface MathElement {
     Position getPosition();
 
     /**
+     * Get the position of the element.
+     *
+     * @param absolute whether to get the absolute position
+     * @return the position
+     */
+    Position getPosition(boolean absolute);
+
+    /**
      * Set the position of the element.
      *
      * @param position to set
@@ -74,13 +82,6 @@ public interface MathElement {
      * @param parent to set
      */
     void setParent(@Nullable MathElement parent);
-
-    /**
-     * Get the middle y position of the element.
-     *
-     * @return middle y
-     */
-    double getMidYPosition();
 
     /**
      * Scale the element.

@@ -53,7 +53,7 @@ public class FractionNodeHandler implements MathMLNodeHandler {
         double lineSpacing = ctx.getConfig().getFontSize() * 0.2; // Distance from either side of the fraction line (horizontally)
 
         // Apply some adjustments based on the level of the math node
-        lineWidth = Math.max(lineWidth - ctx.getLevel() * 0.05, 0.3);
+        lineWidth = Math.max(lineWidth - ctx.getLevel() * 0.05, 0);
         lineSpacing = Math.max(lineSpacing - ctx.getLevel() * 0.2, 1.0);
 
         // Save current position for later
@@ -134,7 +134,7 @@ public class FractionNodeHandler implements MathMLNodeHandler {
         double horizontalPadding = lineSpacing; // Distance from either side for the fraction children
 
         // Apply some adjustments based on the level of the math node
-        lineWidth = Math.max(lineWidth - ctx.getLevel() * 0.05, 0.3);
+        lineWidth = Math.max(lineWidth - ctx.getLevel() * 0.05, 0);
         lineSpacing = Math.max(lineSpacing - ctx.getLevel() * 0.2, 1.0);
         horizontalPadding = Math.max(horizontalPadding - ctx.getLevel() * 0.2, 1.0);
 

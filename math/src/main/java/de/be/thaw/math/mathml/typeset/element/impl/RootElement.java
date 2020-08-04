@@ -25,12 +25,6 @@ public class RootElement extends AbstractMathElement {
         return MathElementType.ROOT;
     }
 
-    @Override
-    public double getMidYPosition() {
-        // Get the mid y position of the basis element
-        return getChildren().orElseThrow().get(0).getMidYPosition();
-    }
-
     /**
      * Get the thickness of the root line.
      *

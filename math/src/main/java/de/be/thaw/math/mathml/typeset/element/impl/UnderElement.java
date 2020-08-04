@@ -18,11 +18,6 @@ public class UnderElement extends VerticalElement {
     }
 
     @Override
-    public double getMidYPosition() {
-        return getChildren().orElseThrow().get(0).getMidYPosition();
-    }
-
-    @Override
     public double getBaseline() {
         return getChildren().orElseThrow().get(0).getBaseline();
     }

@@ -126,8 +126,8 @@ public class MathElementExporter implements ElementExporter {
         // Y position of the main line over the basis element of the root
         double mainRootLineY = y - rootLineWidth / 2;
 
-        out.setLineJoinStyle(1);
-        out.setLineCapStyle(0);
+        out.setLineJoinStyle(0);
+        out.setLineCapStyle(1);
 
         // Draw hook start
         out.setLineWidth((float) rootLineWidth);
@@ -145,7 +145,7 @@ public class MathElementExporter implements ElementExporter {
         out.lineTo((float) (x + element.getSize().getWidth()), (float) mainRootLineY);
 
         // Draw root line end hook
-        out.lineTo((float) (x + element.getSize().getWidth()), (float) (mainRootLineY - fontSize / 6));
+        out.lineTo((float) (x + element.getSize().getWidth()), (float) (mainRootLineY - fontSize / 10));
 
         out.stroke();
     }
@@ -161,6 +161,10 @@ public class MathElementExporter implements ElementExporter {
      * @throws IOException in case the fraction line could not be shown properly
      */
     private void showFractionLine(FractionElement element, ExportContext ctx, PDPageContentStream out, double y, double x) throws IOException {
+        if (element.getLineWidth() <= 0) {
+            return;
+        }
+
         MathElement numerator = element.getChildren().orElseThrow().get(0);
         MathElement denominator = element.getChildren().orElseThrow().get(1);
 
