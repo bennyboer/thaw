@@ -34,9 +34,14 @@ public class OperatorNodeHandler implements MathMLNodeHandler {
         // Deal with the size factor to scale the text (MathML attribute mathsize)
         double fontSize = ctx.getLevelAdjustedFontSize() * mo.getSizeFactor();
 
-        KernedSize size;
+        Size size;
+        double[] kerningAdjustments;
+        double ascent;
         try {
-            size = ctx.getConfig().getFont().getKernedStringSize(-1, operator, fontSize);
+            KernedSize kernedSize = ctx.getConfig().getFont().getKernedStringSize(-1, operator, fontSize);
+            size = new Size(kernedSize.getWidth(), kernedSize.getHeight());
+            ascent = kernedSize.getAscent();
+            kerningAdjustments = kernedSize.getKerningAdjustments();
         } catch (Exception e) {
             throw new TypesetException(e);
         }
@@ -47,7 +52,7 @@ public class OperatorNodeHandler implements MathMLNodeHandler {
         Position position = new Position(ctx.getCurrentX() + leftMargin, ctx.getCurrentY());
         ctx.setCurrentX(position.getX() + size.getWidth() + rightMargin);
 
-        return new OperatorElement(operator, new Size(size.getWidth(), size.getHeight()), fontSize, size.getAscent(), size.getKerningAdjustments(), position);
+        return new OperatorElement(operator, size, fontSize, ascent, kerningAdjustments, mo.isLargeOp(), mo.isVerticalStretchy(), mo.isHorizontalStretchy(), mo.getForm(), position);
     }
 
 }

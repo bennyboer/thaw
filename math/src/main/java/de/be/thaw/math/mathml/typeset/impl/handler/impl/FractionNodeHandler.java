@@ -168,7 +168,7 @@ public class FractionNodeHandler implements MathMLNodeHandler {
 
         // Set the correct size of the fraction element (including horizontalPadding)
         Size size = fractionElement.getSize();
-        fractionElement.setSize(new Size(size.getWidth() + horizontalPadding * 2, size.getHeight()));
+        fractionElement.setSize(new Size(size.getWidth() + horizontalPadding, size.getHeight()));
 
         // Set new position to context
         ctx.setCurrentX(oldX + fractionElement.getSize().getWidth());

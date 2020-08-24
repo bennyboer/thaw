@@ -5,6 +5,8 @@ import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.MathElementType;
 import de.be.thaw.util.Position;
 
+import java.util.Optional;
+
 /**
  * Element representing a fraction.
  */
@@ -82,12 +84,14 @@ public class FractionElement extends AbstractMathElement {
 
         double lineHeight = getChildren().orElseThrow().get(0).getSize().getHeight() + getLineSpacing() + getLineWidth() / 2;
 
-        MathElement parent = getParent().orElseThrow();
-        for (MathElement child : parent.getChildren().orElseThrow()) {
-            if (!(child instanceof FractionElement)) {
-                double otherBaseline = child.getBaseline();
+        Optional<MathElement> optionalParent = getParent();
+        if (optionalParent.isPresent()) {
+            for (MathElement child : optionalParent.orElseThrow().getChildren().orElseThrow()) {
+                if (!(child instanceof FractionElement)) {
+                    double otherBaseline = child.getBaseline();
 
-                return lineHeight + otherBaseline / 2;
+                    return lineHeight + otherBaseline / 2;
+                }
             }
         }
 

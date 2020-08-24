@@ -1,5 +1,7 @@
 package de.be.thaw.math.mathml.tree.util.operator;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Entry of the operator dictionary.
  * It gives recommended default attribute values for a
@@ -44,9 +46,14 @@ public class OperatorDictionaryEntry {
     private final boolean fence;
 
     /**
-     * Whether the operator should be stretchy.
+     * Whether the operator should be stretchy vertically.
      */
-    private final boolean stretchy;
+    private final boolean verticalStretchy;
+
+    /**
+     * Whether the operator should be stretchy horizontally.
+     */
+    private final boolean horizontalStretchy;
 
     /**
      * Whether the operator should be symmetric.
@@ -74,6 +81,30 @@ public class OperatorDictionaryEntry {
      */
     private final boolean largeop;
 
+    /**
+     * Start of the large operator character (if any).
+     */
+    @Nullable
+    private Character largeOpStart;
+
+    /**
+     * Middle of the large operator character (if any).
+     */
+    @Nullable
+    private Character largeOpMiddle;
+
+    /**
+     * End of the large operator character (if any).
+     */
+    @Nullable
+    private Character largeOpEnd;
+
+    /**
+     * Extension of the large operator character (if any).
+     */
+    @Nullable
+    private Character largeOpExtension;
+
     public OperatorDictionaryEntry(
             char[] operator,
             OperatorForm form,
@@ -82,12 +113,36 @@ public class OperatorDictionaryEntry {
             int lspace,
             int rspace,
             boolean fence,
-            boolean stretchy,
+            boolean verticalStretchy,
+            boolean horizontalStretchy,
             boolean symmetric,
             boolean separator,
             boolean accent,
             boolean movablelimits,
             boolean largeop
+    ) {
+        this(operator, form, description, priority, lspace, rspace, fence, verticalStretchy, horizontalStretchy, symmetric, separator, accent, movablelimits, largeop, null, null, null, null);
+    }
+
+    public OperatorDictionaryEntry(
+            char[] operator,
+            OperatorForm form,
+            String description,
+            int priority,
+            int lspace,
+            int rspace,
+            boolean fence,
+            boolean verticalStretchy,
+            boolean horizontalStretchy,
+            boolean symmetric,
+            boolean separator,
+            boolean accent,
+            boolean movablelimits,
+            boolean largeop,
+            @Nullable Character largeOpStart,
+            @Nullable Character largeOpMiddle,
+            @Nullable Character largeOpEnd,
+            @Nullable Character largeOpExtension
     ) {
         this.operator = operator;
         this.form = form;
@@ -96,12 +151,17 @@ public class OperatorDictionaryEntry {
         this.lspace = lspace;
         this.rspace = rspace;
         this.fence = fence;
-        this.stretchy = stretchy;
+        this.verticalStretchy = verticalStretchy;
+        this.horizontalStretchy = horizontalStretchy;
         this.symmetric = symmetric;
         this.separator = separator;
         this.accent = accent;
         this.movablelimits = movablelimits;
         this.largeop = largeop;
+        this.largeOpStart = largeOpStart;
+        this.largeOpMiddle = largeOpMiddle;
+        this.largeOpEnd = largeOpEnd;
+        this.largeOpExtension = largeOpExtension;
     }
 
     public char[] getOperator() {
@@ -132,8 +192,12 @@ public class OperatorDictionaryEntry {
         return fence;
     }
 
-    public boolean isStretchy() {
-        return stretchy;
+    public boolean isVerticalStretchy() {
+        return verticalStretchy;
+    }
+
+    public boolean isHorizontalStretchy() {
+        return horizontalStretchy;
     }
 
     public boolean isSymmetric() {
@@ -152,8 +216,28 @@ public class OperatorDictionaryEntry {
         return movablelimits;
     }
 
-    public boolean isLargeop() {
+    public boolean isLargeOp() {
         return largeop;
+    }
+
+    @Nullable
+    public Character getLargeOpStart() {
+        return largeOpStart;
+    }
+
+    @Nullable
+    public Character getLargeOpMiddle() {
+        return largeOpMiddle;
+    }
+
+    @Nullable
+    public Character getLargeOpEnd() {
+        return largeOpEnd;
+    }
+
+    @Nullable
+    public Character getLargeOpExtension() {
+        return largeOpExtension;
     }
 
 }

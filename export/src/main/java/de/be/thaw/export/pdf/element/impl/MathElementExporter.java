@@ -7,12 +7,14 @@ import de.be.thaw.export.pdf.font.ThawPdfFont;
 import de.be.thaw.export.pdf.util.ExportContext;
 import de.be.thaw.math.mathml.typeset.element.MathElement;
 import de.be.thaw.math.mathml.typeset.element.impl.FractionElement;
+import de.be.thaw.math.mathml.typeset.element.impl.OperatorElement;
 import de.be.thaw.math.mathml.typeset.element.impl.RootElement;
 import de.be.thaw.math.mathml.typeset.element.impl.TokenElement;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.page.impl.MathExpressionElement;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.util.Matrix;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -210,13 +212,35 @@ public class MathElementExporter implements ElementExporter {
         // Apply font
         out.setFont(font.getPdFont(), (float) element.getFontSize());
 
-        // Set the position of where to draw the text
-        out.newLineAtOffset((float) x, (float) (y - element.getBaseline()));
+        boolean alreadyProcessed = false;
+        if (element instanceof OperatorElement) {
+            OperatorElement op = (OperatorElement) element;
 
-        if (element.getKerningAdjustments() != null) {
-            showTextWithKerning(element, out);
-        } else {
-            out.showText(element.getText());
+            if (op.isVerticalStretchy() || op.isHorizontalStretchy()) {
+                Matrix m = Matrix.getTranslateInstance((float) x, (float) (y - op.getBaseline()));
+                m.concatenate(Matrix.getScaleInstance((float) op.getStretchScaleX(), (float) op.getStretchScaleY()));
+
+                out.setTextMatrix(m);
+
+                if (element.getKerningAdjustments() != null) {
+                    showTextWithKerning(element, out);
+                } else {
+                    out.showText(element.getText());
+                }
+
+                alreadyProcessed = true;
+            }
+        }
+
+        if (!alreadyProcessed) {
+            // Set the position of where to draw the text
+            out.newLineAtOffset((float) x, (float) (y - element.getBaseline()));
+
+            if (element.getKerningAdjustments() != null) {
+                showTextWithKerning(element, out);
+            } else {
+                out.showText(element.getText());
+            }
         }
 
         out.endText();

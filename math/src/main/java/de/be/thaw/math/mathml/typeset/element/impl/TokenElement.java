@@ -53,6 +53,11 @@ public abstract class TokenElement extends AbstractMathElement {
         return baseline;
     }
 
+    @Override
+    public void setBaseline(double baseline) {
+        this.baseline = baseline;
+    }
+
     /**
      * Get the font size to display the text with.
      *

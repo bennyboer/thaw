@@ -36,7 +36,7 @@ public class OperatorHandler extends TokenNodeHandler {
 
         // Determine form
         OperatorForm form = OperatorForm.INFIX;
-        if (element.parent().nodeName().equals("mrow")) {
+        if (element.parent().nodeName().equals("mrow") || element.parent().nodeName().equals("math")) {
             if (element.lastElementSibling() == element) {
                 form = OperatorForm.POSTFIX;
             } else if (element.firstElementSibling() == element) {
@@ -44,9 +44,19 @@ public class OperatorHandler extends TokenNodeHandler {
             }
         }
 
+        // Parse form attribute
+        String formStr = getStringAttribute(element, "form", form.name().toLowerCase());
+        form = OperatorForm.valueOf(formStr.toUpperCase());
+
         // Determine default attribute values
         double lspace = DEFAULT_SPACE_WIDTH;
         double rspace = DEFAULT_SPACE_WIDTH;
+        boolean largeOp = false;
+        boolean verticalStretchy = true;
+        boolean horizontalStretchy = true;
+
+        String stretchyStr = getStringAttribute(element, "stretchy", "");
+        boolean stretchy = Boolean.parseBoolean(stretchyStr);
 
         Optional<OperatorDictionaryEntry> optEntry = OperatorDictionary.getEntry(form, text.trim().toCharArray());
         if (optEntry.isPresent()) {
@@ -54,6 +64,9 @@ public class OperatorHandler extends TokenNodeHandler {
 
             lspace = entry.getLspace();
             rspace = entry.getRspace();
+            largeOp = entry.isLargeOp();
+            verticalStretchy = entry.isVerticalStretchy();
+            horizontalStretchy = entry.isHorizontalStretchy();
         }
 
         // Parse attributes
@@ -61,12 +74,12 @@ public class OperatorHandler extends TokenNodeHandler {
         double mathSize = parseMathSize(element, 1.0);
         lspace = getDoubleAttribute(element, "lspace", lspace);
         rspace = getDoubleAttribute(element, "rspace", rspace);
+        largeOp = getBooleanAttribute(element, "largeop", largeOp);
 
-        // TODO Add attributes that we want to support (form, ...)
+        verticalStretchy = !stretchyStr.isEmpty() ? stretchy : verticalStretchy;
+        horizontalStretchy = !stretchyStr.isEmpty() ? stretchy : horizontalStretchy;
 
-        // TODO Determine the form attribute automatically based on the operator (opening parathesis, closing, semicolon, ...)
-
-        return new OperatorNode(text, mathVariant, mathSize, lspace, rspace);
+        return new OperatorNode(text, mathVariant, mathSize, lspace, rspace, largeOp, verticalStretchy, horizontalStretchy, form);
     }
 
 }

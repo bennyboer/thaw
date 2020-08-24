@@ -9,13 +9,30 @@ import de.be.thaw.util.Position;
  */
 public class RowElement extends AbstractMathElement {
 
-    public RowElement(Position position) {
+    /**
+     * The rows baseline.
+     */
+    private double baseline;
+
+    public RowElement(Position position, double baseline) {
         super(position);
+
+        this.baseline = baseline;
     }
 
     @Override
     public MathElementType getType() {
         return MathElementType.ROW;
+    }
+
+    @Override
+    public double getBaseline() {
+        return baseline;
+    }
+
+    @Override
+    public void setBaseline(double baseline) {
+        this.baseline = baseline;
     }
 
 }

@@ -1,4 +1,44 @@
+#MATH, '
+<math>
+    <mover>
+        <mrow>
+            <mi>x</mi>
+            <mo>+</mo>
+            <mtext>&#x2026;</mtext>
+            <mo>+</mo>
+            <mi>x</mi>
+        </mrow>
+        <mover>
+            <mo stretchy="true">&OverBrace;</mo>
+            <mrow>
+                <mi>k</mi>
+                <mspace width="3" />
+                <mtext>times</mtext>
+            </mrow>
+        </mover>
+    </mover>
+</math>
+'#
+
 #H1, numbered=false# Math support torture test
+
+
+#MATH, '
+<math>
+    <msubsup>
+        <mo stretchy="true" largeop="true" form="prefix">&int;</mo>
+        <mn>1</mn>
+        <mi>x</mi>
+    </msubsup>
+    <mfrac>
+        <mrow>
+            <mi>d</mi>
+            <mi>t</mi>
+        </mrow>
+        <mi>t</mi>
+    </mfrac>
+</math>
+'#
 
 
 #H3, numbered=false# Superscript
@@ -156,7 +196,19 @@
 
 #IMAGE, src="img/ex26.png", scale=false#
 
-**NOT POSSIBLE YET**, we still need the `<mtable>` element.
+#MATH, '
+<math>
+    <mo>(</mo>
+    <mfrac linethickness="0">
+        <mi>n</mi>
+        <mfrac bevelled="true">
+            <mi>k</mi>
+            <mn>2</mn>
+        </mfrac>
+    </mfrac>
+    <mo>)</mo>
+</math>
+'#
 
 
 #H3, numbered=false# Complex term with binomial coefficient
@@ -474,7 +526,7 @@
             <mi>x</mi>
         </mrow>
         <mover>
-            <mo>&#9182;</mo>
+            <mo>&OverBrace;</mo>
             <mrow>
                 <mi>k</mi>
                 <mspace width="3" />
@@ -618,7 +670,7 @@
 #MATH, '
 <math>
     <msubsup>
-        <mi>x</mi>
+        <mi>y</mi>
         <mn>3</mn>
         <mo>‴</mo>
     </msubsup>
@@ -723,5 +775,35 @@
             </msub>
         </mrow>
     </msub>
+</math>
+'#
+
+#MATH, '
+<math>
+    <mi>&pi;</mi>
+    <mo>-</mo>
+	<mrow>
+		<mo>(</mo>
+		<mfrac>
+			<mfrac>
+                <mn>1</mn>
+                <mn>2</mn>
+            </mfrac>
+            <mfrac>
+                <mn>1</mn>
+                <mfrac>
+                    <mn>1</mn>
+                    <mfrac>
+                        <mn>1</mn>
+                        <mfrac>
+                            <mn>1</mn>
+                            <mn>2</mn>
+                        </mfrac>
+                    </mfrac>
+                </mfrac>
+            </mfrac>
+		</mfrac>
+		<mo>)</mo>
+	</mrow>
 </math>
 '#

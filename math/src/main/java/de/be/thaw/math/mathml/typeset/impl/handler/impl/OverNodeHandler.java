@@ -8,6 +8,7 @@ import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 
 /**
  * Handler dealing with the over node.
@@ -46,6 +47,15 @@ public class OverNodeHandler extends VerticalNodeHandler {
         // Then typeset the basis element
         MathElement basisElement = MathNodeHandlers.getHandler(overNode.getChildren().get(0).getName())
                 .handle(overNode.getChildren().get(0), ctx);
+
+        // Stretch over element if it is stretchy
+        if (overElement.isHorizontalStretchy()) {
+            overElement.setStretchScaleX(basisElement.getSize().getWidth() / overElement.getSize().getWidth());
+            overElement.setSize(new Size(overElement.getSize().getWidth() * overElement.getStretchScaleX(), overElement.getSize().getHeight()));
+        } else if (basisElement.isHorizontalStretchy()) {
+            basisElement.setStretchScaleX(overElement.getSize().getWidth() / basisElement.getSize().getWidth());
+            basisElement.setSize(new Size(basisElement.getSize().getWidth() * basisElement.getStretchScaleX(), basisElement.getSize().getHeight()));
+        }
 
         // Align elements according to the alignment attribute
         alignElements(overNode.getAlignment(), overElement, basisElement);

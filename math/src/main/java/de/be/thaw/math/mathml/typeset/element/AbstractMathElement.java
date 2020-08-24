@@ -35,6 +35,16 @@ public abstract class AbstractMathElement implements MathElement {
      */
     private List<MathElement> children;
 
+    /**
+     * The x scale of the operator.
+     */
+    private double scaleX = 1.0;
+
+    /**
+     * The y scale of the operator.
+     */
+    private double scaleY = 1.0;
+
     public AbstractMathElement(Position position) {
         this.position = position;
     }
@@ -154,6 +164,41 @@ public abstract class AbstractMathElement implements MathElement {
     @Override
     public double getBaseline() {
         return getChildren().orElseThrow().get(0).getPosition(false).getY() + getChildren().orElseThrow().get(0).getBaseline();
+    }
+
+    @Override
+    public void setBaseline(double baseline) {
+        getChildren().orElseThrow().get(0).setBaseline(baseline);
+    }
+
+    @Override
+    public boolean isVerticalStretchy() {
+        return false;
+    }
+
+    @Override
+    public boolean isHorizontalStretchy() {
+        return false;
+    }
+
+    @Override
+    public double getStretchScaleX() {
+        return scaleX;
+    }
+
+    @Override
+    public void setStretchScaleX(double scaleX) {
+        this.scaleX = scaleX;
+    }
+
+    @Override
+    public double getStretchScaleY() {
+        return scaleY;
+    }
+
+    @Override
+    public void setStretchScaleY(double scaleY) {
+        this.scaleY = scaleY;
     }
 
 }

@@ -10,6 +10,7 @@ module de.be.thaw.math {
     exports de.be.thaw.math.mathml.typeset.element;
     exports de.be.thaw.math.mathml.typeset.config;
     exports de.be.thaw.math.mathml.typeset.element.impl;
+    exports de.be.thaw.math.mathml.tree.util.operator;
 
     requires org.jsoup;
     requires de.be.thaw.util;

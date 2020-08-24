@@ -8,6 +8,10 @@ import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathMLNodeHandler;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Handler dealing with the row node.
@@ -21,8 +25,6 @@ public class RowNodeHandler implements MathMLNodeHandler {
 
     @Override
     public MathElement handle(MathMLNode node, MathTypesetContext ctx) throws TypesetException {
-        RowElement row = new RowElement(new Position(ctx.getCurrentX(), ctx.getCurrentY()));
-
         // Save current position context for later
         double oldX = ctx.getCurrentX();
         double oldY = ctx.getCurrentY();
@@ -31,27 +33,51 @@ public class RowNodeHandler implements MathMLNodeHandler {
         ctx.setCurrentX(0);
         ctx.setCurrentY(0);
 
+        List<MathElement> children = new ArrayList<>();
         for (MathMLNode child : node.getChildren()) {
-            row.addChild(MathNodeHandlers.getHandler(child.getName())
+            children.add(MathNodeHandlers.getHandler(child.getName())
                     .handle(child, ctx));
 
             ctx.setCurrentY(0);
         }
 
-        // Align children by their baseline
+        // Gather some metrics
         double maxBaseline = 0;
-        for (MathElement child : row.getChildren().orElseThrow()) {
-            maxBaseline = Math.max(maxBaseline, child.getBaseline());
+        double maxHeight = 0;
+        for (MathElement child : children) {
+            if (!child.isVerticalStretchy()) {
+                maxBaseline = Math.max(maxBaseline, child.getBaseline());
+                maxHeight = Math.max(maxHeight, child.getSize().getHeight());
+            }
         }
 
-        for (MathElement child : row.getChildren().orElseThrow()) {
+        // Align children by their baseline
+        for (MathElement child : children) {
             double baseline = child.getBaseline();
             double diff = maxBaseline - baseline;
 
             child.setPosition(new Position(
-                    child.getPosition().getX() - row.getPosition().getX(),
-                    child.getPosition().getY() - row.getPosition().getY() + diff
+                    child.getPosition(false).getX(),
+                    child.getPosition(false).getY() + diff
             ));
+        }
+
+        // Stretch vertical stretchy elements
+        for (MathElement child : children) {
+            if (child.isVerticalStretchy()) {
+                child.setStretchScaleY(maxHeight / child.getSize().getHeight());
+                child.setBaseline(child.getBaseline() * child.getStretchScaleY());
+                child.setPosition(new Position(child.getPosition(false).getX(), 0));
+                child.setSize(new Size(child.getSize().getWidth(), child.getSize().getHeight() * child.getStretchScaleY()));
+            }
+        }
+
+        // Create row element
+        RowElement row = new RowElement(new Position(oldX, oldY), maxBaseline);
+
+        // Add children
+        for (MathElement child : children) {
+            row.addChild(child);
         }
 
         // Set correct position context

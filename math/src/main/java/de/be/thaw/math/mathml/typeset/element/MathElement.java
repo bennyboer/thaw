@@ -97,4 +97,33 @@ public interface MathElement {
      */
     double getBaseline();
 
+    /**
+     * Set the baseline of the element.
+     *
+     * @param baseline to set
+     */
+    void setBaseline(double baseline);
+
+    /**
+     * Whether the element may stretch in the vertical axis.
+     *
+     * @return whether vertically stretchy
+     */
+    boolean isVerticalStretchy();
+
+    /**
+     * Whether the element may stretch in the horizontal axis.
+     *
+     * @return whether horizontally stretchy
+     */
+    boolean isHorizontalStretchy();
+
+    double getStretchScaleX();
+
+    void setStretchScaleX(double scaleX);
+
+    double getStretchScaleY();
+
+    void setStretchScaleY(double scaleY);
+
 }
