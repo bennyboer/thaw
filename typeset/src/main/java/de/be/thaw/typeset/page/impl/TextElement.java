@@ -1,10 +1,11 @@
 package de.be.thaw.typeset.page.impl;
 
 import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.page.AbstractElement;
 import de.be.thaw.typeset.page.ElementType;
-import de.be.thaw.typeset.util.Position;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 
 import java.util.Optional;
 
@@ -20,14 +21,9 @@ public class TextElement extends AbstractElement {
     private String text;
 
     /**
-     * Font size of the text in the text element.
+     * Metrics of the text.
      */
-    private final double fontSize;
-
-    /**
-     * Adjustments due to kerning for each code point in the text.
-     */
-    private final double[] kerningAdjustments;
+    private final FontDetailsSupplier.StringMetrics metrics;
 
     /**
      * The original node the text belongs to in the thaw document.
@@ -35,21 +31,26 @@ public class TextElement extends AbstractElement {
      */
     private final DocumentNode node;
 
+    /**
+     * Baseline to use.
+     */
+    private final double baseline;
+
     public TextElement(
             String text,
-            double fontSize,
-            double[] kerningAdjustments,
+            FontDetailsSupplier.StringMetrics metrics,
             DocumentNode node,
             int pageNumber,
+            double baseline,
             Size size,
             Position position
     ) {
         super(pageNumber, size, position);
 
         this.text = text;
-        this.fontSize = fontSize;
-        this.kerningAdjustments = kerningAdjustments;
+        this.metrics = metrics;
         this.node = node;
+        this.baseline = baseline;
     }
 
     /**
@@ -81,21 +82,21 @@ public class TextElement extends AbstractElement {
     }
 
     /**
-     * Get the adjustments due to kerning.
+     * Get the metrics of the text.
      *
-     * @return kerning adjustments
+     * @return metrics
      */
-    public double[] getKerningAdjustments() {
-        return kerningAdjustments;
+    public FontDetailsSupplier.StringMetrics getMetrics() {
+        return metrics;
     }
 
     /**
-     * Get the font size of the text in the element.
+     * Get the baseline to use.
      *
-     * @return font size
+     * @return baseline
      */
-    public double getFontSize() {
-        return fontSize;
+    public double getBaseline() {
+        return baseline;
     }
 
 }

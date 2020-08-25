@@ -1,6 +1,7 @@
 package de.be.thaw.typeset.kerning.glyph;
 
-import de.be.thaw.typeset.util.Size;
+
+import de.be.thaw.util.Size;
 
 import java.io.Serializable;
 import java.util.List;

@@ -1,8 +1,8 @@
 package de.be.thaw.typeset.page;
 
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.typeset.util.Position;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 
 import java.util.Optional;
 

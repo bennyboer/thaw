@@ -5,7 +5,6 @@ import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.TextStyle;
-import de.be.thaw.style.model.style.text.TextAlignment;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.KnuthPlassAlgorithm;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
@@ -16,6 +15,7 @@ import de.be.thaw.typeset.knuthplass.item.impl.Glue;
 import de.be.thaw.typeset.knuthplass.item.impl.Penalty;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.FootNoteBox;
+import de.be.thaw.typeset.knuthplass.item.impl.box.MathBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.PageNumberPlaceholderBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
@@ -23,9 +23,11 @@ import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 import de.be.thaw.typeset.page.Element;
+import de.be.thaw.typeset.page.impl.MathExpressionElement;
 import de.be.thaw.typeset.page.impl.TextElement;
-import de.be.thaw.typeset.util.Position;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.HorizontalAlignment;
+import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,14 +59,22 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                 StyleType.INSETS,
                 style -> Optional.ofNullable((InsetsStyle) style)
         ).orElseThrow();
-        final TextAlignment alignment = paragraph.getNode().getStyle().getStyleAttribute(
+        final HorizontalAlignment alignment = paragraph.getNode().getStyle().getStyleAttribute(
                 StyleType.TEXT,
                 style -> Optional.ofNullable(((TextStyle) style).getAlignment())
-        ).orElse(TextAlignment.LEFT);
+        ).orElse(HorizontalAlignment.LEFT);
         final boolean justify = paragraph.getNode().getStyle().getStyleAttribute(
                 StyleType.TEXT,
                 style -> Optional.ofNullable(((TextStyle) style).getJustify())
         ).orElse(true);
+
+        // Calculate some metrics
+        double baseline;
+        try {
+            baseline = ctx.getConfig().getFontDetailsSupplier().measureString(textParagraph.getNode(), -1, "x").getBaseline();
+        } catch (Exception e) {
+            throw new TypeSettingException(e);
+        }
 
         // Set up the initial position of the paragraph
         ctx.getPositionContext().increaseY(insetsStyle.getTop());
@@ -124,7 +134,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                     // Push foot note to be included on the page
                     ctx.pushFootNote(((FootNoteBox) item).getNode());
 
-                    if (getAvailableHeight(ctx) < lineHeight) {
+                    if (ctx.getAvailableHeight() < lineHeight) {
                         // Create new page first as foot note and foot note reference do not fit on the same page anymore
                         List<Element> footNoteElements = ctx.popFootNote(); // Pop the last foot note again from the current page
                         ctx.pushPage(); // Push the next page
@@ -134,7 +144,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             }
 
             // Check if there is enough space for the line
-            double availableHeight = getAvailableHeight(ctx);
+            double availableHeight = ctx.getAvailableHeight();
             if (availableHeight < lineHeight) {
                 // Not enough space for this line left on the current page -> Create next page
                 ctx.pushPage();
@@ -172,9 +182,9 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             if (!justifyLine) {
                 double restWidth = lineWidth - lineMetrics.getMinWidth() - lineMetrics.getWhiteSpaces() * spaceWidth;
 
-                if (alignment == TextAlignment.RIGHT) {
+                if (alignment == HorizontalAlignment.RIGHT) {
                     ctx.getPositionContext().increaseX(restWidth);
-                } else if (alignment == TextAlignment.CENTER) {
+                } else if (alignment == HorizontalAlignment.CENTER) {
                     ctx.getPositionContext().increaseX(restWidth / 2);
                 }
             }
@@ -204,10 +214,10 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
 
                     ctx.pushPageElement(new TextElement(
                             tb.getText(),
-                            tb.getFontSize(),
-                            tb.getKerningAdjustments(),
+                            tb.getMetrics(),
                             tb.getNode(),
                             ctx.getCurrentPageNumber(),
+                            baseline,
                             new Size(item.getWidth(), lineHeight),
                             new Position(ctx.getPositionContext().getX(), ctx.getPositionContext().getY())
                     ));
@@ -217,11 +227,11 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                     if (item.isFlagged() && item.getWidth() > 0) {
                         // Is a hyphen because the width is bigger than 0 -> add the '-'-character
                         ctx.pushPageElement(new TextElement(
-                                "-",
-                                1.0,
-                                new double[]{0},
+                                ((Penalty) item).getReplacementString(),
+                                ((Penalty) item).getMetrics(),
                                 ((Penalty) item).getNode(),
                                 ctx.getCurrentPageNumber(),
+                                baseline,
                                 new Size(item.getWidth(), lineHeight),
                                 new Position(ctx.getPositionContext().getX(), ctx.getPositionContext().getY())
                         ));
@@ -232,6 +242,20 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                     if (item.getWidth() > 0) { // Is a white space
                         ctx.getPositionContext().increaseX(spaceWidth);
                     }
+                } else if (item instanceof MathBox) {
+                    MathBox box = (MathBox) item;
+
+                    ctx.pushPageElement(new MathExpressionElement(
+                            box.getExpression(),
+                            ctx.getCurrentPageNumber(),
+                            box.getExpression().getSize(),
+                            new Position(ctx.getPositionContext().getX(), ctx.getPositionContext().getY()),
+                            box.getNode(),
+                            true,
+                            baseline
+                    ));
+
+                    ctx.getPositionContext().increaseX(item.getWidth());
                 } else {
                     ctx.getPositionContext().increaseX(item.getWidth());
                 }
@@ -247,10 +271,6 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         }
 
         ctx.getPositionContext().increaseY(insetsStyle.getBottom());
-    }
-
-    private double getAvailableHeight(TypeSettingContext ctx) {
-        return (ctx.getConfig().getPageSize().getHeight() - ctx.getConfig().getPageInsets().getBottom()) - ctx.getPositionContext().getY() - ctx.getCurrentFootNoteElementsHeight();
     }
 
     /**

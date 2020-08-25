@@ -5,5 +5,6 @@ package de.be.thaw.typeset.page;
  */
 public enum ElementType {
     TEXT,
-    IMAGE
+    IMAGE,
+    MATH
 }

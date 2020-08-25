@@ -15,8 +15,8 @@ import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.ReferenceStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
 import de.be.thaw.style.model.style.impl.TextStyle;
-import de.be.thaw.style.model.style.text.TextAlignment;
 import de.be.thaw.style.parser.impl.StyleModelDeserializer;
+import de.be.thaw.util.HorizontalAlignment;
 
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +89,7 @@ public class StyleModel {
         documentStyles.put(StyleType.SIZE, new SizeStyle(210.0, 297.0));
         documentStyles.put(StyleType.INSETS, new InsetsStyle(20.0, 25.0, 20.0, 25.0));
         documentStyles.put(StyleType.BACKGROUND, new BackgroundStyle(new ColorStyle(1.0, 1.0, 1.0, 1.0)));
-        documentStyles.put(StyleType.TEXT, new TextStyle(10.0, null, TextAlignment.LEFT, Boolean.TRUE));
+        documentStyles.put(StyleType.TEXT, new TextStyle(10.0, null, HorizontalAlignment.LEFT, Boolean.TRUE));
         documentStyles.put(StyleType.REFERENCE, new ReferenceStyle(
                 new ColorStyle(
                         0.439,
@@ -136,7 +136,7 @@ public class StyleModel {
             double insetsBottom = 3;
 
             Map<StyleType, Style> headlineStyles = new HashMap<>();
-            headlineStyles.put(StyleType.TEXT, new TextStyle(0.0, lineHeight, TextAlignment.LEFT, false));
+            headlineStyles.put(StyleType.TEXT, new TextStyle(0.0, lineHeight, HorizontalAlignment.LEFT, false));
             headlineStyles.put(StyleType.FONT, new FontStyle(null, FontVariant.BOLD, fontSize, null, null, null));
             headlineStyles.put(StyleType.INSETS, new InsetsStyle(insetsTop, 0.0, insetsBottom, 0.0));
 

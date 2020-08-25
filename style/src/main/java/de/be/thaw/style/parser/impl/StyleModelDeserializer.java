@@ -20,7 +20,7 @@ import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.ReferenceStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
 import de.be.thaw.style.model.style.impl.TextStyle;
-import de.be.thaw.style.model.style.text.TextAlignment;
+import de.be.thaw.util.HorizontalAlignment;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -151,7 +151,7 @@ public class StyleModelDeserializer extends StdDeserializer<StyleModel> {
             case TEXT -> new TextStyle(
                     node.has("firstLineIndent") ? node.get("firstLineIndent").asDouble() : null,
                     node.has("lineHeight") ? node.get("lineHeight").asDouble() : null,
-                    node.has("alignment") ? TextAlignment.valueOf(node.get("alignment").asText().toUpperCase()) : null,
+                    node.has("alignment") ? HorizontalAlignment.valueOf(node.get("alignment").asText().toUpperCase()) : null,
                     node.has("justify") ? node.get("justify").asBoolean() : null
             ).merge(oldStyle);
             case REFERENCE -> {

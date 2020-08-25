@@ -1,6 +1,7 @@
 package de.be.thaw.typeset.knuthplass.item.impl.box;
 
 import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.item.impl.Box;
 
 /**
@@ -14,36 +15,24 @@ public class TextBox extends Box {
     private final String text;
 
     /**
-     * Width of the text.
+     * Metrics of the text.
      */
-    private final double width;
-
-    /**
-     * Font size the box width was calculated with.
-     */
-    private final double fontSize;
-
-    /**
-     * Adjustments due to kerning per character in the text.
-     */
-    private final double[] kerningAdjustments;
+    private final FontDetailsSupplier.StringMetrics metrics;
 
     /**
      * The original node representing this text box in the thaw document model.
      */
     private final DocumentNode node;
 
-    public TextBox(String text, double width, double fontSize, double[] kerningAdjustments, DocumentNode node) {
+    public TextBox(String text, FontDetailsSupplier.StringMetrics metrics, DocumentNode node) {
         this.text = text;
-        this.width = width;
-        this.fontSize = fontSize;
-        this.kerningAdjustments = kerningAdjustments;
+        this.metrics = metrics;
         this.node = node;
     }
 
     @Override
     public double getWidth() {
-        return width;
+        return metrics.getWidth();
     }
 
     /**
@@ -65,21 +54,12 @@ public class TextBox extends Box {
     }
 
     /**
-     * Get the kerning adjustments per character.
+     * Get the metrics of the text.
      *
-     * @return kerning adjustments
+     * @return metrics
      */
-    public double[] getKerningAdjustments() {
-        return kerningAdjustments;
-    }
-
-    /**
-     * Get the font size the boxes width was calculated with.
-     *
-     * @return font size
-     */
-    public double getFontSize() {
-        return fontSize;
+    public FontDetailsSupplier.StringMetrics getMetrics() {
+        return metrics;
     }
 
 }

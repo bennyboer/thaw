@@ -13,4 +13,8 @@ public class DocumentConversionException extends Exception {
         super(cause);
     }
 
+    public DocumentConversionException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
 }

@@ -17,7 +17,7 @@ import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Size;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -115,6 +115,11 @@ public class ExportContext {
      * Lookup of elements by their original DocumentNode ID.
      */
     private Map<String, ElementLocator> elementLookup;
+
+    /**
+     * The math font to use.
+     */
+    private ThawFont mathFont;
 
     public ExportContext(PDDocument pdDocument, Document document) {
         this.pdDocument = pdDocument;
@@ -348,6 +353,24 @@ public class ExportContext {
      */
     public void setElementLookup(Map<String, ElementLocator> elementLookup) {
         this.elementLookup = elementLookup;
+    }
+
+    /**
+     * Set the math font to use.
+     *
+     * @param mathFont to set
+     */
+    public void setMathFont(ThawFont mathFont) {
+        this.mathFont = mathFont;
+    }
+
+    /**
+     * Get the math font to use.
+     *
+     * @return math font
+     */
+    public ThawFont getMathFont() {
+        return mathFont;
     }
 
 }

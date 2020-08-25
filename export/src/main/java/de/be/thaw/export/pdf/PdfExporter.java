@@ -6,13 +6,17 @@ import de.be.thaw.export.Exporter;
 import de.be.thaw.export.exception.ExportException;
 import de.be.thaw.export.pdf.element.ElementExporter;
 import de.be.thaw.export.pdf.element.ElementExporters;
+import de.be.thaw.export.pdf.font.ThawPdfFont;
 import de.be.thaw.export.pdf.util.ElementLocator;
 import de.be.thaw.export.pdf.util.ExportContext;
 import de.be.thaw.export.pdf.util.PdfImageSource;
+import de.be.thaw.font.ThawFont;
 import de.be.thaw.font.util.KernedSize;
 import de.be.thaw.hyphenation.HyphenationDictionaries;
 import de.be.thaw.hyphenation.HyphenationDictionary;
 import de.be.thaw.info.model.language.Language;
+import de.be.thaw.math.util.MathFont;
+import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
@@ -28,13 +32,16 @@ import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Size;
+import org.apache.fontbox.ttf.TTFParser;
+import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -64,6 +71,11 @@ public class PdfExporter implements Exporter {
      */
     private static final double POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
 
+    /**
+     * Points per pixel to calculate size with.
+     */
+    private static final double POINTS_PER_PX = 0.75;
+
     @Override
     public void export(Document document, Path path) throws ExportException {
         try (PDDocument doc = new PDDocument()) {
@@ -88,6 +100,17 @@ public class PdfExporter implements Exporter {
                     insetsStyle.getBottom() * POINTS_PER_MM,
                     insetsStyle.getRight() * POINTS_PER_MM
             ));
+
+            ThawFont mathFont;
+            try {
+                TTFParser ttfParser = new TTFParser();
+                TrueTypeFont ttf = ttfParser.parse(MathFont.getMathFontStream());
+
+                mathFont = new ThawPdfFont(ttf, ctx.getPdDocument());
+            } catch (IOException e) {
+                throw new ExportException(e);
+            }
+            ctx.setMathFont(mathFont);
 
             // Typeset the document to individual pages
             List<Page> pages;
@@ -228,9 +251,11 @@ public class PdfExporter implements Exporter {
                     @Override
                     public StringMetrics measureString(DocumentNode node, int charBefore, String str) throws Exception {
                         double fontSize = ctx.getFontSizeForNode(node);
-                        KernedSize size = ctx.getFontForNode(node).getKernedStringSize(charBefore, str, fontSize);
+                        ThawFont font = ctx.getFontForNode(node);
 
-                        return new StringMetrics(size.getWidth(), size.getHeight(), size.getKerningAdjustments(), fontSize);
+                        KernedSize size = font.getKernedStringSize(charBefore, str, fontSize);
+
+                        return new StringMetrics(size.getWidth(), size.getHeight(), size.getKerningAdjustments(), fontSize, font.getAscent(fontSize));
                     }
 
                     @Override
@@ -246,7 +271,7 @@ public class PdfExporter implements Exporter {
 
                     @Override
                     public double getInterWordShrinkability(DocumentNode node, char lastChar) throws Exception {
-                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() / 2;
+                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() * 0.7;
                     }
                 })
                 .setHyphenator(new Hyphenator() {
@@ -263,7 +288,13 @@ public class PdfExporter implements Exporter {
                         return HyphenatedWordPart.DEFAULT_PENALTY;
                     }
                 })
-                .setImageSourceSupplier(src -> new PdfImageSource(PDImageXObject.createFromFile(src, ctx.getPdDocument())))
+                .setImageSourceSupplier(src -> {
+                    File currentProcessingFolder = ThawContext.getInstance().getCurrentFolder();
+                    File imgFile = new File(currentProcessingFolder, src);
+
+                    return new PdfImageSource(PDImageXObject.createFromFile(imgFile.getAbsolutePath(), ctx.getPdDocument()), POINTS_PER_PX);
+                })
+                .setMathFont(ctx.getMathFont())
                 .build());
     }
 

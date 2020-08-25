@@ -1,7 +1,7 @@
 package de.be.thaw.typeset.page;
 
 import de.be.thaw.typeset.util.Insets;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Size;
 
 import java.util.List;
 

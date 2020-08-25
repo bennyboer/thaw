@@ -1,11 +1,12 @@
 package de.be.thaw.typeset.knuthplass.config;
 
+import de.be.thaw.font.ThawFont;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.GlueConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
 import de.be.thaw.typeset.knuthplass.config.util.image.ImageSourceSupplier;
 import de.be.thaw.typeset.util.Insets;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Size;
 
 /**
  * Builder for the line breaking configuration.
@@ -102,6 +103,11 @@ public class KnuthPlassTypeSettingConfigBuilder {
      * The image source supplier to use.
      */
     private ImageSourceSupplier imageSourceSupplier;
+
+    /**
+     * Font to use for math expressions.
+     */
+    private ThawFont mathFont;
 
     /**
      * Get the size of the page to typeset on (in mm).
@@ -335,6 +341,27 @@ public class KnuthPlassTypeSettingConfigBuilder {
     }
 
     /**
+     * Get the font to use for math expressions.
+     *
+     * @return math font
+     */
+    public ThawFont getMathFont() {
+        return mathFont;
+    }
+
+    /**
+     * Set the font to use for math expressions.
+     *
+     * @param mathFont to set
+     * @return the builder instance
+     */
+    public KnuthPlassTypeSettingConfigBuilder setMathFont(ThawFont mathFont) {
+        this.mathFont = mathFont;
+
+        return this;
+    }
+
+    /**
      * Build the line breaking configuration.
      *
      * @return the build config
@@ -351,7 +378,8 @@ public class KnuthPlassTypeSettingConfigBuilder {
                 getFontDetailsSupplier(),
                 getHyphenator(),
                 getGlueConfig(),
-                getImageSourceSupplier()
+                getImageSourceSupplier(),
+                getMathFont()
         );
     }
 

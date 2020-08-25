@@ -2,13 +2,14 @@ package de.be.thaw.export.pdf.font;
 
 import de.be.thaw.export.pdf.font.exception.FontParseException;
 import de.be.thaw.font.AbstractFont;
+import de.be.thaw.font.util.CharacterSize;
 import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.font.util.OperatingSystem;
-import de.be.thaw.font.util.Size;
 import de.be.thaw.font.util.exception.CouldNotDetermineOperatingSystemException;
 import de.be.thaw.typeset.kerning.glyph.Coordinate;
 import de.be.thaw.typeset.kerning.glyph.Glyph;
 import de.be.thaw.typeset.kerning.optical.OpticalKerningTable;
+import de.be.thaw.util.Size;
 import org.apache.fontbox.ttf.CmapSubtable;
 import org.apache.fontbox.ttf.CmapTable;
 import org.apache.fontbox.ttf.GlyphData;
@@ -91,6 +92,19 @@ public class ThawPdfFont extends AbstractFont {
      */
     public ThawPdfFont(String fontName, File fontFile, PDDocument document) throws FontParseException {
         parseFont(fontName, fontFile, document);
+    }
+
+    /**
+     * Create new PDF font.
+     *
+     * @param ttf      the true type font to use
+     * @param document to embed font in
+     * @throws IOException in case the font could not be loaded properly
+     */
+    public ThawPdfFont(TrueTypeFont ttf, PDDocument document) throws IOException {
+        pdFont = PDType0Font.load(document, ttf, true);
+
+        initForTTF(ttf);
     }
 
     /**
@@ -245,18 +259,32 @@ public class ThawPdfFont extends AbstractFont {
     }
 
     @Override
-    public Size getCharacterSize(int character, double fontSize) throws Exception {
+    public double getAscent(double fontSize) {
+        return pdFont.getFontDescriptor().getAscent() * fontSize / unitsPerEm;
+    }
+
+    @Override
+    public double getDescent(double fontSize) {
+        return pdFont.getFontDescriptor().getDescent() * fontSize / unitsPerEm;
+    }
+
+    @Override
+    public CharacterSize getCharacterSize(int character, double fontSize) throws Exception {
         int glyphID = characterMap.getGlyphId(character);
 
         double width = pdFont.getWidth(glyphID) * fontSize / 1000;
         double height = 0;
 
         GlyphData data = glyphTable.getGlyph(glyphID);
+        double descent = 0;
+        double ascent = 0;
         if (data != null) {
             height = (data.getYMaximum() - data.getYMinimum()) * fontSize / unitsPerEm;
+            ascent = data.getYMaximum() * fontSize / unitsPerEm;
+            descent = -data.getYMinimum() * fontSize / unitsPerEm;
         }
 
-        return new Size(width, height);
+        return new CharacterSize(width, height, ascent, descent);
     }
 
     @Override
@@ -318,7 +346,7 @@ public class ThawPdfFont extends AbstractFont {
      * @return glyph
      */
     private Glyph convertToGlyph(GlyphData data, int glyphID, int codePoint) {
-        de.be.thaw.typeset.util.Size size = new de.be.thaw.typeset.util.Size(data.getXMaximum() - data.getXMinimum(), data.getYMaximum() - data.getYMinimum());
+        Size size = new Size(data.getXMaximum() - data.getXMinimum(), data.getYMaximum() - data.getYMinimum());
         Coordinate position = new Coordinate(data.getXMinimum(), data.getYMinimum());
 
         List<List<Coordinate>> contours = new ArrayList<>(data.getNumberOfContours());

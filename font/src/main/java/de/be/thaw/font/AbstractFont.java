@@ -1,7 +1,8 @@
 package de.be.thaw.font;
 
+import de.be.thaw.font.util.CharacterSize;
 import de.be.thaw.font.util.KernedSize;
-import de.be.thaw.font.util.Size;
+import de.be.thaw.font.util.StringSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +13,12 @@ import java.util.List;
 public abstract class AbstractFont implements ThawFont {
 
     @Override
-    public Size getStringSize(String str, double fontSize) throws Exception {
+    public StringSize getStringSize(String str, double fontSize) throws Exception {
         double width = 0;
         double height = 0;
+
+        double maxAscent = Double.MIN_VALUE;
+        double maxDescent = Double.MIN_VALUE;
 
         int len = str.length();
         for (int i = 0; i < len; i++) {
@@ -25,18 +29,24 @@ public abstract class AbstractFont implements ThawFont {
                 i += charCount - 1;
             }
 
-            Size characterSize = getCharacterSize(character, fontSize);
+            CharacterSize characterSize = getCharacterSize(character, fontSize);
             width += characterSize.getWidth();
-            height += Math.max(characterSize.getHeight(), height);
+            height = Math.max(characterSize.getHeight(), height);
+
+            maxAscent = Math.max(characterSize.getAscent(), maxAscent);
+            maxDescent = Math.max(characterSize.getDescent(), maxDescent);
         }
 
-        return new Size(width, height);
+        return new StringSize(width, height, maxAscent, maxDescent);
     }
 
     @Override
     public KernedSize getKernedStringSize(int charBefore, String str, double fontSize) throws Exception {
         double width = 0;
         double height = 0;
+
+        double maxAscent = Double.MIN_VALUE;
+        double maxDescent = Double.MIN_VALUE;
 
         int len = str.length();
         List<Double> kerningAdjustments = new ArrayList<>(len);
@@ -54,14 +64,23 @@ public abstract class AbstractFont implements ThawFont {
             }
             kerningAdjustments.add(kerningAdjustment);
 
-            Size characterSize = getCharacterSize(character, fontSize);
+            CharacterSize characterSize = getCharacterSize(character, fontSize);
             width += characterSize.getWidth() + kerningAdjustment;
-            height += Math.max(characterSize.getHeight(), height);
+            height = Math.max(characterSize.getHeight(), height);
+
+            maxAscent = Math.max(characterSize.getAscent(), maxAscent);
+            maxDescent = Math.max(characterSize.getDescent(), maxDescent);
 
             charBefore = character;
         }
 
-        return new KernedSize(width, height, kerningAdjustments.stream().mapToDouble(i -> i).toArray());
+        return new KernedSize(
+                width,
+                height,
+                maxAscent,
+                maxDescent,
+                kerningAdjustments.stream().mapToDouble(i -> i).toArray()
+        );
     }
 
 }

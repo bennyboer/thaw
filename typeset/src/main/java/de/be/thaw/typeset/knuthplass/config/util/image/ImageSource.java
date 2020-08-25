@@ -1,6 +1,6 @@
 package de.be.thaw.typeset.knuthplass.config.util.image;
 
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Size;
 
 /**
  * An image source.

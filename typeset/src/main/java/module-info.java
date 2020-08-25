@@ -25,4 +25,6 @@ module de.be.thaw.typeset {
     requires de.be.thaw.reference;
     requires de.be.thaw.font;
     requires org.jetbrains.annotations;
+    requires de.be.thaw.util;
+    requires de.be.thaw.math;
 }

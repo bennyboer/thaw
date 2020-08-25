@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(':util')
+    implementation project(':font')
+
+    // Used to parse MathML (HTML)
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
+}

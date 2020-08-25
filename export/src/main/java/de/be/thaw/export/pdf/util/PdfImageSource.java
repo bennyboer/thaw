@@ -1,7 +1,7 @@
 package de.be.thaw.export.pdf.util;
 
 import de.be.thaw.typeset.knuthplass.config.util.image.ImageSource;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Size;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 /**
@@ -19,10 +19,10 @@ public class PdfImageSource implements ImageSource {
      */
     private final Size size;
 
-    public PdfImageSource(PDImageXObject image) {
+    public PdfImageSource(PDImageXObject image, double pointsPerPx) {
         this.image = image;
 
-        size = new Size(image.getWidth(), image.getHeight());
+        size = new Size(image.getWidth() * pointsPerPx, image.getHeight() * pointsPerPx);
     }
 
     @Override

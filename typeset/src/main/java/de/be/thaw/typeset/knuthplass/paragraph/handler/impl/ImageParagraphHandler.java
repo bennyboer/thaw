@@ -1,8 +1,10 @@
 package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
 
+import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.text.TextAlignment;
+import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
@@ -10,8 +12,6 @@ import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.image.ImageParagraph;
 import de.be.thaw.typeset.page.impl.ImageElement;
-import de.be.thaw.typeset.util.Position;
-import de.be.thaw.typeset.util.Size;
 
 import java.util.Optional;
 
@@ -43,9 +43,9 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
 
         double maxWidth = ctx.getConfig().getPageSize().getWidth() - (ctx.getConfig().getPageInsets().getLeft() + ctx.getConfig().getPageInsets().getRight()) - (insetsStyle.getLeft() + insetsStyle.getRight());
         double x = ctx.getConfig().getPageInsets().getLeft();
-        if (imageParagraph.getAlignment() == TextAlignment.CENTER) {
+        if (imageParagraph.getAlignment() == HorizontalAlignment.CENTER) {
             x += (maxWidth - width) / 2;
-        } else if (imageParagraph.getAlignment() == TextAlignment.RIGHT) {
+        } else if (imageParagraph.getAlignment() == HorizontalAlignment.RIGHT) {
             x += maxWidth - width;
         }
 
@@ -59,10 +59,10 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
                 new Position(x, ctx.getPositionContext().getY())
         ));
 
-        if (imageParagraph.isFloating() && imageParagraph.getAlignment() != TextAlignment.CENTER) {
+        if (imageParagraph.isFloating() && imageParagraph.getAlignment() != HorizontalAlignment.CENTER) {
             ctx.getFloatConfig().setFloatUntilY(ctx.getPositionContext().getY() + height + insetsStyle.getBottom());
             ctx.getFloatConfig().setFloatWidth(width + insetsStyle.getLeft() + insetsStyle.getRight());
-            ctx.getFloatConfig().setFloatIndent(imageParagraph.getAlignment() == TextAlignment.LEFT ? ctx.getFloatConfig().getFloatWidth() : 0);
+            ctx.getFloatConfig().setFloatIndent(imageParagraph.getAlignment() == HorizontalAlignment.LEFT ? ctx.getFloatConfig().getFloatWidth() : 0);
         } else {
             ctx.getPositionContext().increaseY(height + insetsStyle.getBottom());
         }

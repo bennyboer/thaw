@@ -22,8 +22,8 @@ import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.page.impl.PageNumberPlaceholderElement;
 import de.be.thaw.typeset.page.impl.TextElement;
-import de.be.thaw.typeset.util.Position;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -80,9 +80,10 @@ public class TextElementExporter implements ElementExporter {
                     PDDeviceRGB.INSTANCE
             ));
 
-            // Check if the element is really just a placeholder for the current page number
-            double[] kerningAdjustments = te.getKerningAdjustments();
+            double[] kerningAdjustments = te.getMetrics().getKerningAdjustments();
+            double baseline = te.getBaseline();
 
+            // Check if the element is really just a placeholder for the current page number
             if (te instanceof PageNumberPlaceholderElement) {
                 // We need to determine the page number of the target here to display as text
                 InternalReference internalReference = (InternalReference) reference;
@@ -103,7 +104,7 @@ public class TextElementExporter implements ElementExporter {
                 kerningAdjustments = size.getKerningAdjustments();
             }
 
-            double y = getYOffsetForElement(te, ctx);
+            double y = ctx.getCurrentPage().getMediaBox().getUpperRightY() - element.getPosition().getY() - baseline;
             double x = te.getPosition().getX();
 
             // Set the position of where to draw the text
@@ -111,7 +112,7 @@ public class TextElementExporter implements ElementExporter {
 
             // Show the text
             if (kerningAdjustments != null) {
-                showTextWithKerning(out, font, te.getText(), kerningAdjustments, te.getFontSize());
+                showTextWithKerning(out, font, te.getText(), fontSize, kerningAdjustments);
             } else {
                 out.showText(te.getText());
             }
@@ -170,10 +171,10 @@ public class TextElementExporter implements ElementExporter {
      * @param out                to write text to
      * @param font               to use
      * @param text               to write
-     * @param kerningAdjustments to apply
-     * @param fontSize           of the text
+     * @param fontSize           to display text with
+     * @param kerningAdjustments of the text
      */
-    private void showTextWithKerning(PDPageContentStream out, ThawPdfFont font, String text, double[] kerningAdjustments, double fontSize) throws IOException {
+    private void showTextWithKerning(PDPageContentStream out, ThawPdfFont font, String text, double fontSize, double[] kerningAdjustments) throws IOException {
         List<Object> toPrint = new ArrayList<>();
 
         int codePointIdx = 0;
@@ -232,6 +233,7 @@ public class TextElementExporter implements ElementExporter {
 
                 double lineY = y + descent;
 
+                out.setStrokingColor(0.0f, 0.0f, 0.0f); // TODO Set to same color as text
                 out.setLineWidth((float) lineWidth);
                 out.moveTo((float) lineStartX, (float) lineY);
                 out.lineTo((float) lineEndX, (float) lineY);
@@ -242,19 +244,6 @@ public class TextElementExporter implements ElementExporter {
         }
 
         ctx.setCurrentlyUnderlined(false);
-    }
-
-    /**
-     * Get the y offset for the passed element.
-     *
-     * @param element to get offset for
-     * @param ctx     to help
-     * @return y-offset
-     */
-    private double getYOffsetForElement(TextElement element, ExportContext ctx) {
-        double fontSize = ctx.getFontSizeForNode(element.getNode().orElseThrow());
-
-        return ctx.getCurrentPage().getMediaBox().getUpperRightY() - element.getPosition().getY() - fontSize;
     }
 
     /**
@@ -269,9 +258,11 @@ public class TextElementExporter implements ElementExporter {
             return; // No link needed
         }
 
+        double y = ctx.getCurrentPage().getMediaBox().getUpperRightY() - element.getPosition().getY() - element.getMetrics().getBaseline();
+
         PDRectangle rect = new PDRectangle(
                 (float) element.getPosition().getX(),
-                (float) getYOffsetForElement(element, ctx),
+                (float) y,
                 (float) element.getSize().getWidth(),
                 (float) element.getSize().getHeight()
         );

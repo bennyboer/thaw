@@ -5,12 +5,13 @@ import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.TextStyle;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
+import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.toc.TableOfContentsItemParagraph;
 import de.be.thaw.typeset.page.impl.PageNumberPlaceholderElement;
-import de.be.thaw.typeset.util.Position;
-import de.be.thaw.typeset.util.Size;
+import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 
 import java.util.Optional;
 
@@ -38,10 +39,19 @@ public class TableOfContentsItemParagraphHandler extends TextParagraphHandler {
         ).orElseThrow());
 
         double pageNumberMaxX = ctx.getConfig().getPageSize().getWidth() - ctx.getConfig().getPageInsets().getRight();
+
+        FontDetailsSupplier.StringMetrics metrics;
+        try {
+            metrics = ctx.getConfig().getFontDetailsSupplier().measureString(paragraph.getNode(), -1, "99999");
+        } catch (Exception e) {
+            throw new TypeSettingException(e);
+        }
+
         ctx.pushPageElement(new PageNumberPlaceholderElement(
-                12.0,
+                metrics,
                 paragraph.getNode(),
                 ctx.getCurrentPageNumber(),
+                metrics.getBaseline(),
                 new Size(p.getPageNumberWidth(), lineHeight),
                 new Position(pageNumberMaxX, ctx.getPositionContext().getY() - lineHeight)
         ));

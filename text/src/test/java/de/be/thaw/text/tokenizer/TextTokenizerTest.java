@@ -355,7 +355,7 @@ public class TextTokenizerTest {
 
         ThingyToken thingyToken = (ThingyToken) tokens.get(0);
         Assertions.assertEquals("H1", thingyToken.getName());
-        Assertions.assertEquals(Arrays.asList("first-level-heading", "3", "42", "hey there", "\" hey there\""), thingyToken.getArguments());
+        Assertions.assertEquals(Arrays.asList("first-level-heading", "3", "42", "hey there", "hey there"), thingyToken.getArguments());
         Assertions.assertEquals(0, thingyToken.getOptions().size());
 
         Assertions.assertEquals(" First-level headline", tokens.get(1).getValue());
@@ -380,7 +380,7 @@ public class TextTokenizerTest {
 
         Assertions.assertEquals("first-level-headline", thingyToken.getOptions().get("label"));
         Assertions.assertEquals("there", thingyToken.getOptions().get("hey"));
-        Assertions.assertEquals("\"hello world\"", thingyToken.getOptions().get("key"));
+        Assertions.assertEquals("hello world", thingyToken.getOptions().get("key"));
 
         Assertions.assertEquals(" First-level headline", tokens.get(1).getValue());
         Assertions.assertEquals(new TextPosition(1, 67, 1, 87), tokens.get(1).getPosition());
@@ -407,7 +407,7 @@ public class TextTokenizerTest {
         Assertions.assertEquals("IMG", imgThingy.getName());
         Assertions.assertEquals(0, imgThingy.getArguments().size());
         Assertions.assertEquals(4, imgThingy.getOptions().size());
-        Assertions.assertEquals("\"C:\\Users\\YOURNAME\\cool_image.png\"", imgThingy.getOptions().get("src"));
+        Assertions.assertEquals("C:\\Users\\YOURNAME\\cool_image.png", imgThingy.getOptions().get("src"));
         Assertions.assertEquals("600", imgThingy.getOptions().get("width"));
         Assertions.assertEquals("250", imgThingy.getOptions().get("height"));
         Assertions.assertEquals("CENTER", imgThingy.getOptions().get("alignment"));
@@ -524,6 +524,15 @@ public class TextTokenizerTest {
         String text = "The following enumeration is no enumeration!\n" +
                 "-A\n" +
                 "-B\n";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(1, tokens.size());
+    }
+
+    @Test
+    public void testInStringStateForThingies() throws TokenizeException {
+        String text = "#MATH, '<math><mi mathvariant=\"double-struck\">x</mi></math>'#";
 
         List<Token> tokens = tokenize(text);
 

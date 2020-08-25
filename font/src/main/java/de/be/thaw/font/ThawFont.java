@@ -1,12 +1,29 @@
 package de.be.thaw.font;
 
+import de.be.thaw.font.util.CharacterSize;
 import de.be.thaw.font.util.KernedSize;
-import de.be.thaw.font.util.Size;
+import de.be.thaw.font.util.StringSize;
 
 /**
  * Description of a font in the Thaw project.
  */
 public interface ThawFont {
+
+    /**
+     * Get the ascent of the font.
+     *
+     * @param fontSize the font size
+     * @return ascent
+     */
+    double getAscent(double fontSize);
+
+    /**
+     * Get the descent of the font.
+     *
+     * @param fontSize the font size
+     * @return descent
+     */
+    double getDescent(double fontSize);
 
     /**
      * Get the size for the passed character.
@@ -16,7 +33,7 @@ public interface ThawFont {
      * @return size
      * @throws Exception in case the character size could not be determined
      */
-    Size getCharacterSize(int character, double fontSize) throws Exception;
+    CharacterSize getCharacterSize(int character, double fontSize) throws Exception;
 
     /**
      * Get the size for the passed string.
@@ -25,7 +42,7 @@ public interface ThawFont {
      * @return size
      * @throws Exception in case the string size could not be determined
      */
-    Size getStringSize(String str, double fontSize) throws Exception;
+    StringSize getStringSize(String str, double fontSize) throws Exception;
 
     /**
      * Get the size for the passed string with kerning adjustments applied.

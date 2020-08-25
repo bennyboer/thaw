@@ -101,3 +101,5 @@ The project is organized in multiple modules:
 | Hyphenation | `/hyphenation` | Module dealing with hyphenating individual words. |
 | Plugin | `/plugin` | Plugin development resources. |
 | Shared | `/shared` | Some shared classes. |
+| Math | `/math` | LaTeX to MathML converter + MathML typesetting. |
+| Util | `/util` | Some useful module-spanning utilities. |

@@ -1,0 +1,12 @@
+{
+    "DOCUMENT": {
+        "font": {
+            "size": 15
+        }
+    },
+    "IMAGE": {
+        "insets": {
+            "bottom": 10
+        }
+    }
+}
