@@ -42,6 +42,8 @@ public class OperatorHandler extends TokenNodeHandler {
             } else if (element.firstElementSibling() == element) {
                 form = OperatorForm.PREFIX;
             }
+        } else if (element.parent().childrenSize() == 1) {
+            form = OperatorForm.POSTFIX;
         }
 
         // Parse form attribute
@@ -52,8 +54,8 @@ public class OperatorHandler extends TokenNodeHandler {
         double lspace = DEFAULT_SPACE_WIDTH;
         double rspace = DEFAULT_SPACE_WIDTH;
         boolean largeOp = false;
-        boolean verticalStretchy = true;
-        boolean horizontalStretchy = true;
+        boolean verticalStretchy = false;
+        boolean horizontalStretchy = false;
 
         String stretchyStr = getStringAttribute(element, "stretchy", "");
         boolean stretchy = Boolean.parseBoolean(stretchyStr);

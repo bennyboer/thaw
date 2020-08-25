@@ -34,27 +34,39 @@ public class OverNodeHandler extends VerticalNodeHandler {
         ctx.setCurrentX(0);
         ctx.setCurrentY(0);
 
-        // First typeset the over element
+        // First typeset the basis element
+        MathElement basisElement = MathNodeHandlers.getHandler(overNode.getChildren().get(0).getName())
+                .handle(overNode.getChildren().get(0), ctx);
+
+        // Update preferred size
+        Size oldPreferredSize = ctx.getPreferredSize();
+        ctx.setPreferredSize(new Size(basisElement.getSize().getWidth(), 0));
+
+        // Then typeset the over element
+        ctx.setCurrentX(0);
+        ctx.setCurrentY(0);
         ctx.setLevel(ctx.getLevel() + 2);
         MathElement overElement = MathNodeHandlers.getHandler(overNode.getChildren().get(1).getName())
                 .handle(overNode.getChildren().get(1), ctx);
         ctx.setLevel(ctx.getLevel() - 2);
 
-        // Shift the basis element
-        ctx.setCurrentX(0);
-        ctx.setCurrentY(overElement.getSize().getHeight() + spacing);
+        // Reset preferred size
+        ctx.setPreferredSize(oldPreferredSize);
 
-        // Then typeset the basis element
-        MathElement basisElement = MathNodeHandlers.getHandler(overNode.getChildren().get(0).getName())
-                .handle(overNode.getChildren().get(0), ctx);
+        // Shift the basis element to be below the over element
+        basisElement.setPosition(new Position(
+                basisElement.getPosition(false).getX(),
+                overElement.getSize().getHeight() + spacing
+        ));
 
-        // Stretch over element if it is stretchy
-        if (overElement.isHorizontalStretchy()) {
+        // Stretch basis element to the current preferred size if it is stretchy horizontally
+        if (basisElement.isHorizontalStretchy() && ctx.getPreferredSize().getWidth() > basisElement.getSize().getWidth()) {
+            basisElement.setStretchScaleX(ctx.getPreferredSize().getWidth() / basisElement.getSize().getWidth());
+        }
+
+        // Stretch over element if it is stretchy horizontally (based on the basis element width)
+        if (overElement.isHorizontalStretchy() && basisElement.getSize().getWidth() > overElement.getSize().getWidth()) {
             overElement.setStretchScaleX(basisElement.getSize().getWidth() / overElement.getSize().getWidth());
-            overElement.setSize(new Size(overElement.getSize().getWidth() * overElement.getStretchScaleX(), overElement.getSize().getHeight()));
-        } else if (basisElement.isHorizontalStretchy()) {
-            basisElement.setStretchScaleX(overElement.getSize().getWidth() / basisElement.getSize().getWidth());
-            basisElement.setSize(new Size(basisElement.getSize().getWidth() * basisElement.getStretchScaleX(), basisElement.getSize().getHeight()));
         }
 
         // Align elements according to the alignment attribute

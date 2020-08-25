@@ -8,6 +8,7 @@ import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 
 /**
  * Handler dealing with the under node.
@@ -37,6 +38,10 @@ public class UnderNodeHandler extends VerticalNodeHandler {
         MathElement basisElement = MathNodeHandlers.getHandler(underNode.getChildren().get(0).getName())
                 .handle(underNode.getChildren().get(0), ctx);
 
+        // Update preferred size
+        Size oldPreferredSize = ctx.getPreferredSize();
+        ctx.setPreferredSize(new Size(basisElement.getSize().getWidth(), 0));
+
         // Shift the under element
         ctx.setCurrentX(0);
         ctx.setCurrentY(basisElement.getSize().getHeight() + spacing);
@@ -46,6 +51,19 @@ public class UnderNodeHandler extends VerticalNodeHandler {
         MathElement underElement = MathNodeHandlers.getHandler(underNode.getChildren().get(1).getName())
                 .handle(underNode.getChildren().get(1), ctx);
         ctx.setLevel(ctx.getLevel() - 2);
+
+        // Reset preferred size
+        ctx.setPreferredSize(oldPreferredSize);
+
+        // Stretch basis element to the current preferred size if it is stretchy horizontally
+        if (basisElement.isHorizontalStretchy() && ctx.getPreferredSize().getWidth() > basisElement.getSize().getWidth()) {
+            basisElement.setStretchScaleX(ctx.getPreferredSize().getWidth() / basisElement.getSize().getWidth());
+        }
+
+        // Stretch under element if it is stretchy horizontally (based on the basis element width)
+        if (underElement.isHorizontalStretchy() && basisElement.getSize().getWidth() > underElement.getSize().getWidth()) {
+            underElement.setStretchScaleX(basisElement.getSize().getWidth() / underElement.getSize().getWidth());
+        }
 
         // Align elements according to the alignment attribute
         alignElements(underNode.getAlignment(), basisElement, underElement);

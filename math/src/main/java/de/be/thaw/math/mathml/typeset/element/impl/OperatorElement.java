@@ -62,4 +62,25 @@ public class OperatorElement extends TokenElement {
         return horizontalStretchy;
     }
 
+    @Override
+    public void setStretchScaleY(double scaleY) {
+        super.setStretchScaleY(scaleY);
+
+        setBaseline(getBaseline() * scaleY);
+        setSize(new Size(
+                getSize().getWidth(),
+                getSize().getHeight() * scaleY
+        ));
+    }
+
+    @Override
+    public void setStretchScaleX(double scaleX) {
+        super.setStretchScaleX(scaleX);
+
+        setSize(new Size(
+                getSize().getWidth() * scaleX,
+                getSize().getHeight()
+        ));
+    }
+
 }

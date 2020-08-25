@@ -8,6 +8,7 @@ import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.MathTypesetContext;
 import de.be.thaw.math.mathml.typeset.impl.handler.MathNodeHandlers;
 import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 
 /**
  * Handler dealing with the under and over node.
@@ -33,19 +34,27 @@ public class UnderOverNodeHandler extends VerticalNodeHandler {
         ctx.setCurrentX(0);
         ctx.setCurrentY(0);
 
-        // First typeset the over element
+        // First typeset the basis element
+        MathElement basisElement = MathNodeHandlers.getHandler(underOverNode.getChildren().get(0).getName())
+                .handle(underOverNode.getChildren().get(0), ctx);
+
+        // Update preferred size
+        Size oldPreferredSize = ctx.getPreferredSize();
+        ctx.setPreferredSize(new Size(basisElement.getSize().getWidth(), 0));
+
+        // Then typeset the over element
+        ctx.setCurrentX(0);
+        ctx.setCurrentY(0);
         ctx.setLevel(ctx.getLevel() + 2);
         MathElement overElement = MathNodeHandlers.getHandler(underOverNode.getChildren().get(2).getName())
                 .handle(underOverNode.getChildren().get(2), ctx);
         ctx.setLevel(ctx.getLevel() - 2);
 
-        // Shift the basis element
-        ctx.setCurrentX(0);
-        ctx.setCurrentY(overElement.getSize().getHeight() + spacing);
-
-        // Then typeset the basis element
-        MathElement basisElement = MathNodeHandlers.getHandler(underOverNode.getChildren().get(0).getName())
-                .handle(underOverNode.getChildren().get(0), ctx);
+        // Shift the basis element to be below the over element
+        basisElement.setPosition(new Position(
+                basisElement.getPosition(false).getX(),
+                overElement.getSize().getHeight() + spacing
+        ));
 
         // Shift the under element
         ctx.setCurrentX(0);
@@ -56,6 +65,24 @@ public class UnderOverNodeHandler extends VerticalNodeHandler {
         MathElement underElement = MathNodeHandlers.getHandler(underOverNode.getChildren().get(1).getName())
                 .handle(underOverNode.getChildren().get(1), ctx);
         ctx.setLevel(ctx.getLevel() - 2);
+
+        // Reset preferred size
+        ctx.setPreferredSize(oldPreferredSize);
+
+        // Stretch basis element to the current preferred size if it is stretchy horizontally
+        if (basisElement.isHorizontalStretchy() && ctx.getPreferredSize().getWidth() > basisElement.getSize().getWidth()) {
+            basisElement.setStretchScaleX(ctx.getPreferredSize().getWidth() / basisElement.getSize().getWidth());
+        }
+
+        // Stretch over element if it is stretchy horizontally (based on the basis element width)
+        if (overElement.isHorizontalStretchy() && basisElement.getSize().getWidth() > overElement.getSize().getWidth()) {
+            overElement.setStretchScaleX(basisElement.getSize().getWidth() / overElement.getSize().getWidth());
+        }
+
+        // Stretch under element if it is stretchy horizontally (based on the basis element width)
+        if (underElement.isHorizontalStretchy() && basisElement.getSize().getWidth() > underElement.getSize().getWidth()) {
+            underElement.setStretchScaleX(basisElement.getSize().getWidth() / underElement.getSize().getWidth());
+        }
 
         // Align elements according to the alignment attribute
         alignElements(underOverNode.getAlignment(), overElement, basisElement, underElement);

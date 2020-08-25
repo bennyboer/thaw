@@ -1,25 +1,3 @@
-#MATH, '
-<math>
-    <mover>
-        <mrow>
-            <mi>x</mi>
-            <mo>+</mo>
-            <mtext>&#x2026;</mtext>
-            <mo>+</mo>
-            <mi>x</mi>
-        </mrow>
-        <mover>
-            <mo stretchy="true">&OverBrace;</mo>
-            <mrow>
-                <mi>k</mi>
-                <mspace width="3" />
-                <mtext>times</mtext>
-            </mrow>
-        </mover>
-    </mover>
-</math>
-'#
-
 #H1, numbered=false# Math support torture test
 
 
@@ -526,7 +504,7 @@
             <mi>x</mi>
         </mrow>
         <mover>
-            <mo>&OverBrace;</mo>
+            <mo stretchy="true">&OverBrace;</mo>
             <mrow>
                 <mi>k</mi>
                 <mspace width="3" />
@@ -589,7 +567,45 @@
 
 #IMAGE, src="img/ex52.png", scale=false#
 
-*TODO*
+#MATH, '
+<math>
+    <mo stretchy="false">{</mo>
+    <munderover>
+        <mrow>
+            <mi>a</mi>
+            <mo>,</mo>
+            <mo rspace="1">&hellip;</mo>
+            <mo>,</mo>
+            <mi>a</mi>
+            <mo>,</mo>
+            <mi>b</mi>
+            <mo>,</mo>
+            <mo rspace="1">&hellip;</mo>
+            <mo>,</mo>
+            <mi>b</mi>
+        </mrow>
+        <munder>
+            <mo stretchy="true">&UnderBrace;</mo>
+            <mrow>
+                <mi>k</mi>
+                <mo>+</mo>
+                <mi>l</mi>
+                <mspace width="3" />
+                <mtext>elements</mtext>
+            </mrow>
+        </munder>
+        <mover>
+            <mo stretchy="true">&OverBrace;</mo>
+            <mrow>
+                <mi>k</mi>
+                <mspace width="3" />
+                <mtext>times</mtext>
+            </mrow>
+        </mover>
+    </munderover>
+    <mo stretchy="false">}</mo>
+</math>
+'#
 
 
 #H3, numbered=false# Nested matrices!
@@ -777,6 +793,9 @@
     </msub>
 </math>
 '#
+
+
+#H3, numbered=false# Large parenthesis
 
 #MATH, '
 <math>

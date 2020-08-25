@@ -66,9 +66,7 @@ public class RowNodeHandler implements MathMLNodeHandler {
         for (MathElement child : children) {
             if (child.isVerticalStretchy()) {
                 child.setStretchScaleY(maxHeight / child.getSize().getHeight());
-                child.setBaseline(child.getBaseline() * child.getStretchScaleY());
                 child.setPosition(new Position(child.getPosition(false).getX(), 0));
-                child.setSize(new Size(child.getSize().getWidth(), child.getSize().getHeight() * child.getStretchScaleY()));
             }
         }
 

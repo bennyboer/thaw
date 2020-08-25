@@ -1,6 +1,7 @@
 package de.be.thaw.math.mathml.typeset.impl;
 
 import de.be.thaw.math.mathml.typeset.config.MathTypesetConfig;
+import de.be.thaw.util.Size;
 
 /**
  * Context used during typesetting.
@@ -26,6 +27,11 @@ public class MathTypesetContext {
      * Nesting level in the expression.
      */
     private int level = 0;
+
+    /**
+     * Preferred size of the currently processing element.
+     */
+    private Size preferredSize = new Size(0, 0);
 
     public MathTypesetContext(MathTypesetConfig config) {
         this.config = config;
@@ -66,6 +72,14 @@ public class MathTypesetContext {
 
     public double getLevelAdjustedFontSize() {
         return Math.max(getConfig().getFontSize() - getConfig().getFontSize() * 0.1 * getLevel(), 4);
+    }
+
+    public Size getPreferredSize() {
+        return preferredSize;
+    }
+
+    public void setPreferredSize(Size preferredSize) {
+        this.preferredSize = preferredSize;
     }
 
 }
