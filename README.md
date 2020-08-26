@@ -103,3 +103,4 @@ The project is organized in multiple modules:
 | Shared | `/shared` | Some shared classes. |
 | Math | `/math` | LaTeX to MathML converter + MathML typesetting. |
 | Util | `/util` | Some useful module-spanning utilities. |
+| Code | `/code` | Dealing with syntax highlighting code. |
