@@ -1,3 +1,7 @@
+plugins {
+    id 'de.jjohannes.extra-java-module-info' version '0.1'
+}
+
 dependencies {
     implementation project(':core')
     implementation project(':text')
@@ -7,4 +11,12 @@ dependencies {
     implementation project(':reference')
     implementation project(':util')
     implementation project(':math')
+    implementation project(':code')
+
+    // Library for parsing RTF (Rich-Text-Format)
+    implementation group: 'com.github.joniles', name: 'rtfparserkit', version: '1.15.0'
+}
+
+extraJavaModuleInfo {
+    automaticModule('rtfparserkit-1.15.0.jar', 'com.rtfparserkit')
 }

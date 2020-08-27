@@ -71,3 +71,9 @@ SOFTWARE.
 
 We use the STIX 2.0 math font (https://github.com/stipub/stixfonts) distributed under the OFL (Open Font License) (See https://scripts.sil.org/OFL).
 The font file(s) and the original license file containing the copyright information are located under `math/src/main/resources/font/stix`.
+
+
+## RTF Parser Kit
+
+RTF Parser Kit is used by Thaw (https://github.com/joniles/rtfparserkit).
+It is distributed under the Apache-2.0 License which can be obtained from https://github.com/joniles/rtfparserkit/blob/master/licence.txt or http://www.apache.org/licenses/LICENSE-2.0.

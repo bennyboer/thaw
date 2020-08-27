@@ -33,7 +33,6 @@ import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Size;
-import de.be.thaw.util.debug.Debug;
 import org.apache.fontbox.ttf.TTFParser;
 import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -296,6 +295,7 @@ public class PdfExporter implements Exporter {
                     return new PdfImageSource(PDImageXObject.createFromFile(imgFile.getAbsolutePath(), ctx.getPdDocument()), POINTS_PER_PX);
                 })
                 .setMathFont(ctx.getMathFont())
+                .setWorkingDirectory(ThawContext.getInstance().getCurrentFolder())
                 .build());
     }
 
