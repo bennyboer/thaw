@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Paragraph handler dealing with typesetting code block paragraphs.
@@ -66,11 +67,27 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
                 StyleType.INSETS,
                 style -> Optional.ofNullable((InsetsStyle) style)
         ).orElseThrow();
+        final boolean showLineNumbers = paragraph.getNode().getStyle().getStyleAttribute(
+                StyleType.TEXT,
+                style -> Optional.ofNullable(((TextStyle) style).isShowLineNumbers())
+        ).orElse(true);
 
         // Prepare collections used during RTF parsing
         List<ColorStyle> colors = new ArrayList<>();
         colors.add(new ColorStyle(0.0, 0.0, 0.0, 1.0)); // Add the default color (index 0)
         Stack<RTFGroupContext> ctxStack = new Stack<>();
+
+        // Check if there is enough space for the next line
+        double availableHeight = ctx.getAvailableHeight();
+        if (availableHeight < lineHeight) {
+            // Not enough space for this line left on the current page -> Create next page
+            ctx.pushPage();
+        }
+
+        AtomicInteger currentLineNumber = new AtomicInteger(0); // Counter for the current line number
+        if (showLineNumbers) {
+            drawLineNumber(currentLineNumber.incrementAndGet(), codeParagraph, ctx);
+        }
 
         // Parse the RTF code
         IRtfSource source = new RtfStreamSource(new ByteArrayInputStream(codeParagraph.getRtfCode().getBytes(StandardCharsets.UTF_8)));
@@ -89,24 +106,21 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
                 @Override
                 public void processDocumentStart() {
-
+                    // Do nothing.
                 }
 
                 @Override
                 public void processDocumentEnd() {
-
+                    // Do nothing.
                 }
 
                 @Override
                 public void processGroupStart() {
-                    System.out.println("GROUP START");
                     ctxStack.push(new RTFGroupContext(ctxStack.isEmpty() ? null : ctxStack.peek()));
                 }
 
                 @Override
                 public void processGroupEnd() {
-                    System.out.println("GROUP END");
-
                     if (isParseColors) {
                         isParseColors = false;
                     }
@@ -116,18 +130,16 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
                 @Override
                 public void processCharacterBytes(byte[] data) {
-
+                    // Do nothing.
                 }
 
                 @Override
                 public void processBinaryBytes(byte[] data) {
-
+                    // Do nothing.
                 }
 
                 @Override
                 public void processString(String string) {
-                    System.out.println(string);
-
                     if (isParseColors) {
                         if (string.equals(";") && tmpBlue > -1) {
                             colors.add(new ColorStyle(tmpRed / 255.0, tmpGreen / 255.0, tmpBlue / 255.0, 1.0));
@@ -179,8 +191,6 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
                 @Override
                 public void processCommand(Command command, int parameter, boolean hasParameter, boolean optional) {
-                    System.out.println(command.getCommandType().name() + " " + command.getCommandName() + (hasParameter ? (" = " + parameter) : ""));
-
                     if (command.getCommandType() == CommandType.Destination) {
                         if (!command.getCommandName().equals("rtf")) {
                             ctxStack.peek().setAcceptElements(false);
@@ -206,6 +216,25 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
                                     // Explicit line break
                                     ctx.getPositionContext().increaseY(lineHeight);
                                     ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + insetsStyle.getLeft());
+
+                                    // Check if there is enough space for the next line
+                                    double availableHeight = ctx.getAvailableHeight();
+                                    if (availableHeight < lineHeight) {
+                                        // Not enough space for this line left on the current page -> Create next page
+                                        try {
+                                            ctx.pushPage();
+                                        } catch (TypeSettingException e) {
+                                            throw new RuntimeException(e); // TODO Make this more beautiful
+                                        }
+                                    }
+
+                                    if (showLineNumbers) {
+                                        try {
+                                            drawLineNumber(currentLineNumber.incrementAndGet(), codeParagraph, ctx);
+                                        } catch (TypeSettingException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    }
                                 }
                             }
                             case Value -> {
@@ -228,6 +257,55 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         } catch (IOException e) {
             throw new TypeSettingException("Could not typeset code block paragraph properly", e);
         }
+    }
+
+    /**
+     * Draw the passed line number in front of a code line.
+     *
+     * @param lineNumber to draw
+     * @param paragraph  the paragraph
+     * @param ctx        the typesetting context
+     */
+    private void drawLineNumber(int lineNumber, CodeParagraph paragraph, TypeSettingContext ctx) throws TypeSettingException {
+        final String lineNumberFontFamily = paragraph.getNode().getStyle().getStyleAttribute(
+                StyleType.TEXT,
+                style -> Optional.ofNullable(((TextStyle) style).getLineNumberFontFamily())
+        ).orElse("Consolas");
+        final Double lineNumberFontSize = paragraph.getNode().getStyle().getStyleAttribute(
+                StyleType.TEXT,
+                style -> Optional.ofNullable(((TextStyle) style).getLineNumberFontSize())
+        ).orElse(12.0);
+        final ColorStyle lineNumberColor = paragraph.getNode().getStyle().getStyleAttribute(
+                StyleType.TEXT,
+                style -> Optional.ofNullable(((TextStyle) style).getLineNumberColor())
+        ).orElse(null);
+
+        // Stringify line number
+        String lineNumberStr = String.valueOf(lineNumber);
+
+        // Create dummy document node representing the line number string
+        Map<StyleType, Style> lineNumberStyles = new HashMap<>();
+        lineNumberStyles.put(StyleType.FONT, new FontStyle(lineNumberFontFamily, FontVariant.MONOSPACE, lineNumberFontSize, lineNumberColor, null, null));
+        DocumentNodeStyle lineNumberNodeStyle = new DocumentNodeStyle(paragraph.getNode().getStyle(), lineNumberStyles);
+        DocumentNode lineNumberDocumentNode = new DocumentNode(new TextNode(lineNumberStr, null), paragraph.getNode(), lineNumberNodeStyle);
+
+        // Measure line number string
+        FontDetailsSupplier.StringMetrics lineNumberStrMetrics;
+        try {
+            lineNumberStrMetrics = ctx.getConfig().getFontDetailsSupplier().measureString(lineNumberDocumentNode, -1, lineNumberStr);
+        } catch (Exception e) {
+            throw new TypeSettingException(e);
+        }
+
+        ctx.pushPageElement(new TextElement(
+                lineNumberStr,
+                lineNumberStrMetrics,
+                lineNumberDocumentNode,
+                ctx.getCurrentPageNumber(),
+                lineNumberStrMetrics.getBaseline(),
+                new Size(lineNumberStrMetrics.getWidth(), lineNumberStrMetrics.getHeight()),
+                new Position(ctx.getConfig().getPageInsets().getLeft() - lineNumberStrMetrics.getWidth() - 10.0, ctx.getPositionContext().getY())
+        ));
     }
 
     /**

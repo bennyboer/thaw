@@ -1,13 +1,19 @@
 package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
 
 import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.core.document.node.style.DocumentNodeStyle;
+import de.be.thaw.font.util.FontVariant;
+import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.impl.ColorStyle;
 import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.TextStyle;
+import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.KnuthPlassAlgorithm;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
+import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.exception.CouldNotFindFeasibleSolutionException;
 import de.be.thaw.typeset.knuthplass.item.Item;
 import de.be.thaw.typeset.knuthplass.item.ItemType;
@@ -30,7 +36,9 @@ import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.IntToDoubleFunction;
 
@@ -67,11 +75,27 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                 StyleType.TEXT,
                 style -> Optional.ofNullable(((TextStyle) style).getJustify())
         ).orElse(true);
+        final boolean showLineNumbers = paragraph.getNode().getStyle().getStyleAttribute(
+                StyleType.TEXT,
+                style -> Optional.ofNullable(((TextStyle) style).isShowLineNumbers())
+        ).orElse(false);
+        final String lineNumberFontFamily = paragraph.getNode().getStyle().getStyleAttribute(
+                StyleType.TEXT,
+                style -> Optional.ofNullable(((TextStyle) style).getLineNumberFontFamily())
+        ).orElse("Cambria");
+        final Double lineNumberFontSize = paragraph.getNode().getStyle().getStyleAttribute(
+                StyleType.TEXT,
+                style -> Optional.ofNullable(((TextStyle) style).getLineNumberFontSize())
+        ).orElse(7.0);
+        final ColorStyle lineNumberColor = paragraph.getNode().getStyle().getStyleAttribute(
+                StyleType.TEXT,
+                style -> Optional.ofNullable(((TextStyle) style).getLineNumberColor())
+        ).orElse(null);
 
         // Calculate some metrics
         double baseline;
         try {
-            baseline = ctx.getConfig().getFontDetailsSupplier().measureString(textParagraph.getNode(), -1, "x").getBaseline();
+            baseline = ctx.getConfig().getFontDetailsSupplier().measureString(textParagraph.getNode(), -1, "M").getBaseline();
         } catch (Exception e) {
             throw new TypeSettingException(e);
         }
@@ -187,6 +211,38 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                 } else if (alignment == HorizontalAlignment.CENTER) {
                     ctx.getPositionContext().increaseX(restWidth / 2);
                 }
+            }
+
+            int currentLineNumber = ctx.increaseAndGetLineNumber();
+
+            // Show the current line number in front of the text (if showLineNumbers is true).
+            if (showLineNumbers) {
+                // Stringify line number
+                String lineNumberStr = String.valueOf(currentLineNumber);
+
+                // Create dummy document node representing the line number string
+                Map<StyleType, Style> lineNumberStyles = new HashMap<>();
+                lineNumberStyles.put(StyleType.FONT, new FontStyle(lineNumberFontFamily, FontVariant.MONOSPACE, lineNumberFontSize, lineNumberColor, null, null));
+                DocumentNodeStyle lineNumberNodeStyle = new DocumentNodeStyle(paragraph.getNode().getStyle(), lineNumberStyles);
+                DocumentNode lineNumberDocumentNode = new DocumentNode(new TextNode(lineNumberStr, null), paragraph.getNode(), lineNumberNodeStyle);
+
+                // Measure line number string
+                FontDetailsSupplier.StringMetrics lineNumberStrMetrics;
+                try {
+                    lineNumberStrMetrics = ctx.getConfig().getFontDetailsSupplier().measureString(lineNumberDocumentNode, -1, lineNumberStr);
+                } catch (Exception e) {
+                    throw new TypeSettingException(e);
+                }
+
+                ctx.pushPageElement(new TextElement(
+                        lineNumberStr,
+                        lineNumberStrMetrics,
+                        lineNumberDocumentNode,
+                        ctx.getCurrentPageNumber(),
+                        baseline,
+                        new Size(lineNumberStrMetrics.getWidth(), lineHeight),
+                        new Position(ctx.getConfig().getPageInsets().getLeft() - lineNumberStrMetrics.getWidth() - 10.0, ctx.getPositionContext().getY())
+                ));
             }
 
             for (Item item : line) {

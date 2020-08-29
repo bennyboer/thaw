@@ -89,7 +89,16 @@ public class StyleModel {
         documentStyles.put(StyleType.SIZE, new SizeStyle(210.0, 297.0));
         documentStyles.put(StyleType.INSETS, new InsetsStyle(20.0, 25.0, 20.0, 25.0));
         documentStyles.put(StyleType.BACKGROUND, new BackgroundStyle(new ColorStyle(1.0, 1.0, 1.0, 1.0)));
-        documentStyles.put(StyleType.TEXT, new TextStyle(10.0, null, HorizontalAlignment.LEFT, Boolean.TRUE));
+        documentStyles.put(StyleType.TEXT, new TextStyle(
+                10.0,
+                null,
+                HorizontalAlignment.LEFT,
+                Boolean.TRUE,
+                false,
+                "Consolas",
+                7.0,
+                new ColorStyle(0.6, 0.6, 0.6, 1.0)
+        ));
         documentStyles.put(StyleType.REFERENCE, new ReferenceStyle(
                 new ColorStyle(
                         0.439,
@@ -136,13 +145,36 @@ public class StyleModel {
             double insetsBottom = 3;
 
             Map<StyleType, Style> headlineStyles = new HashMap<>();
-            headlineStyles.put(StyleType.TEXT, new TextStyle(0.0, lineHeight, HorizontalAlignment.LEFT, false));
+            headlineStyles.put(StyleType.TEXT, new TextStyle(0.0, lineHeight, HorizontalAlignment.LEFT, false, null, null, null, null));
             headlineStyles.put(StyleType.FONT, new FontStyle(null, FontVariant.BOLD, fontSize, null, null, null));
             headlineStyles.put(StyleType.INSETS, new InsetsStyle(insetsTop, 0.0, insetsBottom, 0.0));
 
             StyleBlock headlineStyleBlock = new StyleBlock(name, headlineStyles);
             model.addBlock(headlineStyleBlock.getName(), headlineStyleBlock);
         }
+
+        // Code styles
+        final Map<StyleType, Style> codeStyles = new HashMap<>();
+        codeStyles.put(StyleType.FONT, new FontStyle(
+                null,
+                null,
+                9.0,
+                null,
+                null,
+                null
+        ));
+        codeStyles.put(StyleType.TEXT, new TextStyle(
+                null,
+                10.0,
+                null,
+                null,
+                true,
+                "Consolas",
+                8.0,
+                new ColorStyle(0.7, 0.7, 0.7, 1.0)
+        ));
+        StyleBlock codeStyleBlock = new StyleBlock("CODE", codeStyles);
+        model.addBlock(codeStyleBlock.getName(), codeStyleBlock);
 
         return model;
     }
