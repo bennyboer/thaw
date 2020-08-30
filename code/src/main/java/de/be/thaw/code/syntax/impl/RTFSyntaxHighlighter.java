@@ -46,6 +46,11 @@ public class RTFSyntaxHighlighter implements SyntaxHighlighter {
     private static final int MAX_WAIT_TIME = 30;
 
     /**
+     * How many spaces are to be a tab.
+     */
+    private static final int SPACES_PER_TAB = 4;
+
+    /**
      * Message printed when Python is not available on the command line.
      */
     private static final String PYTHON_NOT_INSTALLED_MESSAGE = "In order to syntax highlight code blocks you need to install Python on your machine (https://www.python.org/).\n" +
@@ -60,6 +65,9 @@ public class RTFSyntaxHighlighter implements SyntaxHighlighter {
     @Override
     public String highlight(String code, String language, String style) throws HighlightException {
         checkIfToolsAvailable(); // Check if Python and Pygments tools are available on the command line
+
+        // Replace tabs with whitespaces as they are not formatted by Pygments properly
+        code = code.replaceAll("\t", " ".repeat(SPACES_PER_TAB));
 
         // Write code in a temporary file
         File tmpCodeFile;
