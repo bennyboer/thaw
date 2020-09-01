@@ -14,10 +14,22 @@ public class CodeParagraph extends AbstractParagraph {
      */
     private final String rtfCode;
 
-    public CodeParagraph(String rtfCode, double lineWidth, DocumentNode node) {
+    /**
+     * The start line to display from.
+     */
+    private final int startLine;
+
+    /**
+     * The end line to display to.
+     */
+    private final int endLine;
+
+    public CodeParagraph(String rtfCode, int startLine, int endLine, double lineWidth, DocumentNode node) {
         super(lineWidth, node);
 
         this.rtfCode = rtfCode;
+        this.startLine = startLine;
+        this.endLine = endLine;
     }
 
     @Override
@@ -32,6 +44,24 @@ public class CodeParagraph extends AbstractParagraph {
      */
     public String getRtfCode() {
         return rtfCode;
+    }
+
+    /**
+     * Get the start line to display from.
+     *
+     * @return start line
+     */
+    public int getStartLine() {
+        return startLine;
+    }
+
+    /**
+     * Get the end line to display to.
+     *
+     * @return end line
+     */
+    public int getEndLine() {
+        return endLine;
     }
 
 }

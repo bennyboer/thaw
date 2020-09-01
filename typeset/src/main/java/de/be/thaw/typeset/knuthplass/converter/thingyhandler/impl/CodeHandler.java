@@ -49,6 +49,31 @@ public class CodeHandler implements ThingyHandler {
         // Try to read code from Thingy arguments and options
         String code = readSourceCode(node, ctx);
 
+        int startLine = 1;
+        int endLine = Integer.MAX_VALUE;
+        String startLineStr = node.getOptions().get("startline");
+        if (startLineStr != null) {
+            try {
+                startLine = Integer.parseInt(startLineStr);
+            } catch (NumberFormatException e) {
+                throw new DocumentConversionException(String.format(
+                        "Expected value of option 'startLine' of #CODE# Thingy at %s to be an integer",
+                        node.getTextPosition()
+                ), e);
+            }
+        }
+        String endLineStr = node.getOptions().get("endline");
+        if (endLineStr != null) {
+            try {
+                endLine = Integer.parseInt(endLineStr);
+            } catch (NumberFormatException e) {
+                throw new DocumentConversionException(String.format(
+                        "Expected value of option 'endLine' of #CODE# Thingy at %s to be an integer",
+                        node.getTextPosition()
+                ), e);
+            }
+        }
+
         // Syntax highlight code (build RTF from code).
         String rtfCode = syntaxHighlight(code, node, ctx);
 
@@ -56,6 +81,8 @@ public class CodeHandler implements ThingyHandler {
         ctx.finalizeParagraph();
         ctx.setCurrentParagraph(new CodeParagraph(
                 rtfCode,
+                startLine,
+                endLine,
                 ctx.getLineWidth(),
                 documentNode
         ));

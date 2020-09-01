@@ -255,9 +255,14 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         private boolean drawLineNumberNextToken = true;
 
         /**
-         * The current line number.
+         * The current line number to draw.
          */
-        private int currentLineNumber = 0;
+        private int currentLineNumberToDraw = 0;
+
+        /**
+         * Counter of line numbers.
+         */
+        private int lineNumberCounter = 1;
 
         RTFCodeParser(CodeParagraph codeParagraph, TypeSettingContext ctx) {
             this.codeParagraph = codeParagraph;
@@ -421,12 +426,18 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
                 return;
             }
 
+            // Check whether the current line should be shown (defined by start and end line in the code paragraph).
+            boolean showLine = lineNumberCounter >= codeParagraph.getStartLine() && lineNumberCounter <= codeParagraph.getEndLine();
+            if (!showLine) {
+                return;
+            }
+
             // Draw line numbers (if necessary)
             if (showLineNumbers && drawLineNumberNextToken) {
                 drawLineNumberNextToken = false;
 
                 try {
-                    drawLineNumber(++currentLineNumber, codeParagraph, ctx);
+                    drawLineNumber(++currentLineNumberToDraw, codeParagraph, ctx);
                 } catch (TypeSettingException e) {
                     cancelParsing(e);
                 }
@@ -498,31 +509,38 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
          * @param explicit whether we are dealing with an explicit line break or because the line ran out of space
          */
         private void breakLine(boolean explicit) {
-            // Draw line numbers if it has not been drawn for this line yet
-            if (showLineNumbers && drawLineNumberNextToken) {
-                try {
-                    drawLineNumber(++currentLineNumber, codeParagraph, ctx);
-                } catch (TypeSettingException e) {
-                    cancelParsing(e);
+            boolean displayLine = lineNumberCounter >= codeParagraph.getStartLine() && lineNumberCounter <= codeParagraph.getEndLine();
+            if (displayLine) {
+                // Draw line numbers if it has not been drawn for this line yet
+                if (showLineNumbers && drawLineNumberNextToken) {
+                    try {
+                        drawLineNumber(++currentLineNumberToDraw, codeParagraph, ctx);
+                    } catch (TypeSettingException e) {
+                        cancelParsing(e);
+                    }
                 }
-            }
 
-            // Adjust position context for the next line
-            ctx.getPositionContext().increaseY(lineHeight);
-            ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + insetsStyle.getLeft());
+                // Adjust position context for the next line
+                ctx.getPositionContext().increaseY(lineHeight);
+                ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + insetsStyle.getLeft());
 
-            // Check if there is enough space for the next line
-            double availableHeight = ctx.getAvailableHeight();
-            if (availableHeight < lineHeight) {
-                // Not enough space for this line left on the current page -> Create next page
-                try {
-                    ctx.pushPage();
-                } catch (TypeSettingException e) {
-                    cancelParsing(e);
+                // Check if there is enough space for the next line
+                double availableHeight = ctx.getAvailableHeight();
+                if (availableHeight < lineHeight) {
+                    // Not enough space for this line left on the current page -> Create next page
+                    try {
+                        ctx.pushPage();
+                    } catch (TypeSettingException e) {
+                        cancelParsing(e);
+                    }
                 }
+            } else {
+                currentLineNumberToDraw++;
             }
 
             if (explicit) {
+                lineNumberCounter++; // Increase line number counter
+
                 drawLineNumberNextToken = true;
             }
         }
