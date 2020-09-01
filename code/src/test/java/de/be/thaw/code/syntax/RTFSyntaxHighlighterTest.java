@@ -3,10 +3,12 @@ package de.be.thaw.code.syntax;
 import de.be.thaw.code.syntax.exception.HighlightException;
 import de.be.thaw.code.syntax.impl.RTFSyntaxHighlighter;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class RTFSyntaxHighlighterTest {
 
+    @Disabled("Depends on environment")
     @Test
     public void simpleTest() throws HighlightException {
         RTFSyntaxHighlighter highlighter = new RTFSyntaxHighlighter();
