@@ -1,6 +1,5 @@
 package de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl;
 
-import de.be.thaw.code.syntax.SyntaxHighlighter;
 import de.be.thaw.code.syntax.exception.HighlightException;
 import de.be.thaw.code.syntax.impl.RTFSyntaxHighlighter;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
@@ -51,7 +50,7 @@ public class CodeHandler implements ThingyHandler {
         String code = readSourceCode(node, ctx);
 
         // Syntax highlight code (build RTF from code).
-        String rtfCode = syntaxHighlight(code, node);
+        String rtfCode = syntaxHighlight(code, node, ctx);
 
         // Finalize the current paragraph -> we'll create a special code block paragraph instead
         ctx.finalizeParagraph();
@@ -110,10 +109,11 @@ public class CodeHandler implements ThingyHandler {
      *
      * @param code to do syntax highlighting for
      * @param node the code thingy node
+     * @param ctx  the conversion context
      * @return the syntax highlighted code
      * @throws DocumentConversionException in case the code could not be syntax highlighted
      */
-    private String syntaxHighlight(String code, ThingyNode node) throws DocumentConversionException {
+    private String syntaxHighlight(String code, ThingyNode node, ConversionContext ctx) throws DocumentConversionException {
         String sourceFile = node.getOptions().get("src");
         boolean isAlreadyRTFCode = sourceFile != null && sourceFile.endsWith(".rtf");
         if (isAlreadyRTFCode) {
@@ -128,9 +128,11 @@ public class CodeHandler implements ThingyHandler {
             }
             String style = node.getOptions().getOrDefault("style", "colorful");
 
-            SyntaxHighlighter syntaxHighlighter = new RTFSyntaxHighlighter();
+            RTFSyntaxHighlighter syntaxHighlighter = new RTFSyntaxHighlighter();
+            syntaxHighlighter.setWorkingDirectory(ctx.getConfig().getWorkingDirectory());
+
             try {
-                return syntaxHighlighter.highlight(code, language.toLowerCase(), style.toLowerCase());
+                return syntaxHighlighter.highlight(code, language, style.toLowerCase());
             } catch (HighlightException e) {
                 throw new DocumentConversionException(e);
             }
