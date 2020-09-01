@@ -109,9 +109,13 @@ public class ThingyState implements State {
 
     @Override
     public State onNewLine(TokenizingContext ctx) {
-        // Thingy is able to stretch over multiple lines.
-        // New line is then replaced with white space character.
-        ctx.getBuffer().append(' ');
+        if (internalState == InternalState.IN_STRING) {
+            ctx.getBuffer().append('\n');
+        } else {
+            // Thingy is able to stretch over multiple lines.
+            // New line is then replaced with white space character.
+            ctx.getBuffer().append(' ');
+        }
 
         return this;
     }

@@ -101,6 +101,11 @@ public class TypeSettingContext {
      */
     private int footNoteNumber = 1;
 
+    /**
+     * Counter for line numbers.
+     */
+    private int lineNumberCounter = 0;
+
     public TypeSettingContext(
             KnuthPlassTypeSettingConfig config,
             Document document,
@@ -392,6 +397,13 @@ public class TypeSettingContext {
         }
 
         return null;
+    }
+
+    /**
+     * Increase and get the current line number.
+     */
+    public int increaseAndGetLineNumber() {
+        return ++lineNumberCounter;
     }
 
     /**

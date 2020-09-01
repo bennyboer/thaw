@@ -20,11 +20,13 @@ module de.be.thaw.typeset {
     requires de.be.thaw.core;
     requires de.be.thaw.text;
     requires de.be.thaw.info;
-    requires java.desktop;
     requires de.be.thaw.style;
     requires de.be.thaw.reference;
     requires de.be.thaw.font;
-    requires org.jetbrains.annotations;
     requires de.be.thaw.util;
     requires de.be.thaw.math;
+    requires de.be.thaw.code;
+    requires org.jetbrains.annotations;
+    requires java.desktop;
+    requires com.rtfparserkit;
 }

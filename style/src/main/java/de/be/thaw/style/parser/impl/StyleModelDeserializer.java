@@ -152,7 +152,11 @@ public class StyleModelDeserializer extends StdDeserializer<StyleModel> {
                     node.has("firstLineIndent") ? node.get("firstLineIndent").asDouble() : null,
                     node.has("lineHeight") ? node.get("lineHeight").asDouble() : null,
                     node.has("alignment") ? HorizontalAlignment.valueOf(node.get("alignment").asText().toUpperCase()) : null,
-                    node.has("justify") ? node.get("justify").asBoolean() : null
+                    node.has("justify") ? node.get("justify").asBoolean() : null,
+                    node.has("showLineNumbers") ? node.get("showLineNumbers").asBoolean() : null,
+                    node.has("lineNumberFontFamily") ? node.get("lineNumberFontFamily").asText() : null,
+                    node.has("lineNumberFontSize") ? node.get("lineNumberFontSize").asDouble() : null,
+                    node.has("lineNumberColor") ? (ColorStyle) deserializeStyle(StyleType.COLOR, node.get("lineNumberColor"), null) : null
             ).merge(oldStyle);
             case REFERENCE -> {
                 ColorStyle internalColor = node.has("internalColor") ? (ColorStyle) deserializeStyle(StyleType.COLOR, node.get("internalColor"), null) : null;

@@ -2,6 +2,7 @@
 
 Here we are listing libraries that are used by the Thaw project.
 
+
 ## Apache PDFBox
 
 We are using [Apache PDFBox](https://pdfbox.apache.org/) for exporting a Thaw document to PDF.
@@ -29,10 +30,12 @@ Furthermore the library contains the following attribution notices:
 >Includes the Zapf Dingbats Glyph List
 >Copyright 2002, 2010 Adobe Systems Incorporated.
 
+
 ## Jackson
 
 We are using [Jackson](https://github.com/FasterXML/jackson-core) for JSON deserialization.
 The library is licensed under the Apache 2.0 license, which can be obtained from http://www.apache.org/licenses/LICENSE-2.0.
+
 
 ## jsoup: Java HTML Parser
 
@@ -63,7 +66,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+
 ## STIX Two Math font
 
-We use the STIX 2.0 math font (https://github.com/stipub/stixfonts) distrubuted under the OFL (Open Font License) (See https://scripts.sil.org/OFL).
+We use the STIX 2.0 math font (https://github.com/stipub/stixfonts) distributed under the OFL (Open Font License) (See https://scripts.sil.org/OFL).
 The font file(s) and the original license file containing the copyright information are located under `math/src/main/resources/font/stix`.
+
+
+## RTF Parser Kit
+
+RTF Parser Kit is used by Thaw (https://github.com/joniles/rtfparserkit).
+It is distributed under the Apache-2.0 License which can be obtained from https://github.com/joniles/rtfparserkit/blob/master/licence.txt or http://www.apache.org/licenses/LICENSE-2.0.

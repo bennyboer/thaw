@@ -295,6 +295,7 @@ public class PdfExporter implements Exporter {
                     return new PdfImageSource(PDImageXObject.createFromFile(imgFile.getAbsolutePath(), ctx.getPdDocument()), POINTS_PER_PX);
                 })
                 .setMathFont(ctx.getMathFont())
+                .setWorkingDirectory(ThawContext.getInstance().getCurrentFolder())
                 .build());
     }
 

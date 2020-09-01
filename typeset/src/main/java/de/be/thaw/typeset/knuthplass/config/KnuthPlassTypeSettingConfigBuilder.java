@@ -8,6 +8,8 @@ import de.be.thaw.typeset.knuthplass.config.util.image.ImageSourceSupplier;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Size;
 
+import java.io.File;
+
 /**
  * Builder for the line breaking configuration.
  */
@@ -108,6 +110,11 @@ public class KnuthPlassTypeSettingConfigBuilder {
      * Font to use for math expressions.
      */
     private ThawFont mathFont;
+
+    /**
+     * The working directory.
+     */
+    private File workingDirectory;
 
     /**
      * Get the size of the page to typeset on (in mm).
@@ -362,6 +369,26 @@ public class KnuthPlassTypeSettingConfigBuilder {
     }
 
     /**
+     * Get the working directory.
+     *
+     * @return working directory
+     */
+    public File getWorkingDirectory() {
+        return workingDirectory;
+    }
+
+    /**
+     * Set the working directory.
+     *
+     * @param workingDirectory to set
+     */
+    public KnuthPlassTypeSettingConfigBuilder setWorkingDirectory(File workingDirectory) {
+        this.workingDirectory = workingDirectory;
+
+        return this;
+    }
+
+    /**
      * Build the line breaking configuration.
      *
      * @return the build config
@@ -379,7 +406,8 @@ public class KnuthPlassTypeSettingConfigBuilder {
                 getHyphenator(),
                 getGlueConfig(),
                 getImageSourceSupplier(),
-                getMathFont()
+                getMathFont(),
+                getWorkingDirectory()
         );
     }
 

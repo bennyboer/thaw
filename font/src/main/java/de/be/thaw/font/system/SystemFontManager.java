@@ -1,7 +1,7 @@
 package de.be.thaw.font.system;
 
-import de.be.thaw.font.util.OperatingSystem;
-import de.be.thaw.font.util.exception.CouldNotDetermineOperatingSystemException;
+import de.be.thaw.util.os.OperatingSystem;
+import de.be.thaw.util.os.exception.CouldNotDetermineOperatingSystemException;
 import de.be.thaw.font.util.exception.CouldNotGetFontsException;
 import de.be.thaw.font.util.file.FontCollectionFile;
 import de.be.thaw.font.util.file.FontFile;

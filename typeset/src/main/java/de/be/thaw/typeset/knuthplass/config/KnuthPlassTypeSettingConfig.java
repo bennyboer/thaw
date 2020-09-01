@@ -8,6 +8,8 @@ import de.be.thaw.typeset.knuthplass.config.util.image.ImageSourceSupplier;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Size;
 
+import java.io.File;
+
 /**
  * Configuration of the Knuth-Plass line breaking algorithm.
  */
@@ -76,6 +78,11 @@ public class KnuthPlassTypeSettingConfig {
      */
     private final ThawFont mathFont;
 
+    /**
+     * The working directory.
+     */
+    private final File workingDirectory;
+
     public KnuthPlassTypeSettingConfig(
             Size pageSize,
             Insets pageInsets,
@@ -88,7 +95,8 @@ public class KnuthPlassTypeSettingConfig {
             Hyphenator hyphenator,
             GlueConfig glueConfig,
             ImageSourceSupplier imageSourceSupplier,
-            ThawFont mathFont
+            ThawFont mathFont,
+            File workingDirectory
     ) {
         if (fontDetailsSupplier == null) {
             throw new NullPointerException("Cannot build line breaking configuration as the font details supplier is null which is required to properly typeset");
@@ -100,6 +108,10 @@ public class KnuthPlassTypeSettingConfig {
 
         if (glueConfig == null) {
             throw new NullPointerException("Cannot build line breaking configuration as the glue configuration is null which is required");
+        }
+
+        if (workingDirectory == null) {
+            throw new NullPointerException("Cannot build line breaking configuration as the working directory is null which is required");
         }
 
         this.pageSize = pageSize;
@@ -122,6 +134,8 @@ public class KnuthPlassTypeSettingConfig {
         this.imageSourceSupplier = imageSourceSupplier;
 
         this.mathFont = mathFont;
+
+        this.workingDirectory = workingDirectory;
     }
 
     /**
@@ -234,6 +248,15 @@ public class KnuthPlassTypeSettingConfig {
      */
     public ImageSourceSupplier getImageSourceSupplier() {
         return imageSourceSupplier;
+    }
+
+    /**
+     * Get the working directory.
+     *
+     * @return working directory
+     */
+    public File getWorkingDirectory() {
+        return workingDirectory;
     }
 
     /**
