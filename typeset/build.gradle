@@ -18,5 +18,5 @@ dependencies {
 }
 
 extraJavaModuleInfo {
-    automaticModule('rtfparserkit-1.15.0.jar', 'com.rtfparserkit')
+    automaticModule('rtfparserkit-1.15.0.jar', 'rtfparserkit')
 }

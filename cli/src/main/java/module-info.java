@@ -8,4 +8,6 @@ module de.be.thaw.cli {
     requires de.be.thaw.style;
     requires de.be.thaw.shared;
     requires de.be.thaw.reference;
+
+    opens de.be.thaw.cli;
 }

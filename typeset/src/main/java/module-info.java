@@ -28,5 +28,5 @@ module de.be.thaw.typeset {
     requires de.be.thaw.code;
     requires org.jetbrains.annotations;
     requires java.desktop;
-    requires com.rtfparserkit;
+    requires rtfparserkit;
 }

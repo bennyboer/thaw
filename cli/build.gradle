@@ -1,5 +1,6 @@
 plugins {
     id 'application'
+    id 'org.beryx.jlink' version '2.21.4'
 }
 
 application {
@@ -24,4 +25,12 @@ dependencies {
 compileJava {
     // Additional compiler arguments needed by picocli
     options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher {
+        name = 'thaw'
+//        jvmArgs = ['-Dlog4j.configurationFile=./log4j2.xml']
+    }
 }
