@@ -35,4 +35,11 @@ public class RowElement extends AbstractMathElement {
         this.baseline = baseline;
     }
 
+    @Override
+    public void scale(double factor) {
+        super.scale(factor);
+
+        baseline *= factor;
+    }
+
 }
