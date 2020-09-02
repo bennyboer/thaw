@@ -59,6 +59,11 @@ public class FormattedState implements State {
         return this;
     }
 
+    @Override
+    public boolean acceptEmptyLine(TokenizingContext ctx) {
+        return false;
+    }
+
     /**
      * Handle the translation when a code emphasis is the uppermost emphasis.
      *

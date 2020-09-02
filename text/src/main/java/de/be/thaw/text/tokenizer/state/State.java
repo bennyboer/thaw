@@ -35,4 +35,12 @@ public interface State {
      */
     State onNewLine(TokenizingContext ctx) throws InvalidStateException;
 
+    /**
+     * Called on an empty line.
+     *
+     * @param ctx the tokenizing context
+     * @return whether the state accepts the empty line
+     */
+    boolean acceptEmptyLine(TokenizingContext ctx);
+
 }

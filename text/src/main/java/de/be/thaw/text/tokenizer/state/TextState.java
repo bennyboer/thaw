@@ -126,6 +126,11 @@ public class TextState implements State {
         return this;
     }
 
+    @Override
+    public boolean acceptEmptyLine(TokenizingContext ctx) {
+        return false;
+    }
+
     /**
      * Create token that ended one character before.
      *

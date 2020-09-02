@@ -120,6 +120,11 @@ public class ThingyState implements State {
         return this;
     }
 
+    @Override
+    public boolean acceptEmptyLine(TokenizingContext ctx) {
+        return internalState == InternalState.IN_STRING;
+    }
+
     /**
      * Handle starting or ending a string.
      *

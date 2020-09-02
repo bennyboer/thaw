@@ -50,4 +50,9 @@ public class EscapedState implements State {
         return returnState;
     }
 
+    @Override
+    public boolean acceptEmptyLine(TokenizingContext ctx) {
+        return false;
+    }
+
 }

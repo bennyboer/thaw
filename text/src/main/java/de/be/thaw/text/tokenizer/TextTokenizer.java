@@ -141,7 +141,11 @@ public class TextTokenizer implements Iterator<Result<Token, TokenizeException>>
                 ctx.setCurrentLine(currentLine - skippedNewLines);
                 ctx.setCurrentPos(tmpEndOfLine);
 
-                currentState.forceEnd(ctx);
+                if (currentState.acceptEmptyLine(ctx)) {
+                    currentState.onNewLine(ctx);
+                } else {
+                    currentState.forceEnd(ctx);
+                }
 
                 ctx.setCurrentLine(currentLine); // Restore correct current line
                 ctx.setCurrentPos(0);
@@ -150,22 +154,27 @@ public class TextTokenizer implements Iterator<Result<Token, TokenizeException>>
             return true;
         } else if (skippedNewLines > 0) {
             // One or more empty lines occurred
-            boolean multipleNewLineSkips = skippedNewLines > 1;
 
-            if (multipleNewLineSkips) {
-                ctx.accept(new EmptyLineToken(new TextPosition(
-                        ctx.getStartLine(),
-                        ctx.getStartPos(),
-                        ctx.getCurrentLine() - 1,
-                        ctx.getCurrentPos()
-                )));
+            if (!currentState.acceptEmptyLine(ctx)) {
+                boolean multipleNewLineSkips = skippedNewLines > 1;
 
-                ctx.setStartPos(1);
-                ctx.setStartLine(ctx.getStartLine() + 1);
-                ctx.setCurrentLine(ctx.getStartLine());
-                ctx.setCurrentPos(1);
+                if (multipleNewLineSkips) {
+                    ctx.accept(new EmptyLineToken(new TextPosition(
+                            ctx.getStartLine(),
+                            ctx.getStartPos(),
+                            ctx.getCurrentLine() - 1,
+                            ctx.getCurrentPos()
+                    )));
 
-                currentState = new TextState();
+                    ctx.setStartPos(1);
+                    ctx.setStartLine(ctx.getStartLine() + 1);
+                    ctx.setCurrentLine(ctx.getStartLine());
+                    ctx.setCurrentPos(1);
+
+                    currentState = new TextState();
+                } else {
+                    currentState = currentState.onNewLine(ctx);
+                }
             } else {
                 currentState = currentState.onNewLine(ctx);
             }
