@@ -178,13 +178,6 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             double lineWidth = result.getContext().getLineWidth(i + 1);
             LineMetrics lineMetrics = calculateLineMetrics(line);
 
-            if (lineMetrics.getMinWidth() == 0) {
-                // No need to lay it out.
-                // Might happen when breaking right before the paragraphs end glue with
-                // zero width and infinite stretchability.
-                continue;
-            }
-
             // Last item is glue with width 0 -> indicates explicit line break
             Item last = line.get(line.size() - 1);
             boolean isExplicitLineBreakInLine = last.getType() == ItemType.GLUE && last.getWidth() == 0 && last.getStretchability() > 0;
