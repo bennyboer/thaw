@@ -8,6 +8,7 @@ import de.be.thaw.text.tokenizer.token.FormattedToken;
 import de.be.thaw.text.util.TextPosition;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
@@ -22,8 +23,14 @@ public class FormattedState implements State {
      */
     private final Stack<TextEmphasis> emphases = new Stack<>();
 
-    public FormattedState(TextEmphasis emphasis) {
+    /**
+     * Position in text of the last emphases change.
+     */
+    private int lastEmphasesChangePos = -1;
+
+    public FormattedState(TextEmphasis emphasis, TokenizingContext ctx) {
         emphases.push(emphasis);
+        lastEmphasesChangePos = ctx.getCurrentPos();
     }
 
     @Override
@@ -42,11 +49,13 @@ public class FormattedState implements State {
         // Ending in this state is illegal!
         throw new InvalidStateException(
                 String.format(
-                        "Missing end modifiers for the following open formatting blocks at the end of the text: %s",
+                        "Missing end modifiers for the following open formatting blocks at the end of the text around %d:%d: %s",
+                        ctx.getCurrentLine(),
+                        ctx.getCurrentPos(),
                         emphases.stream()
                                 .sorted()
                                 .map(TextEmphasis::name)
-                                .collect(Collectors.joining())
+                                .collect(Collectors.joining(", "))
                 )
         );
     }
@@ -126,11 +135,12 @@ public class FormattedState implements State {
         return switch (c) {
             case '*' -> { // Start bold block or end italic block
                 int currentLength = ctx.getBuffer().length();
-                boolean isStartBold = currentLength == 0 && !emphases.contains(TextEmphasis.BOLD);
+                boolean isStartBold = (ctx.getCurrentPos() - lastEmphasesChangePos == 1) && !emphases.contains(TextEmphasis.BOLD);
 
                 if (isStartBold) {
                     // Start a new bold block
                     emphases.pop();
+                    lastEmphasesChangePos = ctx.getCurrentPos();
                     emphases.push(TextEmphasis.BOLD);
 
                     yield this;
@@ -164,6 +174,7 @@ public class FormattedState implements State {
                         }
 
                         ctx.ignoreNext(1);
+                        lastEmphasesChangePos = ctx.getCurrentPos();
                         emphases.push(TextEmphasis.BOLD);
 
                         yield this;
@@ -255,25 +266,28 @@ public class FormattedState implements State {
             case '*' -> { // Enter italic block
                 ctx.accept(createEarlyToken(ctx));
 
+                lastEmphasesChangePos = ctx.getCurrentPos();
                 emphases.push(TextEmphasis.ITALIC);
                 yield this;
             }
             case '_' -> { // Enter underline block
                 ctx.accept(createEarlyToken(ctx));
 
+                lastEmphasesChangePos = ctx.getCurrentPos();
                 emphases.push(TextEmphasis.UNDERLINED);
                 yield this;
             }
             case '`' -> { // Enter code block
                 ctx.accept(createEarlyToken(ctx));
 
+                lastEmphasesChangePos = ctx.getCurrentPos();
                 emphases.push(TextEmphasis.CODE);
                 yield this;
             }
             case '#' -> { // Enter thingy block
                 ctx.accept(createEarlyToken(ctx));
 
-                yield new ThingyState(this);
+                yield new ThingyState(this, new HashSet<>(emphases));
             }
             case '\\' -> new EscapedState(this);
             case '\t' -> {

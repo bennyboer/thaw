@@ -539,4 +539,13 @@ public class TextTokenizerTest {
         Assertions.assertEquals(1, tokens.size());
     }
 
+    @Test
+    public void testFormattedWithThingyIncluded() throws TokenizeException {
+        String text = "Dieses Dokument wurde zum #DATE, format='dd. MMMM yyyy'# um **#DATE, format='HH:mm:ss'#** erstellt.";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(TextEmphasis.BOLD, ((ThingyToken) tokens.get(3)).getEmphases().iterator().next());
+    }
+
 }

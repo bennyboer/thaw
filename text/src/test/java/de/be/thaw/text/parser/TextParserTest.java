@@ -187,4 +187,20 @@ public class TextParserTest {
                 "            - [TEXT]: 'Even more nesting!'\n", model.getRoot().toString());
     }
 
+    @Test
+    public void testFormattedWithThingyIncluded() throws ParseException {
+        String text = "Dieses Dokument wurde zum #DATE, format='dd. MMMM yyyy'# um **#DATE, format='HH:mm:ss'#** erstellt.";
+
+        TextModel model = parse(text);
+
+        Assertions.assertEquals("- [ROOT]: ~\n" +
+                "  - [BOX]: ~\n" +
+                "    - [TEXT]: 'Dieses Dokument wurde zum '\n" +
+                "    - [THINGY]: Name: 'DATE', Args: [], Options: {format=dd. MMMM yyyy}\n" +
+                "    - [TEXT]: ' um '\n" +
+                "    - [FORMATTED]: '' [BOLD]\n" +
+                "      - [THINGY]: Name: 'DATE', Args: [], Options: {format=HH:mm:ss}\n" +
+                "    - [TEXT]: ' erstellt.'\n", model.getRoot().toString());
+    }
+
 }

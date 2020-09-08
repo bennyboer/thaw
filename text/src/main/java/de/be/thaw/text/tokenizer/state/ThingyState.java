@@ -1,5 +1,6 @@
 package de.be.thaw.text.tokenizer.state;
 
+import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.tokenizer.TokenizingContext;
 import de.be.thaw.text.tokenizer.exception.InvalidStateException;
 import de.be.thaw.text.tokenizer.token.ThingyToken;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * State of a thingy.
@@ -65,8 +67,14 @@ public class ThingyState implements State {
      */
     private InternalState beforeInStringState;
 
-    public ThingyState(State returnState) {
+    /**
+     * Emphases currently active.
+     */
+    private final Set<TextEmphasis> emphases;
+
+    public ThingyState(State returnState, Set<TextEmphasis> emphases) {
         this.returnState = returnState;
+        this.emphases = emphases;
     }
 
     @Override
@@ -179,7 +187,8 @@ public class ThingyState implements State {
                 ),
                 name,
                 arguments,
-                options
+                options,
+                emphases
         ));
 
         return returnState;

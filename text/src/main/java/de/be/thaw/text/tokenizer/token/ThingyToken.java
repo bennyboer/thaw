@@ -1,14 +1,16 @@
 package de.be.thaw.text.tokenizer.token;
 
+import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.util.TextPosition;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Token representing a thingy.
  */
-public class ThingyToken extends DefaultToken {
+public class ThingyToken extends FormattedToken {
 
     /**
      * Fake value of every thingy token.
@@ -30,8 +32,8 @@ public class ThingyToken extends DefaultToken {
      */
     private final Map<String, String> options;
 
-    public ThingyToken(TextPosition position, String name, Collection<String> arguments, Map<String, String> options) {
-        super(VALUE, position);
+    public ThingyToken(TextPosition position, String name, Collection<String> arguments, Map<String, String> options, Set<TextEmphasis> emphases) {
+        super(VALUE, position, emphases);
 
         this.name = name;
         this.arguments = arguments;

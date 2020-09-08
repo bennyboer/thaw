@@ -56,7 +56,7 @@ public class DateHandler implements ThingyHandler {
 
         // Fetch the current paragraph and add the date string to it
         TextParagraph paragraph = (TextParagraph) ctx.getCurrentParagraph();
-        ctx.appendTextToParagraph(paragraph, dateStr, documentNode);
+        ctx.appendTextToParagraph(paragraph, dateStr, documentNode.getParent());
     }
 
 }

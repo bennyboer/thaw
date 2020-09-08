@@ -30,7 +30,7 @@ public class PageHandler implements ThingyHandler {
         }
 
         TextParagraph paragraph = (TextParagraph) ctx.getCurrentParagraph();
-        paragraph.addItem(new PageNumberPlaceholderBox(documentNode));
+        paragraph.addItem(new PageNumberPlaceholderBox(documentNode.getParent()));
     }
 
 }

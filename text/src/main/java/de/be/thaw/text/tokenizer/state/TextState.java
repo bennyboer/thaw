@@ -9,6 +9,8 @@ import de.be.thaw.text.tokenizer.token.EnumerationItemStartToken;
 import de.be.thaw.text.tokenizer.token.TextToken;
 import de.be.thaw.text.util.TextPosition;
 
+import java.util.Collections;
+
 /**
  * State of standard text.
  */
@@ -20,22 +22,22 @@ public class TextState implements State {
             case '*' -> {
                 ctx.accept(createEarlyToken(ctx));
 
-                yield new FormattedState(TextEmphasis.ITALIC);
+                yield new FormattedState(TextEmphasis.ITALIC, ctx);
             }
             case '_' -> {
                 ctx.accept(createEarlyToken(ctx));
 
-                yield new FormattedState(TextEmphasis.UNDERLINED);
+                yield new FormattedState(TextEmphasis.UNDERLINED, ctx);
             }
             case '`' -> {
                 ctx.accept(createEarlyToken(ctx));
 
-                yield new FormattedState(TextEmphasis.CODE);
+                yield new FormattedState(TextEmphasis.CODE, ctx);
             }
             case '#' -> {
                 ctx.accept(createEarlyToken(ctx));
 
-                yield new ThingyState(new TextState());
+                yield new ThingyState(new TextState(), Collections.emptySet());
             }
             case '-' -> {
                 // Check if is enumeration item start (first non-whitespace character in line)

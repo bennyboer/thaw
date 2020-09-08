@@ -1,6 +1,7 @@
 package de.be.thaw.text.parser.rule.impl;
 
 import de.be.thaw.text.model.tree.Node;
+import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.text.parser.exception.ParseException;
 import de.be.thaw.text.parser.rule.ParseRule;
@@ -20,8 +21,21 @@ public class ThingyRule implements ParseRule {
         }
 
         ThingyToken tt = (ThingyToken) token;
+        ThingyNode thingyNode = new ThingyNode(tt.getName(), tt.getArguments(), tt.getOptions(), tt.getPosition());
 
-        node.addChild(new ThingyNode(tt.getName(), tt.getArguments(), tt.getOptions(), tt.getPosition()));
+        if (!tt.getEmphases().isEmpty()) {
+            // Add formatted node first
+            Node fmt = new FormattedNode(
+                    "",
+                    token.getPosition(),
+                    tt.getEmphases()
+            );
+
+            fmt.addChild(thingyNode);
+            node.addChild(fmt);
+        } else {
+            node.addChild(thingyNode);
+        }
 
         return node;
     }
