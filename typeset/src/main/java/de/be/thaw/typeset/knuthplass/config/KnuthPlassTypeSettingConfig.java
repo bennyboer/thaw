@@ -1,6 +1,7 @@
 package de.be.thaw.typeset.knuthplass.config;
 
 import de.be.thaw.font.ThawFont;
+import de.be.thaw.text.parser.TextParser;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.GlueConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
@@ -83,6 +84,16 @@ public class KnuthPlassTypeSettingConfig {
      */
     private final File workingDirectory;
 
+    /**
+     * Text parser to use for parsing nested Thaw document text strings (for example captions).
+     */
+    private final TextParser textParser;
+
+    /**
+     * Offset to add to the page number.
+     */
+    private final int pageNumberOffset;
+
     public KnuthPlassTypeSettingConfig(
             Size pageSize,
             Insets pageInsets,
@@ -96,7 +107,9 @@ public class KnuthPlassTypeSettingConfig {
             GlueConfig glueConfig,
             ImageSourceSupplier imageSourceSupplier,
             ThawFont mathFont,
-            File workingDirectory
+            File workingDirectory,
+            TextParser textParser,
+            int pageNumberOffset
     ) {
         if (fontDetailsSupplier == null) {
             throw new NullPointerException("Cannot build line breaking configuration as the font details supplier is null which is required to properly typeset");
@@ -112,6 +125,10 @@ public class KnuthPlassTypeSettingConfig {
 
         if (workingDirectory == null) {
             throw new NullPointerException("Cannot build line breaking configuration as the working directory is null which is required");
+        }
+
+        if (textParser == null) {
+            throw new NullPointerException("Cannot build line breaking configuration as a thaw document text parser needs to be specified (for example to parse nested captions for image paragraphs).");
         }
 
         this.pageSize = pageSize;
@@ -136,6 +153,9 @@ public class KnuthPlassTypeSettingConfig {
         this.mathFont = mathFont;
 
         this.workingDirectory = workingDirectory;
+        this.textParser = textParser;
+
+        this.pageNumberOffset = pageNumberOffset;
     }
 
     /**
@@ -260,12 +280,55 @@ public class KnuthPlassTypeSettingConfig {
     }
 
     /**
+     * Get the text parser to use to parse for example captions for image paragraphs.
+     *
+     * @return text parser
+     */
+    public TextParser getTextParser() {
+        return textParser;
+    }
+
+    /**
      * Create a new builder for the line breaking configuration.
      *
      * @return builder
      */
     public static KnuthPlassTypeSettingConfigBuilder newBuilder() {
         return new KnuthPlassTypeSettingConfigBuilder();
+    }
+
+    /**
+     * Get the offset added to the page number.
+     *
+     * @return page number offset
+     */
+    public int getPageNumberOffset() {
+        return pageNumberOffset;
+    }
+
+    /**
+     * Create a new builder for the line breaking configuration.
+     *
+     * @param config to initialize settings from
+     * @return builder
+     */
+    public static KnuthPlassTypeSettingConfigBuilder newBuilder(KnuthPlassTypeSettingConfig config) {
+        return new KnuthPlassTypeSettingConfigBuilder()
+                .setTextParser(config.getTextParser())
+                .setWorkingDirectory(config.getWorkingDirectory())
+                .setFitnessDemerit(config.getFitnessDemerit())
+                .setFlaggedDemerit(config.getFlaggedDemerit())
+                .setFontDetailsSupplier(config.getFontDetailsSupplier())
+                .setGlueConfig(config.getGlueConfig())
+                .setHyphenator(config.getHyphenator())
+                .setImageSourceSupplier(config.getImageSourceSupplier())
+                .setIndentWidth(config.getIndentWidth())
+                .setLooseness(config.getLooseness())
+                .setMathFont(config.getMathFont())
+                .setPageInsets(config.getPageInsets())
+                .setPageSize(config.getPageSize())
+                .setTolerance(config.getTolerance())
+                .setPageNumberOffset(config.getPageNumberOffset());
     }
 
 }

@@ -95,7 +95,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         // Calculate some metrics
         double baseline;
         try {
-            baseline = ctx.getConfig().getFontDetailsSupplier().measureString(textParagraph.getNode(), -1, "M").getBaseline();
+            baseline = ctx.getConfig().getFontDetailsSupplier().measureString(textParagraph.getNode(), -1, "X").getHeight();
         } catch (Exception e) {
             throw new TypeSettingException(e);
         }
@@ -255,7 +255,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                         // Measure the page number string and set it on the text box item
                         try {
                             var metrics = ctx.getConfig().getFontDetailsSupplier().measureString(tb.getNode(), -1, text);
-                            ((PageNumberPlaceholderBox) item).set(text, metrics.getWidth(), metrics.getKerningAdjustments(), metrics.getFontSize());
+                            ((PageNumberPlaceholderBox) item).set(text, metrics.getWidth(), metrics);
                         } catch (Exception e) {
                             throw new TypeSettingException(e);
                         }

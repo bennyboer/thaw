@@ -24,6 +24,21 @@ public class DefaultReferenceModel implements ReferenceModel {
      */
     private final Map<String, Reference> referenceLookup = new HashMap<>();
 
+    /**
+     * Lookup from labels to their node ID.
+     */
+    private final Map<String, String> labelToNodeID = new HashMap<>();
+
+    /**
+     * Reference number lookup by node ID.
+     */
+    private final Map<String, Integer> referenceNumberLookup = new HashMap<>();
+
+    /**
+     * Reference counter lookup.
+     */
+    private final Map<String, Integer> referenceCounterLookup = new HashMap<>();
+
     @Override
     public void addReference(Reference reference) {
         references.add(reference);
@@ -38,6 +53,33 @@ public class DefaultReferenceModel implements ReferenceModel {
     @Override
     public Optional<Reference> getReference(String sourceID) {
         return Optional.ofNullable(referenceLookup.get(sourceID));
+    }
+
+    @Override
+    public void addLabel(String label, String nodeID) {
+        labelToNodeID.put(label, nodeID);
+    }
+
+    @Override
+    public Optional<String> getNodeIDForLabel(String label) {
+        return Optional.ofNullable(labelToNodeID.get(label));
+    }
+
+    @Override
+    public int setReferenceNumber(String counterName, String nodeID) {
+        // Increase reference counter by 1 first
+        referenceCounterLookup.put(counterName, referenceCounterLookup.computeIfAbsent(counterName, k -> 0) + 1);
+
+        // Set reference number for the node ID to the new counter value
+        int counter = referenceCounterLookup.get(counterName);
+        referenceNumberLookup.put(nodeID, counter);
+
+        return counter;
+    }
+
+    @Override
+    public int getReferenceNumber(String nodeID) {
+        return referenceNumberLookup.getOrDefault(nodeID, -1);
     }
 
 }

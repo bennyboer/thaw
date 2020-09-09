@@ -296,6 +296,7 @@ public class PdfExporter implements Exporter {
                 })
                 .setMathFont(ctx.getMathFont())
                 .setWorkingDirectory(ThawContext.getInstance().getCurrentFolder())
+                .setTextParser(ThawContext.getInstance().getTextParser())
                 .build());
     }
 

@@ -65,7 +65,7 @@ public class ReferenceListHandler implements ThingyHandler {
                         List<DocumentNode> firstChildren = root.getChildren().get(root.getChildren().size() - 1).getChildren();
                         DocumentNode firstChild = firstChildren.get(0);
 
-                        ctx.getLabelToNodeID().put(entry.getIdentifier(), firstChild.getId());
+                        ctx.getReferenceModel().addLabel(entry.getIdentifier(), firstChild.getId());
                     }
                 }
             }

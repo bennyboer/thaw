@@ -19,14 +19,9 @@ public class PageNumberPlaceholderBox extends TextBox {
     private double width = 0;
 
     /**
-     * Kerning adjustments of the page number string.
+     * Metrics of the text.
      */
-    private double[] kerningAdjustments = new double[0];
-
-    /**
-     * Font size to display the text with.
-     */
-    private double fontSize = 1;
+    private FontDetailsSupplier.StringMetrics metrics;
 
     public PageNumberPlaceholderBox(DocumentNode node) {
         super("", FontDetailsSupplier.StringMetrics.placeholder(), node);
@@ -35,16 +30,14 @@ public class PageNumberPlaceholderBox extends TextBox {
     /**
      * Set the value of the placeholder.
      *
-     * @param value              the value to display
-     * @param width              of the value
-     * @param kerningAdjustments of the value string
-     * @param fontSize           to display the string with
+     * @param value   the value to display
+     * @param width   of the value
+     * @param metrics of the value
      */
-    public void set(String value, double width, double[] kerningAdjustments, double fontSize) {
+    public void set(String value, double width, FontDetailsSupplier.StringMetrics metrics) {
         this.value = value;
         this.width = width;
-        this.kerningAdjustments = kerningAdjustments;
-        this.fontSize = fontSize;
+        this.metrics = metrics;
     }
 
     @Override
@@ -55,6 +48,15 @@ public class PageNumberPlaceholderBox extends TextBox {
     @Override
     public double getWidth() {
         return width;
+    }
+
+    @Override
+    public FontDetailsSupplier.StringMetrics getMetrics() {
+        if (metrics == null) {
+            return super.getMetrics();
+        }
+
+        return metrics;
     }
 
 }

@@ -9,16 +9,13 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.reference.ReferenceModel;
-import de.be.thaw.reference.impl.DefaultReferenceModel;
 import de.be.thaw.reference.impl.InternalReference;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.HeaderFooterStyle;
 import de.be.thaw.text.model.tree.Node;
-import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.BoxNode;
 import de.be.thaw.text.model.tree.impl.RootNode;
-import de.be.thaw.text.model.tree.impl.ThingyNode;
 
 import java.io.File;
 import java.util.Optional;
@@ -30,8 +27,11 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
 
     @Override
     public Document build(DocumentBuildSource source) throws DocumentBuildException {
-        ReferenceModel referenceModel = new DefaultReferenceModel();
+        ReferenceModel referenceModel = source.getReferenceModel();
         DocumentBuildContext ctx = new DocumentBuildContext(source.getInfo(), source.getTextModel(), referenceModel, source.getStyleModel(), source.getSourceModel());
+        if (source.getParentDocument() != null) {
+            ctx.setParentDocument(source.getParentDocument());
+        }
 
         DocumentNode root = toRootNode(ctx);
         loadHeadersAndFooters(root, ctx);
@@ -41,9 +41,11 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
                 root,
                 referenceModel,
                 ctx.getSourceModel(),
+                source.getStyleModel(),
                 ctx.getHeaderNodes(),
                 ctx.getFooterNodes(),
-                ctx.getFootNotes()
+                ctx.getFootNotes(),
+                source.getParentDocument() != null ? source.getParentDocument().getNodeLookup() : null
         );
 
         processPotentialReferences(document, ctx);
@@ -112,31 +114,15 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
     private void processPotentialReferences(Document document, DocumentBuildContext ctx) throws MissingReferenceTargetException {
         // Add potential targets to reference model if the target has been found, otherwise throw an exception
         for (DocumentBuildContext.PotentialInternalReference potentialReference : ctx.getPotentialReferences()) {
-            String targetID = ctx.getLabelToNodeID().get(potentialReference.getTargetLabel());
-            if (targetID == null) {
-                throw new MissingReferenceTargetException(String.format(
-                        "Reference target with label '%s' is missing",
-                        potentialReference.getTargetLabel()
-                ));
-            }
-
-            String counterName = potentialReference.getCounterName();
-            if (counterName == null) {
-                DocumentNode targetNode = document.getNodeForId(targetID).orElseThrow();
-
-                Node textNode = targetNode.getTextNode();
-                if (textNode.getType() == NodeType.THINGY) {
-                    ThingyNode thingyNode = (ThingyNode) textNode;
-                    counterName = thingyNode.getName().toLowerCase();
-                }
-            } else {
-                counterName = counterName.toLowerCase();
-            }
+            String targetID = ctx.getReferenceModel().getNodeIDForLabel(potentialReference.getTargetLabel())
+                    .orElseThrow(() -> new MissingReferenceTargetException(String.format(
+                            "Reference target with label '%s' is missing",
+                            potentialReference.getTargetLabel()
+                    )));
 
             ctx.getReferenceModel().addReference(new InternalReference(
                     potentialReference.getSourceID(),
                     targetID,
-                    counterName,
                     potentialReference.getPrefix()
             ));
         }

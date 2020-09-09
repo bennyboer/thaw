@@ -16,7 +16,6 @@ import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.ImageParagraphHandle
 import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.MathParagraphHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.TableOfContentsItemParagraphHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.TextParagraphHandler;
-import de.be.thaw.typeset.knuthplass.paragraph.impl.code.CodeParagraph;
 import de.be.thaw.typeset.page.Page;
 
 import java.util.EnumMap;
@@ -73,7 +72,19 @@ public class KnuthPlassTypeSetter implements TypeSetter {
 
     @Override
     public List<Page> typeset(Document document) throws TypeSettingException {
-        List<List<Paragraph>> consecutiveParagraphLists = convertToParagraphs(document, document.getRoot());
+        return typesetWithConfig(document, config);
+    }
+
+    /**
+     * Typeset the passed document with the given configuration.
+     *
+     * @param document      to typeset
+     * @param configuration the config to use
+     * @return the typeset document
+     * @throws TypeSettingException in case the document could not be typeset properly
+     */
+    public List<Page> typesetWithConfig(Document document, KnuthPlassTypeSettingConfig configuration) throws TypeSettingException {
+        List<List<Paragraph>> consecutiveParagraphLists = convertToParagraphs(document, document.getRoot(), configuration);
 
         // Convert headers and footers to paragraph lists for later use during the typesetting
         Map<PageRange, List<List<Paragraph>>> headerParagraphs = convertHeadersOrFootersToParagraphs(document, document.getHeaderNodes());
@@ -82,18 +93,19 @@ public class KnuthPlassTypeSetter implements TypeSetter {
         // Convert foot notes to paragraph lists for later use during the typesetting
         Map<String, List<List<Paragraph>>> footNoteParagraphs = new HashMap<>();
         for (Map.Entry<String, DocumentNode> entry : document.getFootNotes().entrySet()) {
-            footNoteParagraphs.put(entry.getKey(), convertToParagraphs(document, entry.getValue()));
+            footNoteParagraphs.put(entry.getKey(), convertToParagraphs(document, entry.getValue(), configuration));
         }
 
         // Creating context used during typesetting.
         TypeSettingContext ctx = new TypeSettingContext(
-                config,
+                configuration,
                 document,
                 consecutiveParagraphLists,
                 headerParagraphs,
                 footerParagraphs,
                 footNoteParagraphs,
-                this::typesetConsecutiveParagraphs
+                this::typesetConsecutiveParagraphs,
+                this::typesetWithConfig
         );
 
         // Type set main document content
@@ -137,7 +149,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
         Map<PageRange, List<List<Paragraph>>> result = new HashMap<>();
 
         for (Map.Entry<PageRange, DocumentNode> entry : nodeMap.entrySet()) {
-            result.put(entry.getKey(), convertToParagraphs(document, entry.getValue()));
+            result.put(entry.getKey(), convertToParagraphs(document, entry.getValue(), config));
         }
 
         return result;
@@ -146,14 +158,15 @@ public class KnuthPlassTypeSetter implements TypeSetter {
     /**
      * Convert the passed document and root node to paragraphs.
      *
-     * @param document to convert with
-     * @param root     node to convert
+     * @param document      to convert with
+     * @param root          node to convert
+     * @param configuration to use
      * @return a list of consecutive paragraphs
      * @throws TypeSettingException in case the conversion failed
      */
-    private List<List<Paragraph>> convertToParagraphs(Document document, DocumentNode root) throws TypeSettingException {
+    private List<List<Paragraph>> convertToParagraphs(Document document, DocumentNode root, KnuthPlassTypeSettingConfig configuration) throws TypeSettingException {
         try {
-            return new KnuthPlassConverter(root, config).convert(document);
+            return new KnuthPlassConverter(root, configuration).convert(document);
         } catch (DocumentConversionException e) {
             throw new TypeSettingException("Could not convert the document into the Knuth-Plass algorithm format", e);
         }

@@ -1,6 +1,7 @@
 package de.be.thaw.typeset.knuthplass.config;
 
 import de.be.thaw.font.ThawFont;
+import de.be.thaw.text.parser.TextParser;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.GlueConfig;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.Hyphenator;
@@ -115,6 +116,16 @@ public class KnuthPlassTypeSettingConfigBuilder {
      * The working directory.
      */
     private File workingDirectory;
+
+    /**
+     * Text parser to use for parsing nested Thaw document text strings (for example captions).
+     */
+    private TextParser textParser;
+
+    /**
+     * Offset added to the page number.
+     */
+    private int pageNumberOffset = 0;
 
     /**
      * Get the size of the page to typeset on (in mm).
@@ -389,6 +400,47 @@ public class KnuthPlassTypeSettingConfigBuilder {
     }
 
     /**
+     * Get the text parser to use to parse for example captions for image paragraphs.
+     *
+     * @return text parser
+     */
+    public TextParser getTextParser() {
+        return textParser;
+    }
+
+    /**
+     * Set the text parser to use.
+     *
+     * @param textParser to set
+     */
+    public KnuthPlassTypeSettingConfigBuilder setTextParser(TextParser textParser) {
+        this.textParser = textParser;
+
+        return this;
+    }
+
+    /**
+     * Get the offset added to the page number.
+     *
+     * @return page number offset
+     */
+    public int getPageNumberOffset() {
+        return pageNumberOffset;
+    }
+
+    /**
+     * Set the offset added to the page number.
+     *
+     * @param pageNumberOffset to set
+     * @return the page number offset
+     */
+    public KnuthPlassTypeSettingConfigBuilder setPageNumberOffset(int pageNumberOffset) {
+        this.pageNumberOffset = pageNumberOffset;
+
+        return this;
+    }
+
+    /**
      * Build the line breaking configuration.
      *
      * @return the build config
@@ -407,7 +459,9 @@ public class KnuthPlassTypeSettingConfigBuilder {
                 getGlueConfig(),
                 getImageSourceSupplier(),
                 getMathFont(),
-                getWorkingDirectory()
+                getWorkingDirectory(),
+                getTextParser(),
+                getPageNumberOffset()
         );
     }
 

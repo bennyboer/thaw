@@ -34,8 +34,7 @@ public class RefHandler implements ThingyHandler {
         ctx.getPotentialReferences().add(new DocumentBuildContext.PotentialInternalReference(
                 documentNode.getId(),
                 targetLabel,
-                thingyNode.getOptions().get("prefix"),
-                thingyNode.getOptions().get("counter")
+                thingyNode.getOptions().get("prefix")
         ));
     }
 

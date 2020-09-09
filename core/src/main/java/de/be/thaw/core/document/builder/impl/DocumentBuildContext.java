@@ -1,5 +1,6 @@
 package de.be.thaw.core.document.builder.impl;
 
+import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.thingy.ThingyHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.CiteHandler;
@@ -27,6 +28,7 @@ import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.text.parser.exception.ParseException;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -63,11 +65,6 @@ public class DocumentBuildContext {
      * List of potential references.
      */
     private final List<PotentialInternalReference> potentialReferences = new ArrayList<>();
-
-    /**
-     * Lookup from labels to their node ID.
-     */
-    private final Map<String, String> labelToNodeID = new HashMap<>();
 
     /**
      * Counter for headline numbering.
@@ -114,6 +111,12 @@ public class DocumentBuildContext {
      */
     private final Map<String, DocumentNode> footNotes = new HashMap<>();
 
+    /**
+     * Parent document that is specified when typesetting nested documents.
+     */
+    @Nullable
+    private Document parentDocument;
+
     public DocumentBuildContext(ThawInfo info, TextModel textModel, ReferenceModel referenceModel, StyleModel styleModel, SourceModel sourceModel) {
         this.info = info;
         this.textModel = textModel;
@@ -145,10 +148,6 @@ public class DocumentBuildContext {
 
     public List<PotentialInternalReference> getPotentialReferences() {
         return potentialReferences;
-    }
-
-    public Map<String, String> getLabelToNodeID() {
-        return labelToNodeID;
     }
 
     public List<Integer> getHeadlineCounter() {
@@ -312,7 +311,7 @@ public class DocumentBuildContext {
         String label = thingyNode.getOptions().get("label");
         if (label != null) {
             // Add as potential target
-            getLabelToNodeID().put(label, documentNode.getId());
+            getReferenceModel().addLabel(label, documentNode.getId());
         }
 
         Optional<ThingyHandler> optionalThingyHandler = getThingyHandler(thingyNode.getName());
@@ -482,6 +481,14 @@ public class DocumentBuildContext {
         return true;
     }
 
+    public Optional<Document> getParentDocument() {
+        return Optional.ofNullable(parentDocument);
+    }
+
+    public void setParentDocument(@Nullable Document parentDocument) {
+        this.parentDocument = parentDocument;
+    }
+
     /**
      * A potential internal reference.
      */
@@ -502,16 +509,10 @@ public class DocumentBuildContext {
          */
         private final String prefix;
 
-        /**
-         * Name of the counter to use.
-         */
-        private final String counterName;
-
-        public PotentialInternalReference(String sourceID, String targetLabel, String prefix, String counterName) {
+        public PotentialInternalReference(String sourceID, String targetLabel, String prefix) {
             this.sourceID = sourceID;
             this.targetLabel = targetLabel;
             this.prefix = prefix;
-            this.counterName = counterName;
         }
 
         public String getSourceID() {
@@ -524,10 +525,6 @@ public class DocumentBuildContext {
 
         public String getPrefix() {
             return prefix;
-        }
-
-        public String getCounterName() {
-            return counterName;
         }
 
     }

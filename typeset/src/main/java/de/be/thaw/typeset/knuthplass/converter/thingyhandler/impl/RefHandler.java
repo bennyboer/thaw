@@ -38,14 +38,17 @@ public class RefHandler implements ThingyHandler {
         InternalReference reference = (InternalReference) ctx.getDocument().getReferenceModel().getReference(documentNode.getId()).orElseThrow();
 
         // Check if target is a headline -> then we use headline numbering as display name of the reference
-        DocumentNode targetNode = ctx.getDocument().getNodeForId(reference.getTargetID()).orElseThrow();
+        DocumentNode targetNode = ctx.getDocument().getNodeForId(reference.getTargetID()).orElseThrow(() -> new DocumentConversionException(String.format(
+                "There is no reference target node with ID '%s'",
+                reference.getTargetID()
+        )));
         ThingyNode thingyNode = (ThingyNode) targetNode.getTextNode();
 
         String displayString;
         if (isHeadlineThingyNode(thingyNode)) {
             displayString = thingyNode.getOptions().get("_numbering");
         } else {
-            int refNum = ctx.getAndIncrementInternalRefCounter(reference.getCounterName());
+            int refNum = ctx.getDocument().getReferenceModel().getReferenceNumber(targetNode.getId());
 
             Optional<String> optionalPrefix = reference.getPrefix();
             if (optionalPrefix.isPresent()) {

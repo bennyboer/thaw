@@ -1,10 +1,13 @@
 package de.be.thaw.typeset.knuthplass.paragraph.impl.image;
 
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.typeset.knuthplass.config.util.image.ImageSource;
 import de.be.thaw.typeset.knuthplass.paragraph.AbstractParagraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
+import de.be.thaw.util.HorizontalAlignment;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 /**
  * Paragraph representing an image.
@@ -26,12 +29,26 @@ public class ImageParagraph extends AbstractParagraph {
      */
     private final HorizontalAlignment alignment;
 
-    public ImageParagraph(double lineWidth, DocumentNode node, ImageSource src, boolean floating, HorizontalAlignment alignment) {
+    /**
+     * Caption of the image.
+     */
+    @Nullable
+    private final String caption;
+
+    public ImageParagraph(
+            double lineWidth,
+            DocumentNode node,
+            ImageSource src,
+            boolean floating,
+            HorizontalAlignment alignment,
+            @Nullable String caption
+    ) {
         super(lineWidth, node);
 
         this.src = src;
         this.floating = floating;
         this.alignment = alignment;
+        this.caption = caption;
     }
 
     public ImageSource getSrc() {
@@ -48,8 +65,22 @@ public class ImageParagraph extends AbstractParagraph {
         return floating;
     }
 
+    /**
+     * Get the image paragraphs alignment.
+     *
+     * @return alignment
+     */
     public HorizontalAlignment getAlignment() {
         return alignment;
+    }
+
+    /**
+     * Get the caption of the image paragraph.
+     *
+     * @return caption
+     */
+    public Optional<String> getCaption() {
+        return Optional.ofNullable(caption);
     }
 
 }
