@@ -1,8 +1,20 @@
 package de.be.thaw.typeset.knuthplass;
 
 import de.be.thaw.core.document.Document;
+import de.be.thaw.core.document.builder.impl.DefaultDocumentBuilder;
+import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
+import de.be.thaw.core.document.builder.impl.source.DocumentBuildSource;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.util.PageRange;
+import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.block.StyleBlock;
+import de.be.thaw.style.model.style.Style;
+import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.impl.HeaderFooterStyle;
+import de.be.thaw.style.model.style.impl.InsetsStyle;
+import de.be.thaw.style.model.style.impl.SizeStyle;
+import de.be.thaw.text.model.TextModel;
+import de.be.thaw.text.parser.exception.ParseException;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
@@ -10,11 +22,15 @@ import de.be.thaw.typeset.knuthplass.util.RethrowingBiFunction;
 import de.be.thaw.typeset.page.AbstractElement;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
+import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Position;
+import de.be.thaw.util.Size;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +38,16 @@ import java.util.Map;
  * Context used during typesetting.
  */
 public class TypeSettingContext {
+
+    /**
+     * Inches per printer point conversion factor.
+     */
+    private static final double INCHES_PER_POINT = 1.0 / 72;
+
+    /**
+     * Millimeters per inch conversion factor.
+     */
+    private static final double MM_PER_INCH = 25.4;
 
     /**
      * Configuration of the Knuth-Plass type setting algorithm.
@@ -81,6 +107,12 @@ public class TypeSettingContext {
     private final RethrowingBiFunction<List<List<Paragraph>>, TypeSettingContext, List<Page>, TypeSettingException> typesettingFunction;
 
     /**
+     * Function used to typeset a document.
+     */
+    @Nullable
+    private final RethrowingBiFunction<Document, KnuthPlassTypeSettingConfig, List<Page>, TypeSettingException> typesetDocumentFunction;
+
+    /**
      * Offset added to the current page number.
      * Used for example when typesetting headers and footers on demand.
      */
@@ -113,9 +145,12 @@ public class TypeSettingContext {
             @Nullable Map<PageRange, List<List<Paragraph>>> headerParagraphs,
             @Nullable Map<PageRange, List<List<Paragraph>>> footerParagraphs,
             @Nullable Map<String, List<List<Paragraph>>> footNoteParagraphs,
-            @Nullable RethrowingBiFunction<List<List<Paragraph>>, TypeSettingContext, List<Page>, TypeSettingException> typesettingFunction
+            @Nullable RethrowingBiFunction<List<List<Paragraph>>, TypeSettingContext, List<Page>, TypeSettingException> typesettingFunction,
+            @Nullable RethrowingBiFunction<Document, KnuthPlassTypeSettingConfig, List<Page>, TypeSettingException> typesetDocumentFunction
     ) {
         this.config = config;
+        this.pageNumberOffset = config.getPageNumberOffset();
+
         this.document = document;
         this.consecutiveParagraphLists = consecutiveParagraphLists;
 
@@ -123,6 +158,7 @@ public class TypeSettingContext {
         this.footerParagraphs = footerParagraphs;
         this.footNoteParagraphs = footNoteParagraphs;
         this.typesettingFunction = typesettingFunction;
+        this.typesetDocumentFunction = typesetDocumentFunction;
 
         positionContext.setY(config.getPageInsets().getTop()); // Initialize y-offset
     }
@@ -251,7 +287,7 @@ public class TypeSettingContext {
         List<List<Paragraph>> footerParagraphList = getHeaderFooterForPageNumber(currentPageNumber, footerParagraphs);
 
         if (headerParagraphList != null) {
-            TypeSettingContext newContext = new TypeSettingContext(config, document, headerParagraphList, null, null, null, null);
+            TypeSettingContext newContext = new TypeSettingContext(config, document, headerParagraphList, null, null, null, null, null);
             newContext.setPageNumberOffset(currentPageNumber - 1);
 
             List<Page> headerPages = typesettingFunction.apply(headerParagraphList, newContext);
@@ -278,7 +314,7 @@ public class TypeSettingContext {
         }
 
         if (footerParagraphList != null) {
-            TypeSettingContext newContext = new TypeSettingContext(config, document, footerParagraphList, null, null, null, null);
+            TypeSettingContext newContext = new TypeSettingContext(config, document, footerParagraphList, null, null, null, null, null);
             newContext.setPageNumberOffset(currentPageNumber - 1);
 
             List<Page> footerPages = typesettingFunction.apply(footerParagraphList, newContext);
@@ -354,7 +390,7 @@ public class TypeSettingContext {
      */
     public void pushFootNote(DocumentNode node) throws TypeSettingException {
         List<List<Paragraph>> paragraphLists = footNoteParagraphs.get(node.getId());
-        List<Page> pages = typesettingFunction.apply(paragraphLists, new TypeSettingContext(config, document, paragraphLists, null, null, null, null));
+        List<Page> pages = typesettingFunction.apply(paragraphLists, new TypeSettingContext(config, document, paragraphLists, null, null, null, null, null));
         Page page = pages.get(0);
 
         page.getElements().sort(Comparator.comparingDouble(e -> e.getPosition().getY() + e.getSize().getHeight()));
@@ -404,6 +440,87 @@ public class TypeSettingContext {
      */
     public int increaseAndGetLineNumber() {
         return ++lineNumberCounter;
+    }
+
+    /**
+     * Typeset the passed document.
+     *
+     * @param document      to typeset
+     * @param configuration to use
+     * @return the typeset pages
+     * @throws TypeSettingException in case the passed document could not be typeset
+     */
+    private List<Page> typesetDocument(Document document, KnuthPlassTypeSettingConfig configuration) throws TypeSettingException {
+        if (typesetDocumentFunction == null) {
+            throw new TypeSettingException("Cannot typeset the passed document as the current typesetting context is not suitable for this kind of action!");
+        }
+
+        return typesetDocumentFunction.apply(document, configuration);
+    }
+
+    /**
+     * Typeset the passed string written in Thaw document text format (*.tdt).
+     *
+     * @param text             to typeset
+     * @param width            to use for typesetting (in printer points)
+     * @param customStyleModel a custom style model to use
+     * @return the typeset pages
+     * @throws TypeSettingException in case the passed text could not be typset to pages properly
+     */
+    public List<Page> typesetThawTextFormat(String text, double width, @Nullable StyleModel customStyleModel) throws TypeSettingException {
+        // Parse Thaw document text format.
+        TextModel textModel;
+        try {
+            textModel = getConfig().getTextParser().parse(new StringReader(text));
+        } catch (ParseException e) {
+            throw new TypeSettingException(String.format(
+                    "Could not parse the following string written in the Thaw document text format: '%s'. Exception message was: %s",
+                    text,
+                    e.getMessage()
+            ), e);
+        }
+
+        // Create style model to use.
+        StyleModel styleModel = new StyleModel(new HashMap<>()).merge(getDocument().getStyleModel());
+
+        Map<StyleType, Style> styles = new HashMap<>();
+        double mmWidth = width * INCHES_PER_POINT * MM_PER_INCH;
+        styles.put(StyleType.SIZE, new SizeStyle(mmWidth, Double.MAX_VALUE));
+        styles.put(StyleType.INSETS, new InsetsStyle(0.0, 0.0, 0.0, 0.0));
+        styles.put(StyleType.HEADER_FOOTER, new HeaderFooterStyle(null, null));
+        StyleBlock newDocumentBlock = new StyleBlock("DOCUMENT", styles);
+
+        styleModel.addBlock(newDocumentBlock.getName(), newDocumentBlock.merge(styleModel.getBlock(newDocumentBlock.getName()).orElseThrow()));
+
+        if (customStyleModel != null) {
+            styleModel = customStyleModel.merge(styleModel);
+        }
+
+        // Create Thaw document.
+        Document newDocument;
+        try {
+            newDocument = new DefaultDocumentBuilder().build(new DocumentBuildSource(
+                    getDocument().getInfo(),
+                    textModel,
+                    styleModel,
+                    getDocument().getSourceModel(),
+                    getDocument().getReferenceModel(),
+                    getDocument()
+            ));
+        } catch (DocumentBuildException e) {
+            throw new TypeSettingException(String.format(
+                    "Could not build a document for the following string written in the Thaw document text format: '%s'. Exception message was: %s",
+                    text,
+                    e.getMessage()
+            ), e);
+        }
+
+        // Typeset the document.
+        return typesetDocument(newDocument, KnuthPlassTypeSettingConfig.newBuilder(getConfig())
+                .setPageSize(new Size(width, Double.MAX_VALUE))
+                .setPageInsets(new Insets(0))
+                .setPageNumberOffset(getCurrentPageNumber() - 1)
+                .build());
     }
 
     /**

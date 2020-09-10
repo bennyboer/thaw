@@ -40,7 +40,7 @@ public class FootNoteHandler implements ThingyHandler {
         }
 
         // Increment foot note counter
-        int counter = ctx.getAndIncrementInternalRefCounter("_FOOTNOTE");
+        int counter = ctx.getDocument().getReferenceModel().setReferenceNumber("_FOOTNOTE", documentNode.getId());
 
         TextParagraph paragraph = (TextParagraph) ctx.getCurrentParagraph();
 

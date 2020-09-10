@@ -95,7 +95,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         // Calculate some metrics
         double baseline;
         try {
-            baseline = ctx.getConfig().getFontDetailsSupplier().measureString(textParagraph.getNode(), -1, "M").getBaseline();
+            baseline = ctx.getConfig().getFontDetailsSupplier().measureString(textParagraph.getNode(), -1, "X").getHeight();
         } catch (Exception e) {
             throw new TypeSettingException(e);
         }
@@ -141,6 +141,10 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             });
         }
 
+        // Since not all items in the text paragraph have the correct width by now (For example the #PAGE# thingy items).
+        // We need to set them to a reasonable estimation.
+        fixItemWidthWithEstimations(textParagraph, ctx);
+
         // Find the break points in the text paragraph to split the paragraph into lines with later
         KnuthPlassAlgorithm.LineBreakingResult result = findBreakPoints(textParagraph, ctx);
 
@@ -173,6 +177,8 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                 // Not enough space for this line left on the current page -> Create next page
                 ctx.pushPage();
             }
+
+            fixItemWidthForLine(line, ctx);
 
             // Calculating some metrics describing the line in more detail
             double lineWidth = result.getContext().getLineWidth(i + 1);
@@ -248,19 +254,6 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                 if (item instanceof TextBox) {
                     TextBox tb = (TextBox) item;
 
-                    if (item instanceof PageNumberPlaceholderBox) {
-                        // Replace text with the actual page number we are currently at
-                        String text = String.valueOf(ctx.getCurrentPageNumber());
-
-                        // Measure the page number string and set it on the text box item
-                        try {
-                            var metrics = ctx.getConfig().getFontDetailsSupplier().measureString(tb.getNode(), -1, text);
-                            ((PageNumberPlaceholderBox) item).set(text, metrics.getWidth(), metrics.getKerningAdjustments(), metrics.getFontSize());
-                        } catch (Exception e) {
-                            throw new TypeSettingException(e);
-                        }
-                    }
-
                     ctx.pushPageElement(new TextElement(
                             tb.getText(),
                             tb.getMetrics(),
@@ -320,6 +313,68 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         }
 
         ctx.getPositionContext().increaseY(insetsStyle.getBottom());
+    }
+
+    /**
+     * This method will give items that do not have a fixed width yet an estimated width.
+     * An example is the #PAGE# Thingy, that will leave a PageNumberPlaceholderBox in the
+     * text paragraph as item. Since we do not yet know what exact page number we are on, we can
+     * only give an estimation.
+     *
+     * @param textParagraph to process
+     * @param ctx           the typesetting context
+     */
+    private void fixItemWidthWithEstimations(TextParagraph textParagraph, TypeSettingContext ctx) throws TypeSettingException {
+        for (Item item : textParagraph.items()) {
+            if (item instanceof PageNumberPlaceholderBox) {
+                PageNumberPlaceholderBox box = (PageNumberPlaceholderBox) item;
+
+                String text = String.valueOf(ctx.getCurrentPageNumber());
+                text = "9".repeat(text.length() + 1); // We estimate that the page number will be no wider than the current page number * 10
+
+                // Measure the page number string and set it on the text box item
+                try {
+                    var metrics = ctx.getConfig().getFontDetailsSupplier().measureString(
+                            box.getNode(),
+                            -1,
+                            text);
+                    ((PageNumberPlaceholderBox) item).set(text, metrics.getWidth(), metrics);
+                } catch (Exception e) {
+                    throw new TypeSettingException(e);
+                }
+            }
+        }
+    }
+
+    /**
+     * This method will change item widths for items that currently may contain a wrong width.
+     * For example the #PAGE# Thingy will produce a PageNumberPlaceholderBox item that
+     * does currently only contain an estimation of the actual width.
+     * However for only a line we can precisely determine the actual width of a PageNumberPlaceholderBox.
+     *
+     * @param items to fix estimated values for (if any).
+     * @param ctx   the typesetting context
+     * @throws TypeSettingException in case the widths could not be fixed properly
+     */
+    private void fixItemWidthForLine(List<Item> items, TypeSettingContext ctx) throws TypeSettingException {
+        for (Item item : items) {
+            if (item instanceof PageNumberPlaceholderBox) {
+                PageNumberPlaceholderBox box = (PageNumberPlaceholderBox) item;
+
+                String text = String.valueOf(ctx.getCurrentPageNumber());
+
+                // Measure the page number string and set it on the text box item
+                try {
+                    var metrics = ctx.getConfig().getFontDetailsSupplier().measureString(
+                            box.getNode(),
+                            -1,
+                            text);
+                    ((PageNumberPlaceholderBox) item).set(text, metrics.getWidth(), metrics);
+                } catch (Exception e) {
+                    throw new TypeSettingException(e);
+                }
+            }
+        }
     }
 
     /**
@@ -454,7 +509,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
      * @return space width
      */
     private double getJustifiedLineSpaceWidth(LineMetrics lineMetrics, double lineWidth) {
-        return (lineWidth - lineMetrics.minWidth) / lineMetrics.getWhiteSpaces();
+        return (lineWidth - lineMetrics.getMinWidth()) / lineMetrics.getWhiteSpaces();
     }
 
     /**

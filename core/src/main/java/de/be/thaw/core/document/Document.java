@@ -5,6 +5,8 @@ import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
 import de.be.thaw.reference.citation.source.model.SourceModel;
+import de.be.thaw.style.model.StyleModel;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +38,11 @@ public class Document {
     private final SourceModel sourceModel;
 
     /**
+     * Model managing styles.
+     */
+    private final StyleModel styleModel;
+
+    /**
      * Lookup of the document nodes by their ID.
      */
     private final Map<String, DocumentNode> nodeLookup = new HashMap<>();
@@ -61,20 +68,49 @@ public class Document {
             DocumentNode root,
             ReferenceModel referenceModel,
             SourceModel sourceModel,
+            StyleModel styleModel,
             Map<PageRange, DocumentNode> headerNodes,
             Map<PageRange, DocumentNode> footerNodes,
             Map<String, DocumentNode> footNotes
+    ) {
+        this(
+                info,
+                root,
+                referenceModel,
+                sourceModel,
+                styleModel,
+                headerNodes,
+                footerNodes,
+                footNotes,
+                null
+        );
+    }
+
+    public Document(
+            ThawInfo info,
+            DocumentNode root,
+            ReferenceModel referenceModel,
+            SourceModel sourceModel,
+            StyleModel styleModel,
+            Map<PageRange, DocumentNode> headerNodes,
+            Map<PageRange, DocumentNode> footerNodes,
+            Map<String, DocumentNode> footNotes,
+            @Nullable Map<String, DocumentNode> oldNodeLookup
     ) {
         this.info = info;
         this.root = root;
         this.referenceModel = referenceModel;
         this.sourceModel = sourceModel;
+        this.styleModel = styleModel;
 
         this.headerNodes = headerNodes;
         this.footerNodes = footerNodes;
 
         this.footNotes = footNotes;
 
+        if (oldNodeLookup != null) {
+            nodeLookup.putAll(oldNodeLookup);
+        }
         initLookup(root);
     }
 
@@ -130,6 +166,15 @@ public class Document {
     }
 
     /**
+     * Get the style model of the document.
+     *
+     * @return style model
+     */
+    public StyleModel getStyleModel() {
+        return styleModel;
+    }
+
+    /**
      * Get a node by the passed ID.
      *
      * @param nodeID to get node for
@@ -164,6 +209,15 @@ public class Document {
      */
     public Map<String, DocumentNode> getFootNotes() {
         return footNotes;
+    }
+
+    /**
+     * Get the node lookup.
+     *
+     * @return node lookup
+     */
+    public Map<String, DocumentNode> getNodeLookup() {
+        return nodeLookup;
     }
 
 }

@@ -17,9 +17,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -57,12 +55,6 @@ public class ConversionContext {
      * The document to convert.
      */
     private final Document document;
-
-    /**
-     * Counter for internal references.
-     * Mapped by different counter names.
-     */
-    private final Map<String, Integer> internalReferenceCounter = new HashMap<>();
 
     public ConversionContext(KnuthPlassTypeSettingConfig config, Document document) {
         this.config = config;
@@ -365,19 +357,6 @@ public class ConversionContext {
         }
 
         return codePoint;
-    }
-
-    /**
-     * Get and increment the internal reference counter.
-     *
-     * @param counterName name of the counter to get and increment
-     * @return the reference count
-     */
-    public int getAndIncrementInternalRefCounter(String counterName) {
-        int counter = internalReferenceCounter.computeIfAbsent(counterName, k -> 0) + 1;
-        internalReferenceCounter.put(counterName, counter);
-
-        return counter;
     }
 
     /**

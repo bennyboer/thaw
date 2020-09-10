@@ -16,6 +16,7 @@ import de.be.thaw.hyphenation.HyphenationDictionaries;
 import de.be.thaw.hyphenation.HyphenationDictionary;
 import de.be.thaw.info.model.language.Language;
 import de.be.thaw.math.util.MathFont;
+import de.be.thaw.reference.citation.source.model.parser.impl.SourceModelDeserializer;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
@@ -41,13 +42,18 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -238,12 +244,30 @@ public class PdfExporter implements Exporter {
      * @return type setter to use
      */
     private TypeSetter createTypeSetter(ExportContext ctx, Language language) throws TypeSettingException {
+        // Load hyphenation dictionary
         HyphenationDictionary hyphenationDictionary = HyphenationDictionaries.getDictionary(language).orElseThrow(() -> new TypeSettingException(String.format(
                 "Could not find the hyphenation dictionary for language '%s'",
                 language.name()
         )));
 
+        // Load properties to use during typesetting
+        Properties properties = new Properties();
+        String path = String.format("/i18n/%s.properties", language.getCode());
+        InputStream stream = SourceModelDeserializer.class.getResourceAsStream(path);
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            properties.load(br);
+        } catch (IOException e) {
+            throw new TypeSettingException(String.format(
+                    "Could not load typesetting properties (containing translations needed by the process) for language '%s'",
+                    language.name()
+            ), e);
+        }
+
         return new KnuthPlassTypeSetter(KnuthPlassTypeSettingConfig.newBuilder()
+                .setMathFont(ctx.getMathFont())
+                .setWorkingDirectory(ThawContext.getInstance().getCurrentFolder())
+                .setTextParser(ThawContext.getInstance().getTextParser())
+                .setProperties(properties)
                 .setPageSize(ctx.getPageSize())
                 .setPageInsets(ctx.getPageInsets())
                 .setLooseness(1)
@@ -294,8 +318,6 @@ public class PdfExporter implements Exporter {
 
                     return new PdfImageSource(PDImageXObject.createFromFile(imgFile.getAbsolutePath(), ctx.getPdDocument()), POINTS_PER_PX);
                 })
-                .setMathFont(ctx.getMathFont())
-                .setWorkingDirectory(ThawContext.getInstance().getCurrentFolder())
                 .build());
     }
 

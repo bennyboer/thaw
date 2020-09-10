@@ -17,6 +17,11 @@ import java.util.Set;
  */
 public class ImageHandler implements ThingyHandler {
 
+    /**
+     * The default counter name to use for counting references.
+     */
+    private static final String DEFAULT_COUNTER_NAME = "image";
+
     @Override
     public Set<String> getThingyNames() {
         return Set.of("IMAGE");
@@ -26,6 +31,15 @@ public class ImageHandler implements ThingyHandler {
     public void handle(ThingyNode node, DocumentNode documentNode, ConversionContext ctx) throws DocumentConversionException {
         // Finalize the current paragraph
         ctx.finalizeParagraph();
+
+        String caption = node.getOptions().get("caption");
+        String captionPrefix = node.getOptions().get("caption-prefix");
+
+        // Set the image reference counter (if the image got a caption or label -> is referencable).
+        if (node.getOptions().containsKey("label") || caption != null) {
+            String counterName = node.getOptions().getOrDefault("counter", DEFAULT_COUNTER_NAME);
+            ctx.getDocument().getReferenceModel().setReferenceNumber(counterName, documentNode.getId());
+        }
 
         // Load the image
         ImageSource imgSrc;
@@ -61,7 +75,9 @@ public class ImageHandler implements ThingyHandler {
                 documentNode,
                 imgSrc,
                 floating,
-                alignment
+                alignment,
+                caption,
+                captionPrefix
         ));
     }
 

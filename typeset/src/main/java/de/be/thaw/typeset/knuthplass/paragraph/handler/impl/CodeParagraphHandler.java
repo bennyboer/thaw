@@ -11,6 +11,8 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.font.util.KerningMode;
+import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.ColorStyle;
@@ -25,6 +27,9 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.code.CodeParagraph;
+import de.be.thaw.typeset.page.AbstractElement;
+import de.be.thaw.typeset.page.Element;
+import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.page.impl.TextElement;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
@@ -45,6 +50,11 @@ import java.util.Stack;
  */
 public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
+    /**
+     * The default code paragraph caption prefix.
+     */
+    private static final String DEFAULT_CODE_CAPTION_PREFIX = "Listing";
+
     @Override
     public ParagraphType supportedType() {
         return ParagraphType.CODE;
@@ -53,6 +63,13 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
     @Override
     public void handle(Paragraph paragraph, TypeSettingContext ctx) throws TypeSettingException {
         CodeParagraph codeParagraph = (CodeParagraph) paragraph;
+
+        InsetsStyle insetsStyle = paragraph.getNode().getStyle().getStyleAttribute(
+                StyleType.INSETS,
+                style -> Optional.ofNullable((InsetsStyle) style)
+        ).orElseThrow();
+
+        ctx.getPositionContext().increaseY(insetsStyle.getTop());
 
         // Parse the RTF code
         IRtfSource source = new RtfStreamSource(new ByteArrayInputStream(codeParagraph.getRtfCode().getBytes(StandardCharsets.UTF_8)));
@@ -67,6 +84,84 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
                     e.getCause().getMessage()
             ), e.getCause());
         }
+
+        // Add caption (if any)
+        if (codeParagraph.getCaption().isPresent()) {
+            String caption = codeParagraph.getCaption().orElseThrow();
+            addCaption(caption, codeParagraph, insetsStyle, ctx);
+        }
+
+        ctx.getPositionContext().increaseY(insetsStyle.getBottom());
+    }
+
+    /**
+     * Add a caption under the code paragraph.
+     *
+     * @param caption     to add
+     * @param paragraph   the code paragraph
+     * @param insetsStyle of the code paragraph to use
+     * @param ctx         the typesetting context
+     * @throws TypeSettingException in case the caption could not be added properly
+     */
+    private void addCaption(String caption, CodeParagraph paragraph, InsetsStyle insetsStyle, TypeSettingContext ctx) throws TypeSettingException {
+        // Typeset the caption
+        Map<StyleType, Style> styles = new HashMap<>();
+        styles.put(StyleType.TEXT, new TextStyle(0.0, null, null, null, null, null, null, null));
+        StyleBlock documentStyleBlock = new StyleBlock("DOCUMENT", styles);
+        StyleModel styleModel = new StyleModel(new HashMap<>());
+        styleModel.addBlock(documentStyleBlock.getName(), documentStyleBlock);
+
+        List<Page> pages = ctx.typesetThawTextFormat(String.format(
+                "**%s %d**: %s",
+                paragraph.getCaptionPrefix() != null ? paragraph.getCaptionPrefix() : ctx.getConfig().getProperties().getOrDefault("code.caption.prefix", DEFAULT_CODE_CAPTION_PREFIX),
+                ctx.getDocument().getReferenceModel().getReferenceNumber(paragraph.getNode().getId()),
+                caption
+        ), paragraph.getDefaultLineWidth() - insetsStyle.getLeft() - insetsStyle.getRight(), styleModel);
+
+        // Re-layout the elements below the code paragraph
+        double endY = ctx.getPositionContext().getY();
+        double startY = endY;
+        double maxY = endY;
+        double x = ctx.getPositionContext().getX();
+        for (Page page : pages) {
+            for (Element element : page.getElements()) {
+                double oldX = element.getPosition().getX();
+                double oldY = element.getPosition().getY();
+
+                // Set new position
+                AbstractElement abstractElement = (AbstractElement) element;
+                abstractElement.setPosition(new Position(
+                        oldX + x,
+                        oldY + endY
+                ));
+
+                // Check if new line
+                if (element.getPosition().getY() + element.getSize().getHeight() > maxY) {
+                    maxY = element.getPosition().getY() + element.getSize().getHeight();
+
+                    // Check if there is enough space for the next line
+                    double captionHeight = maxY - startY;
+                    double availableHeight = ctx.getAvailableHeight() - captionHeight;
+                    if (availableHeight < element.getSize().getHeight()) {
+                        ctx.pushPage(); // Create next page
+
+                        startY = ctx.getConfig().getPageInsets().getTop();
+                        endY = -oldY + startY;
+                        maxY = startY + element.getSize().getHeight();
+
+                        // Update current element position again
+                        abstractElement.setPosition(new Position(
+                                oldX + x,
+                                oldY + endY
+                        ));
+                    }
+                }
+
+                ctx.pushPageElement(element);
+            }
+        }
+
+        ctx.getPositionContext().setY(maxY);
     }
 
     /**
@@ -314,6 +409,9 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
                     cancelParsing(e);
                 }
             }
+
+            // Initialize position context
+            ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + insetsStyle.getLeft());
         }
 
         @Override
@@ -444,7 +542,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             }
 
             // Check if text element has enough space in the current line -> otherwise break line
-            double maxX = codeParagraph.getDefaultLineWidth() + ctx.getConfig().getPageInsets().getLeft() + insetsStyle.getLeft();
+            double maxX = ctx.getConfig().getPageInsets().getLeft() + codeParagraph.getDefaultLineWidth() - insetsStyle.getRight();
             if (ctx.getPositionContext().getX() + metrics.getWidth() > maxX) {
                 breakLine(false);
             }
@@ -653,7 +751,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
                     ctx.getCurrentPageNumber(),
                     lineNumberStrMetrics.getBaseline(),
                     new Size(lineNumberStrMetrics.getWidth(), lineNumberStrMetrics.getHeight()),
-                    new Position(ctx.getConfig().getPageInsets().getLeft() - lineNumberStrMetrics.getWidth() - 10.0, ctx.getPositionContext().getY())
+                    new Position(ctx.getConfig().getPageInsets().getLeft() - lineNumberStrMetrics.getWidth() - 10.0 + insetsStyle.getLeft(), ctx.getPositionContext().getY())
             ));
         }
 
