@@ -10,6 +10,7 @@ import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Size;
 
 import java.io.File;
+import java.util.Properties;
 
 /**
  * Builder for the line breaking configuration.
@@ -126,6 +127,11 @@ public class KnuthPlassTypeSettingConfigBuilder {
      * Offset added to the page number.
      */
     private int pageNumberOffset = 0;
+
+    /**
+     * Properties containing needed translations during typesetting.
+     */
+    private Properties properties;
 
     /**
      * Get the size of the page to typeset on (in mm).
@@ -432,10 +438,31 @@ public class KnuthPlassTypeSettingConfigBuilder {
      * Set the offset added to the page number.
      *
      * @param pageNumberOffset to set
-     * @return the page number offset
+     * @return the builder
      */
     public KnuthPlassTypeSettingConfigBuilder setPageNumberOffset(int pageNumberOffset) {
         this.pageNumberOffset = pageNumberOffset;
+
+        return this;
+    }
+
+    /**
+     * Get the properties containing translations.
+     *
+     * @return properties
+     */
+    public Properties getProperties() {
+        return properties;
+    }
+
+    /**
+     * Set properties containing translations needed during typesetting.
+     *
+     * @param properties to set
+     * @return the builder
+     */
+    public KnuthPlassTypeSettingConfigBuilder setProperties(Properties properties) {
+        this.properties = properties;
 
         return this;
     }
@@ -461,7 +488,8 @@ public class KnuthPlassTypeSettingConfigBuilder {
                 getMathFont(),
                 getWorkingDirectory(),
                 getTextParser(),
-                getPageNumberOffset()
+                getPageNumberOffset(),
+                getProperties()
         );
     }
 

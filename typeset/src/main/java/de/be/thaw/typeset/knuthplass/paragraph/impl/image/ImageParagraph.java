@@ -35,13 +35,21 @@ public class ImageParagraph extends AbstractParagraph {
     @Nullable
     private final String caption;
 
+    /**
+     * Prefix of the caption.
+     * Should be something like "Figure" but is customizable.
+     */
+    @Nullable
+    private final String captionPrefix;
+
     public ImageParagraph(
             double lineWidth,
             DocumentNode node,
             ImageSource src,
             boolean floating,
             HorizontalAlignment alignment,
-            @Nullable String caption
+            @Nullable String caption,
+            @Nullable String captionPrefix
     ) {
         super(lineWidth, node);
 
@@ -49,6 +57,7 @@ public class ImageParagraph extends AbstractParagraph {
         this.floating = floating;
         this.alignment = alignment;
         this.caption = caption;
+        this.captionPrefix = captionPrefix;
     }
 
     public ImageSource getSrc() {
@@ -81,6 +90,15 @@ public class ImageParagraph extends AbstractParagraph {
      */
     public Optional<String> getCaption() {
         return Optional.ofNullable(caption);
+    }
+
+    /**
+     * Prefix of the caption.
+     * Should be something like "Figure" but is customizable.
+     */
+    @Nullable
+    public String getCaptionPrefix() {
+        return captionPrefix;
     }
 
 }

@@ -461,12 +461,13 @@ public class TypeSettingContext {
     /**
      * Typeset the passed string written in Thaw document text format (*.tdt).
      *
-     * @param text  to typeset
-     * @param width to use for typesetting (in printer points)
+     * @param text             to typeset
+     * @param width            to use for typesetting (in printer points)
+     * @param customStyleModel a custom style model to use
      * @return the typeset pages
      * @throws TypeSettingException in case the passed text could not be typset to pages properly
      */
-    public List<Page> typesetThawTextFormat(String text, double width) throws TypeSettingException {
+    public List<Page> typesetThawTextFormat(String text, double width, @Nullable StyleModel customStyleModel) throws TypeSettingException {
         // Parse Thaw document text format.
         TextModel textModel;
         try {
@@ -490,6 +491,10 @@ public class TypeSettingContext {
         StyleBlock newDocumentBlock = new StyleBlock("DOCUMENT", styles);
 
         styleModel.addBlock(newDocumentBlock.getName(), newDocumentBlock.merge(styleModel.getBlock(newDocumentBlock.getName()).orElseThrow()));
+
+        if (customStyleModel != null) {
+            styleModel = customStyleModel.merge(styleModel);
+        }
 
         // Create Thaw document.
         Document newDocument;

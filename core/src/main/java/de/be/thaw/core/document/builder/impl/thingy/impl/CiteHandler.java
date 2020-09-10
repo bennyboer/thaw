@@ -87,7 +87,8 @@ public class CiteHandler implements ThingyHandler {
         ctx.getPotentialReferences().add(new DocumentBuildContext.PotentialInternalReference(
                 inTextCitationNode.getId(),
                 citations.get(0).getSource().getIdentifier(), // Use first citations source as internal reference target
-                null
+                null,
+                true
         ));
     }
 

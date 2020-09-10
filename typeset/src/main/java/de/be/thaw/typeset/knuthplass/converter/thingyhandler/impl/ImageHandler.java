@@ -32,9 +32,14 @@ public class ImageHandler implements ThingyHandler {
         // Finalize the current paragraph
         ctx.finalizeParagraph();
 
-        // Set the image reference counter
-        String counterName = node.getOptions().getOrDefault("counter", DEFAULT_COUNTER_NAME);
-        ctx.getDocument().getReferenceModel().setReferenceNumber(counterName, documentNode.getId());
+        String caption = node.getOptions().get("caption");
+        String captionPrefix = node.getOptions().get("caption-prefix");
+
+        // Set the image reference counter (if the image got a caption or label -> is referencable).
+        if (node.getOptions().containsKey("label") || caption != null) {
+            String counterName = node.getOptions().getOrDefault("counter", DEFAULT_COUNTER_NAME);
+            ctx.getDocument().getReferenceModel().setReferenceNumber(counterName, documentNode.getId());
+        }
 
         // Load the image
         ImageSource imgSrc;
@@ -65,15 +70,14 @@ public class ImageHandler implements ThingyHandler {
             alignment = HorizontalAlignment.valueOf(alignmentStr.toUpperCase());
         }
 
-        String caption = node.getOptions().get("caption");
-
         ctx.setCurrentParagraph(new ImageParagraph(
                 imageWidth,
                 documentNode,
                 imgSrc,
                 floating,
                 alignment,
-                caption
+                caption,
+                captionPrefix
         ));
     }
 

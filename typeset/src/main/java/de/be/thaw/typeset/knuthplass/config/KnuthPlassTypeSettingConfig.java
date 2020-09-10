@@ -10,6 +10,7 @@ import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Size;
 
 import java.io.File;
+import java.util.Properties;
 
 /**
  * Configuration of the Knuth-Plass line breaking algorithm.
@@ -94,6 +95,11 @@ public class KnuthPlassTypeSettingConfig {
      */
     private final int pageNumberOffset;
 
+    /**
+     * Properties used to fetch translations.
+     */
+    private final Properties properties;
+
     public KnuthPlassTypeSettingConfig(
             Size pageSize,
             Insets pageInsets,
@@ -109,7 +115,8 @@ public class KnuthPlassTypeSettingConfig {
             ThawFont mathFont,
             File workingDirectory,
             TextParser textParser,
-            int pageNumberOffset
+            int pageNumberOffset,
+            Properties properties
     ) {
         if (fontDetailsSupplier == null) {
             throw new NullPointerException("Cannot build line breaking configuration as the font details supplier is null which is required to properly typeset");
@@ -129,6 +136,10 @@ public class KnuthPlassTypeSettingConfig {
 
         if (textParser == null) {
             throw new NullPointerException("Cannot build line breaking configuration as a thaw document text parser needs to be specified (for example to parse nested captions for image paragraphs).");
+        }
+
+        if (properties == null) {
+            throw new NullPointerException("Cannot build line breaking configuration as properties for translations are required");
         }
 
         this.pageSize = pageSize;
@@ -156,6 +167,8 @@ public class KnuthPlassTypeSettingConfig {
         this.textParser = textParser;
 
         this.pageNumberOffset = pageNumberOffset;
+
+        this.properties = properties;
     }
 
     /**
@@ -307,6 +320,15 @@ public class KnuthPlassTypeSettingConfig {
     }
 
     /**
+     * Get the properties containing translations.
+     *
+     * @return properties
+     */
+    public Properties getProperties() {
+        return properties;
+    }
+
+    /**
      * Create a new builder for the line breaking configuration.
      *
      * @param config to initialize settings from
@@ -328,7 +350,8 @@ public class KnuthPlassTypeSettingConfig {
                 .setPageInsets(config.getPageInsets())
                 .setPageSize(config.getPageSize())
                 .setTolerance(config.getTolerance())
-                .setPageNumberOffset(config.getPageNumberOffset());
+                .setPageNumberOffset(config.getPageNumberOffset())
+                .setProperties(config.getProperties());
     }
 
 }

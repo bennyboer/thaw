@@ -509,10 +509,25 @@ public class DocumentBuildContext {
          */
         private final String prefix;
 
+        /**
+         * Whether the internal reference comes from a citation and points to a reference list entry.
+         */
+        private final boolean fromCitation;
+
         public PotentialInternalReference(String sourceID, String targetLabel, String prefix) {
+            this(sourceID, targetLabel, prefix, false);
+        }
+
+        public PotentialInternalReference(
+                String sourceID,
+                String targetLabel,
+                String prefix,
+                boolean fromCitation
+        ) {
             this.sourceID = sourceID;
             this.targetLabel = targetLabel;
             this.prefix = prefix;
+            this.fromCitation = fromCitation;
         }
 
         public String getSourceID() {
@@ -525,6 +540,15 @@ public class DocumentBuildContext {
 
         public String getPrefix() {
             return prefix;
+        }
+
+        /**
+         * Check whether the internal reference comes from a citation and points to a reference list entry.
+         *
+         * @return whether reference originates from a citation thingy
+         */
+        public boolean isFromCitation() {
+            return fromCitation;
         }
 
     }

@@ -115,10 +115,19 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
         // Add potential targets to reference model if the target has been found, otherwise throw an exception
         for (DocumentBuildContext.PotentialInternalReference potentialReference : ctx.getPotentialReferences()) {
             String targetID = ctx.getReferenceModel().getNodeIDForLabel(potentialReference.getTargetLabel())
-                    .orElseThrow(() -> new MissingReferenceTargetException(String.format(
-                            "Reference target with label '%s' is missing",
-                            potentialReference.getTargetLabel()
-                    )));
+                    .orElseThrow(() -> {
+                        if (potentialReference.isFromCitation()) {
+                            return new MissingReferenceTargetException(String.format(
+                                    "Reference list entry for label '%s' is missing. Have you forgotten to add the #REFERENCES# Thingy to your document?",
+                                    potentialReference.getTargetLabel()
+                            ));
+                        } else {
+                            return new MissingReferenceTargetException(String.format(
+                                    "Reference target with label '%s' is missing",
+                                    potentialReference.getTargetLabel()
+                            ));
+                        }
+                    });
 
             ctx.getReferenceModel().addReference(new InternalReference(
                     potentialReference.getSourceID(),
