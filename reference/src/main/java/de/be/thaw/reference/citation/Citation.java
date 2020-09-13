@@ -1,53 +1,73 @@
 package de.be.thaw.reference.citation;
 
-import de.be.thaw.reference.citation.source.Source;
-import org.jetbrains.annotations.Nullable;
+import java.util.Optional;
 
 /**
  * A citation representation.
  */
-public class Citation {
+public interface Citation {
 
     /**
-     * The source to cite.
+     * Get the ID of the source to cite.
+     *
+     * @return the source ID
      */
-    private final Source source;
+    String getSourceID();
 
     /**
-     * Position in the source (page, paragraph, ...).
+     * Get the locator of the citation (for example the page number to cite).
+     *
+     * @return the locator
      */
-    @Nullable
-    private final String position;
+    Optional<String> getLocator();
 
     /**
-     * Whether we are dealing with a direct or indirect citation.
+     * Get a label indicating whether the locator is a page, chapter, ...
+     *
+     * @return the label
      */
-    private final boolean direct;
+    Optional<String> getLabel();
 
-    public Citation(Source source) {
-        this(source, false, null);
-    }
+    /**
+     * Whether only the author name should be included in the citation output.
+     *
+     * @return whether author only
+     */
+    boolean isAuthorOnly();
 
-    public Citation(Source source, boolean direct) {
-        this(source, direct, null);
-    }
+    /**
+     * Whether the author should be suppressed in the citation output.
+     *
+     * @return suppress author in citation output
+     */
+    boolean isSuppressAuthor();
 
-    public Citation(Source source, boolean direct, String position) {
-        this.source = source;
-        this.position = position;
-        this.direct = direct;
-    }
+    /**
+     * Get an optional prefix of the citation.
+     *
+     * @return prefix
+     */
+    Optional<String> getPrefix();
 
-    public Source getSource() {
-        return source;
-    }
+    /**
+     * Get an optional suffix of the citation.
+     *
+     * @return suffix
+     */
+    Optional<String> getSuffix();
 
-    public @Nullable String getPosition() {
-        return position;
-    }
+    /**
+     * Whether there is another reference to the same source before this one.
+     *
+     * @return whether there is another near reference to the same source
+     */
+    Optional<Boolean> isNearNote();
 
-    public boolean isDirect() {
-        return direct;
-    }
+    /**
+     * Generate a hash of the citation.
+     *
+     * @return a hash of the citation
+     */
+    String generateHash();
 
 }

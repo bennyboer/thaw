@@ -2,6 +2,7 @@ package de.be.thaw.reference.impl;
 
 import de.be.thaw.reference.Reference;
 import de.be.thaw.reference.ReferenceModel;
+import de.be.thaw.reference.citation.CitationManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,6 +39,15 @@ public class DefaultReferenceModel implements ReferenceModel {
      * Reference counter lookup.
      */
     private final Map<String, Integer> referenceCounterLookup = new HashMap<>();
+
+    /**
+     * Manager for citations.
+     */
+    private final CitationManager citationManager;
+
+    public DefaultReferenceModel(CitationManager citationManager) {
+        this.citationManager = citationManager;
+    }
 
     @Override
     public void addReference(Reference reference) {
@@ -80,6 +90,11 @@ public class DefaultReferenceModel implements ReferenceModel {
     @Override
     public int getReferenceNumber(String nodeID) {
         return referenceNumberLookup.getOrDefault(nodeID, -1);
+    }
+
+    @Override
+    public CitationManager getCitationManager() {
+        return citationManager;
     }
 
 }

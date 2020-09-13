@@ -3,7 +3,9 @@ package de.be.thaw.info;
 import de.be.thaw.info.model.author.Author;
 import de.be.thaw.info.model.language.Language;
 
+import java.io.File;
 import java.nio.charset.Charset;
+import java.util.Optional;
 
 /**
  * Info of a Thaw project.
@@ -30,5 +32,19 @@ public interface ThawInfo {
      * @return author
      */
     Author getAuthor();
+
+    /**
+     * Get the bibliography file to use.
+     *
+     * @return bibliography file
+     */
+    Optional<File> getBibliographyFile();
+
+    /**
+     * Get the bibliography style name (citation style).
+     *
+     * @return bibliography style name
+     */
+    String getBibliographyStyle();
 
 }

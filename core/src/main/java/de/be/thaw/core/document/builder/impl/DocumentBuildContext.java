@@ -14,7 +14,7 @@ import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
-import de.be.thaw.reference.citation.source.model.SourceModel;
+import de.be.thaw.reference.citation.CitationManager;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
@@ -92,11 +92,6 @@ public class DocumentBuildContext {
     private StyleModel styleModel;
 
     /**
-     * Source model of the document.
-     */
-    private final SourceModel sourceModel;
-
-    /**
      * Mapping of all loaded header nodes.
      */
     private final Map<PageRange, DocumentNode> headerNodes = new HashMap<>();
@@ -117,12 +112,16 @@ public class DocumentBuildContext {
     @Nullable
     private Document parentDocument;
 
-    public DocumentBuildContext(ThawInfo info, TextModel textModel, ReferenceModel referenceModel, StyleModel styleModel, SourceModel sourceModel) {
+    public DocumentBuildContext(
+            ThawInfo info,
+            TextModel textModel,
+            ReferenceModel referenceModel,
+            StyleModel styleModel
+    ) {
         this.info = info;
         this.textModel = textModel;
         this.referenceModel = referenceModel;
         this.styleModel = styleModel;
-        this.sourceModel = sourceModel;
     }
 
     /**
@@ -186,8 +185,8 @@ public class DocumentBuildContext {
         return footNotes;
     }
 
-    public SourceModel getSourceModel() {
-        return sourceModel;
+    public CitationManager getCitationManager() {
+        return getReferenceModel().getCitationManager();
     }
 
     /**

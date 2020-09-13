@@ -16,7 +16,6 @@ import de.be.thaw.hyphenation.HyphenationDictionaries;
 import de.be.thaw.hyphenation.HyphenationDictionary;
 import de.be.thaw.info.model.language.Language;
 import de.be.thaw.math.util.MathFont;
-import de.be.thaw.reference.citation.source.model.parser.impl.SourceModelDeserializer;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
@@ -253,7 +252,7 @@ public class PdfExporter implements Exporter {
         // Load properties to use during typesetting
         Properties properties = new Properties();
         String path = String.format("/i18n/%s.properties", language.getCode());
-        InputStream stream = SourceModelDeserializer.class.getResourceAsStream(path);
+        InputStream stream = KnuthPlassTypeSetter.class.getResourceAsStream(path);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             properties.load(br);
         } catch (IOException e) {

@@ -8,6 +8,7 @@ import de.be.thaw.typeset.kerning.glyph.Coordinate;
 import de.be.thaw.typeset.kerning.glyph.Glyph;
 import de.be.thaw.typeset.kerning.optical.OpticalKerningTable;
 import de.be.thaw.util.Size;
+import de.be.thaw.util.cache.CacheUtil;
 import de.be.thaw.util.os.OperatingSystem;
 import de.be.thaw.util.os.exception.CouldNotDetermineOperatingSystemException;
 import org.apache.fontbox.ttf.CmapSubtable;
@@ -32,7 +33,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -187,7 +187,8 @@ public class ThawPdfFont extends AbstractFont {
         }
 
         // Load or calculate optical kerning table
-        File opticalKerningCacheDir = Path.of(System.getProperty("user.home"), ".thaw", "optical-kerning").toFile();
+        File rootCacheDir = CacheUtil.getCacheRootDir();
+        File opticalKerningCacheDir = new File(rootCacheDir, "optical-kerning");
         if (!opticalKerningCacheDir.exists()) {
             opticalKerningCacheDir.mkdirs();
         }

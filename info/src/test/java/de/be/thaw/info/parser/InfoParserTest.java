@@ -20,7 +20,7 @@ public class InfoParserTest {
                 "language = de\n" +
                 "\n" +
                 "author.name = Benjamin Eder\n" +
-                "author.email = mymail@myimaginarydomain.test\n"));
+                "author.email = mymail@myimaginarydomain.test\n"), null);
 
         Assertions.assertEquals(StandardCharsets.UTF_8, info.getEncoding());
         Assertions.assertEquals(Language.GERMAN, info.getLanguage());

@@ -4,7 +4,9 @@ import de.be.thaw.core.document.builder.impl.DocumentBuildContext;
 import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.thingy.ThingyHandler;
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.reference.citation.styles.referencelist.ReferenceListEntry;
+import de.be.thaw.reference.citation.exception.CouldNotLoadBibliographyException;
+import de.be.thaw.reference.citation.referencelist.ReferenceList;
+import de.be.thaw.reference.citation.referencelist.ReferenceListEntry;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.model.tree.Node;
@@ -13,6 +15,7 @@ import de.be.thaw.text.model.tree.impl.BoxNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.text.parser.exception.ParseException;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Set;
@@ -36,19 +39,25 @@ public class ReferenceListHandler implements ThingyHandler {
             root = root.getParent();
         }
 
-        // Fetch reference list entries
-        List<ReferenceListEntry> entries = ctx.getSourceModel().getStyle().getReferenceListEntries();
+        ReferenceList referenceList;
+        try {
+            referenceList = ctx.getCitationManager().buildReferenceList();
+        } catch (CouldNotLoadBibliographyException | IOException e) {
+            throw new DocumentBuildException(e);
+        }
+
+        // TODO Deal with additional reference list settings (hanging indent, entry spacing).
 
         // Build document nodes for all reference list entries
-        for (ReferenceListEntry entry : entries) {
+        for (ReferenceListEntry entry : referenceList.getEntries()) {
             // Parse entry to text model
             TextModel textModel;
-            try (StringReader sr = new StringReader(entry.getEntry())) {
+            try (StringReader sr = new StringReader(entry.getText())) {
                 textModel = ThawContext.getInstance().getTextParser().parse(sr);
             } catch (ParseException e) {
                 throw new DocumentBuildException(String.format(
                         "Could not parse reference list entry '%s' for reference list #REFERENCES# thingy at %s",
-                        entry.getEntry(),
+                        entry.getText(),
                         thingyNode.getTextPosition()
                 ), e);
             }
@@ -56,7 +65,6 @@ public class ReferenceListHandler implements ThingyHandler {
             boolean isFirst = true;
             for (Node node : textModel.getRoot().children()) {
                 if (node.getType() == NodeType.BOX) {
-
                     ctx.processBoxNode((BoxNode) node, root, root.getStyle());
                     if (isFirst) {
                         isFirst = false;
@@ -65,7 +73,7 @@ public class ReferenceListHandler implements ThingyHandler {
                         List<DocumentNode> firstChildren = root.getChildren().get(root.getChildren().size() - 1).getChildren();
                         DocumentNode firstChild = firstChildren.get(0);
 
-                        ctx.getReferenceModel().addLabel(entry.getIdentifier(), firstChild.getId());
+                        ctx.getReferenceModel().addLabel(entry.getSourceID(), firstChild.getId());
                     }
                 }
             }

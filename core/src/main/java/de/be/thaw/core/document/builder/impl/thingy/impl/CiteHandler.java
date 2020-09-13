@@ -7,16 +7,15 @@ import de.be.thaw.core.document.builder.impl.thingy.ThingyHandler;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.reference.citation.Citation;
-import de.be.thaw.reference.citation.source.Source;
-import de.be.thaw.reference.citation.styles.exception.ReferenceBuildException;
-import de.be.thaw.reference.citation.styles.exception.UnsupportedSourceTypeException;
+import de.be.thaw.reference.citation.SourceCitation;
+import de.be.thaw.reference.citation.exception.CouldNotLoadBibliographyException;
+import de.be.thaw.reference.citation.exception.MissingSourceException;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -39,42 +38,72 @@ public class CiteHandler implements ThingyHandler {
             ));
         }
 
-        boolean isDirect = Boolean.parseBoolean(thingyNode.getOptions().get("direct"));
-
         // Collect citations
         List<Citation> citations = new ArrayList<>();
         for (String identifier : thingyNode.getArguments()) {
-            String[] parts = identifier.split(":");
+            String[] parts = identifier.split(",");
 
-            String id;
-            String position = null;
-            if (parts.length == 1) {
-                id = identifier.trim();
-            } else {
-                id = parts[0].trim();
-                position = parts[1].trim();
+            if (parts.length == 0) {
+                throw new DocumentBuildException(String.format(
+                        "#CITE# Thingy at %s needs at least the ID of the source to cite as argument. Example: #CITE, 'MySourceID, page 42'#",
+                        thingyNode.getTextPosition()
+                ));
+            }
+            SourceCitation citation = new SourceCitation(parts[0].trim());
+
+            // Parse additional options
+            if (parts.length > 1) {
+                for (int i = 1; i < parts.length; i++) {
+                    String part = parts[i];
+
+                    String[] keyValuePair = part.split("=");
+                    String key = keyValuePair[0].trim();
+                    if (keyValuePair.length == 1) {
+                        // Only key specified -> is boolean key-value-pair
+                        switch (key) {
+                            case "author-only" -> citation.setAuthorOnly(true);
+                            case "suppress-author" -> citation.setSuppressAuthor(true);
+                            case "near-note" -> citation.setNearNote(true);
+                        }
+                    } else {
+                        String value = keyValuePair[1].trim();
+
+                        switch (key) {
+                            case "author-only" -> citation.setAuthorOnly(Boolean.parseBoolean(value));
+                            case "suppress-author" -> citation.setSuppressAuthor(Boolean.parseBoolean(value));
+                            case "near-note" -> citation.setNearNote(Boolean.parseBoolean(value));
+                            case "prefix" -> citation.setPrefix(value);
+                            case "suffix" -> citation.setSuffix(value);
+                            case "location" -> {
+                                // Parse label (chapter, page, paragraph, ...) and locator (the actual page number, etc.)
+                                String[] parts2 = value.split(" ");
+
+                                citation.setLabel(parts2[0].trim());
+                                citation.setLocator(parts2[1].trim());
+                            }
+                        }
+                    }
+                }
             }
 
-            Optional<Source> sourceOptional = ctx.getSourceModel().getSource(id);
-            if (sourceOptional.isEmpty()) {
+            // Check if source with sourceID is specified in bibliography
+            if (!ctx.getCitationManager().hasSource(citation.getSourceID())) {
                 throw new DocumentBuildException(String.format(
-                        "#CITE# Thingy at %s is referencing source with identifier '%s' which does not exist in the source model yet",
+                        "#CITE# Thingy at %s is referencing source with identifier '%s' which does not exist in the provided bibliography yet",
                         thingyNode.getTextPosition(),
                         identifier
                 ));
             }
 
-            Source source = sourceOptional.get();
-
-            citations.add(new Citation(source, isDirect, position));
+            citations.add(citation);
         }
 
-        // Add found citations
+        // Register found citations
         String inTextCitation;
         try {
-            inTextCitation = ctx.getSourceModel().getStyle().addCitation(citations);
-        } catch (UnsupportedSourceTypeException | ReferenceBuildException e) {
-            throw new DocumentBuildException(e);
+            inTextCitation = ctx.getCitationManager().register(citations);
+        } catch (MissingSourceException | CouldNotLoadBibliographyException e) {
+            throw new DocumentBuildException(e); // Should not happen since this case should be caught above already
         }
 
         // Add document node representing the in-text-citation
@@ -86,7 +115,7 @@ public class CiteHandler implements ThingyHandler {
 
         ctx.getPotentialReferences().add(new DocumentBuildContext.PotentialInternalReference(
                 inTextCitationNode.getId(),
-                citations.get(0).getSource().getIdentifier(), // Use first citations source as internal reference target
+                citations.get(0).getSourceID(), // Use first citations source as internal reference target
                 null,
                 true
         ));
