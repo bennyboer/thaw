@@ -63,4 +63,11 @@ public interface Citation {
      */
     Optional<Boolean> isNearNote();
 
+    /**
+     * Generate a hash of the citation.
+     *
+     * @return a hash of the citation
+     */
+    String generateHash();
+
 }

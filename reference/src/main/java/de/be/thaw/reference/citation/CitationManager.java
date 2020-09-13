@@ -1,8 +1,10 @@
 package de.be.thaw.reference.citation;
 
+import de.be.thaw.reference.citation.exception.CouldNotLoadBibliographyException;
 import de.be.thaw.reference.citation.exception.MissingSourceException;
 import de.be.thaw.reference.citation.referencelist.ReferenceList;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -16,7 +18,7 @@ public interface CitationManager {
      * @param citations to register
      * @return the citation string
      */
-    String register(List<Citation> citations) throws MissingSourceException;
+    String register(List<Citation> citations) throws MissingSourceException, CouldNotLoadBibliographyException;
 
     /**
      * Check whether a source with the passed ID is available in the bibliography.
@@ -30,7 +32,9 @@ public interface CitationManager {
      * Build a list of bibliography entries.
      *
      * @return bibliography entries
+     * @throws CouldNotLoadBibliographyException in case the bibliography could not be loaded
+     * @throws IOException                       in case the results could not be cached to file
      */
-    ReferenceList buildReferenceList();
+    ReferenceList buildReferenceList() throws CouldNotLoadBibliographyException, IOException;
 
 }

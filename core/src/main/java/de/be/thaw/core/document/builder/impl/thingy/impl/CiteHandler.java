@@ -8,6 +8,7 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.reference.citation.Citation;
 import de.be.thaw.reference.citation.SourceCitation;
+import de.be.thaw.reference.citation.exception.CouldNotLoadBibliographyException;
 import de.be.thaw.reference.citation.exception.MissingSourceException;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
@@ -101,7 +102,7 @@ public class CiteHandler implements ThingyHandler {
         String inTextCitation;
         try {
             inTextCitation = ctx.getCitationManager().register(citations);
-        } catch (MissingSourceException e) {
+        } catch (MissingSourceException | CouldNotLoadBibliographyException e) {
             throw new DocumentBuildException(e); // Should not happen since this case should be caught above already
         }
 

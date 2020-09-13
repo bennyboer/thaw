@@ -2,6 +2,10 @@ package de.be.thaw.reference.citation;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Formatter;
 import java.util.Optional;
 
 /**
@@ -96,6 +100,34 @@ public class SourceCitation implements Citation {
     @Override
     public Optional<Boolean> isNearNote() {
         return Optional.ofNullable(nearNote);
+    }
+
+    @Override
+    public String generateHash() {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+
+            md.update(getSourceID().getBytes(StandardCharsets.UTF_8));
+            getLabel().ifPresent(l -> md.update(l.getBytes(StandardCharsets.UTF_8)));
+            getLocator().ifPresent(l -> md.update(l.getBytes(StandardCharsets.UTF_8)));
+            getPrefix().ifPresent(p -> md.update(p.getBytes(StandardCharsets.UTF_8)));
+            getSuffix().ifPresent(s -> md.update(s.getBytes(StandardCharsets.UTF_8)));
+            isNearNote().ifPresent(b -> md.update((byte) (b ? 1 : 0)));
+            md.update((byte) (isAuthorOnly() ? 1 : 0));
+            md.update((byte) (isSuppressAuthor() ? 1 : 0));
+
+            byte[] bytes = md.digest();
+
+            // Convert resulting bytes to hex
+            try (Formatter formatter = new Formatter()) {
+                for (byte b : bytes) {
+                    formatter.format("%02X", b);
+                }
+                return formatter.toString();
+            }
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Could not generate hash for a citation", e);
+        }
     }
 
     public void setLocator(String locator) {

@@ -4,6 +4,7 @@ import de.be.thaw.core.document.builder.impl.DocumentBuildContext;
 import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.thingy.ThingyHandler;
 import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.reference.citation.exception.CouldNotLoadBibliographyException;
 import de.be.thaw.reference.citation.referencelist.ReferenceList;
 import de.be.thaw.reference.citation.referencelist.ReferenceListEntry;
 import de.be.thaw.shared.ThawContext;
@@ -14,6 +15,7 @@ import de.be.thaw.text.model.tree.impl.BoxNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.text.parser.exception.ParseException;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +39,12 @@ public class ReferenceListHandler implements ThingyHandler {
             root = root.getParent();
         }
 
-        ReferenceList referenceList = ctx.getCitationManager().buildReferenceList();
+        ReferenceList referenceList;
+        try {
+            referenceList = ctx.getCitationManager().buildReferenceList();
+        } catch (CouldNotLoadBibliographyException | IOException e) {
+            throw new DocumentBuildException(e);
+        }
 
         // TODO Deal with additional reference list settings (hanging indent, entry spacing).
 
