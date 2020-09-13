@@ -77,3 +77,9 @@ The font file(s) and the original license file containing the copyright informat
 
 RTF Parser Kit is used by Thaw (https://github.com/joniles/rtfparserkit).
 It is distributed under the Apache-2.0 License which can be obtained from https://github.com/joniles/rtfparserkit/blob/master/licence.txt or http://www.apache.org/licenses/LICENSE-2.0.
+
+
+## citeproc-java
+
+citeproc-java is used (https://github.com/michel-kraemer/citeproc-java) which is distributed unter the Apache-2.0 License.
+You're able to obtain a copy of the license from https://github.com/michel-kraemer/citeproc-java/blob/master/LICENSE.txt or http://www.apache.org/licenses/LICENSE-2.0.

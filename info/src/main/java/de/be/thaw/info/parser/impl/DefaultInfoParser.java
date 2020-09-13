@@ -6,7 +6,9 @@ import de.be.thaw.info.model.author.Author;
 import de.be.thaw.info.model.language.Language;
 import de.be.thaw.info.parser.InfoParser;
 import de.be.thaw.info.parser.exception.ParseException;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;
@@ -20,7 +22,7 @@ import java.util.Properties;
 public class DefaultInfoParser implements InfoParser {
 
     @Override
-    public ThawInfo parse(Reader reader) throws ParseException {
+    public ThawInfo parse(Reader reader, @Nullable File workingDirectory) throws ParseException {
         Properties properties = new Properties();
         try {
             properties.load(reader);
@@ -32,11 +34,19 @@ public class DefaultInfoParser implements InfoParser {
         Language language = parseLanguage(properties);
         Author author = parseAuthor(properties);
 
-        return new DefaultThawInfo(
+        DefaultThawInfo info = new DefaultThawInfo(
                 encoding,
                 language,
                 author
         );
+
+        info.setBibliographyFile(parseBibliographyFile(properties, workingDirectory));
+        String bibliographyStyle = parseBibliographyStyle(properties);
+        if (bibliographyStyle != null) {
+            info.setBibliographyStyle(bibliographyStyle);
+        }
+
+        return info;
     }
 
     /**
@@ -85,6 +95,38 @@ public class DefaultInfoParser implements InfoParser {
         String email = Objects.requireNonNullElse(properties.getProperty("author.email"), "");
 
         return new Author(name, email);
+    }
+
+    /**
+     * Parse the bibliography file (if any).
+     *
+     * @param properties       to use
+     * @param workingDirectory we are currently in
+     * @return bibliography file (or null if not specified in the info file)
+     */
+    @Nullable
+    private File parseBibliographyFile(Properties properties, @Nullable File workingDirectory) {
+        String bibliography = properties.getProperty("bibliography.file");
+        if (bibliography == null) {
+            return null;
+        }
+
+        if (workingDirectory != null) {
+            return new File(workingDirectory, bibliography);
+        } else {
+            return new File(bibliography);
+        }
+    }
+
+    /**
+     * Parse the bibliography style (if any).
+     *
+     * @param properties to use
+     * @return bibliography style (or null if not specified in the info file)
+     */
+    @Nullable
+    private String parseBibliographyStyle(Properties properties) {
+        return properties.getProperty("bibliography.style");
     }
 
 }

@@ -503,7 +503,6 @@ public class TypeSettingContext {
                     getDocument().getInfo(),
                     textModel,
                     styleModel,
-                    getDocument().getSourceModel(),
                     getDocument().getReferenceModel(),
                     getDocument()
             ));

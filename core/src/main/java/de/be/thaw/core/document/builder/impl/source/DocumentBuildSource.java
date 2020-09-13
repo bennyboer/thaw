@@ -3,7 +3,7 @@ package de.be.thaw.core.document.builder.impl.source;
 import de.be.thaw.core.document.Document;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
-import de.be.thaw.reference.citation.source.model.SourceModel;
+import de.be.thaw.reference.citation.CitationManager;
 import de.be.thaw.reference.impl.DefaultReferenceModel;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.text.model.TextModel;
@@ -30,11 +30,6 @@ public class DocumentBuildSource {
     private final StyleModel styleModel;
 
     /**
-     * The source model.
-     */
-    private final SourceModel sourceModel;
-
-    /**
      * Reference model to use during building.
      */
     private final ReferenceModel referenceModel;
@@ -45,15 +40,14 @@ public class DocumentBuildSource {
     @Nullable
     private final Document parentDocument;
 
-    public DocumentBuildSource(ThawInfo info, TextModel textModel, StyleModel styleModel, SourceModel sourceModel) {
-        this(info, textModel, styleModel, sourceModel, new DefaultReferenceModel(), null);
+    public DocumentBuildSource(ThawInfo info, TextModel textModel, StyleModel styleModel, CitationManager citationManager) {
+        this(info, textModel, styleModel, new DefaultReferenceModel(citationManager), null);
     }
 
-    public DocumentBuildSource(ThawInfo info, TextModel textModel, StyleModel styleModel, SourceModel sourceModel, ReferenceModel referenceModel, @Nullable Document parentDocument) {
+    public DocumentBuildSource(ThawInfo info, TextModel textModel, StyleModel styleModel, ReferenceModel referenceModel, @Nullable Document parentDocument) {
         this.info = info;
         this.textModel = textModel;
         this.styleModel = styleModel;
-        this.sourceModel = sourceModel;
         this.referenceModel = referenceModel;
         this.parentDocument = parentDocument;
     }
@@ -68,10 +62,6 @@ public class DocumentBuildSource {
 
     public StyleModel getStyleModel() {
         return styleModel;
-    }
-
-    public SourceModel getSourceModel() {
-        return sourceModel;
     }
 
     public ReferenceModel getReferenceModel() {

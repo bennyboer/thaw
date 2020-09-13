@@ -28,7 +28,7 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
     @Override
     public Document build(DocumentBuildSource source) throws DocumentBuildException {
         ReferenceModel referenceModel = source.getReferenceModel();
-        DocumentBuildContext ctx = new DocumentBuildContext(source.getInfo(), source.getTextModel(), referenceModel, source.getStyleModel(), source.getSourceModel());
+        DocumentBuildContext ctx = new DocumentBuildContext(source.getInfo(), source.getTextModel(), referenceModel, source.getStyleModel());
         if (source.getParentDocument() != null) {
             ctx.setParentDocument(source.getParentDocument());
         }
@@ -40,7 +40,6 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
                 source.getInfo(),
                 root,
                 referenceModel,
-                ctx.getSourceModel(),
                 source.getStyleModel(),
                 ctx.getHeaderNodes(),
                 ctx.getFooterNodes(),

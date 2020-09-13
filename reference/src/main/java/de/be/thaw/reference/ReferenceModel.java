@@ -1,5 +1,7 @@
 package de.be.thaw.reference;
 
+import de.be.thaw.reference.citation.CitationManager;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -65,5 +67,11 @@ public interface ReferenceModel {
      * @return the reference number for the passed node ID (or -1 if not found).
      */
     int getReferenceNumber(String nodeID);
+
+    /**
+     * Get the citation manager to use.
+     * @return citation manager
+     */
+    CitationManager getCitationManager();
 
 }

@@ -1,9 +1,27 @@
+plugins {
+    id 'de.jjohannes.extra-java-module-info' version '0.1'
+}
+
 dependencies {
     implementation project(':shared')
     implementation project(':info')
+    implementation project(':util')
+
+    implementation group: 'de.undercouch', name: 'citeproc-java', version: '2.0.0'
+    runtimeOnly group: 'org.citationstyles', name: 'styles', version: '2.0.0'
+    runtimeOnly group: 'org.citationstyles', name: 'locales', version: '2.0.0'
 
     // JSON serialization/deserialization
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.11.1'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.11.1'
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.11.1'
+
+    // Used to parse CSL citation manager HTML outputs
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.13.1'
+}
+
+extraJavaModuleInfo {
+    automaticModule('citeproc-java-2.0.0.jar', 'de.undercouch.citeproc')
+    automaticModule('jbibtex-1.0.17.jar', 'org.jbibtex')
+    automaticModule('icu4j-62.1.jar', 'com.ibm.icu')
 }

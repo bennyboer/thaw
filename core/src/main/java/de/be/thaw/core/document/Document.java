@@ -4,7 +4,6 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
-import de.be.thaw.reference.citation.source.model.SourceModel;
 import de.be.thaw.style.model.StyleModel;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,11 +30,6 @@ public class Document {
      * Model managing references.
      */
     private final ReferenceModel referenceModel;
-
-    /**
-     * Model managing sources.
-     */
-    private final SourceModel sourceModel;
 
     /**
      * Model managing styles.
@@ -67,7 +61,6 @@ public class Document {
             ThawInfo info,
             DocumentNode root,
             ReferenceModel referenceModel,
-            SourceModel sourceModel,
             StyleModel styleModel,
             Map<PageRange, DocumentNode> headerNodes,
             Map<PageRange, DocumentNode> footerNodes,
@@ -77,7 +70,6 @@ public class Document {
                 info,
                 root,
                 referenceModel,
-                sourceModel,
                 styleModel,
                 headerNodes,
                 footerNodes,
@@ -90,7 +82,6 @@ public class Document {
             ThawInfo info,
             DocumentNode root,
             ReferenceModel referenceModel,
-            SourceModel sourceModel,
             StyleModel styleModel,
             Map<PageRange, DocumentNode> headerNodes,
             Map<PageRange, DocumentNode> footerNodes,
@@ -100,7 +91,6 @@ public class Document {
         this.info = info;
         this.root = root;
         this.referenceModel = referenceModel;
-        this.sourceModel = sourceModel;
         this.styleModel = styleModel;
 
         this.headerNodes = headerNodes;
@@ -154,15 +144,6 @@ public class Document {
      */
     public ReferenceModel getReferenceModel() {
         return referenceModel;
-    }
-
-    /**
-     * Get the source model of the document.
-     *
-     * @return source model
-     */
-    public SourceModel getSourceModel() {
-        return sourceModel;
     }
 
     /**
