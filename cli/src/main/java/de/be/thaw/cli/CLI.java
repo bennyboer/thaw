@@ -13,6 +13,7 @@ import de.be.thaw.reference.citation.CitationManagerFactory;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.parser.StyleParser;
+import de.be.thaw.style.parser.exception.StyleModelParseException;
 import de.be.thaw.style.parser.impl.DefaultStyleParser;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.parser.TextParser;
@@ -204,7 +205,7 @@ public class CLI implements Callable<Integer> {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(styleFile), info.getEncoding()))) {
                 styleModel = styleParser.parse(br);
                 styleModel = styleModel.merge(StyleModel.defaultModel());
-            } catch (de.be.thaw.style.parser.exception.ParseException e) {
+            } catch (StyleModelParseException e) {
                 System.err.println(String.format(
                         "An exception occurred while trying to parse the provided style file at '%s'.\n" +
                                 "The exception message is: '%s'",

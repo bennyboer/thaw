@@ -20,6 +20,7 @@ import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.parser.exception.StyleModelParseException;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
@@ -421,7 +422,7 @@ public class DocumentBuildContext {
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(styleFile), ThawContext.getInstance().getEncoding()))) {
                 styleModel = ThawContext.getInstance().getStyleParser().parse(br);
-            } catch (IOException | de.be.thaw.style.parser.exception.ParseException e) {
+            } catch (IOException | StyleModelParseException e) {
                 throw new DocumentBuildException(String.format(
                         "Could not parse style file at '%s' that should be included as header or footer",
                         styleFile.getAbsolutePath()

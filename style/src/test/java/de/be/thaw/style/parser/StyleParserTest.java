@@ -7,7 +7,7 @@ import de.be.thaw.style.model.style.impl.BackgroundStyle;
 import de.be.thaw.style.model.style.impl.FontStyle;
 import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
-import de.be.thaw.style.parser.exception.ParseException;
+import de.be.thaw.style.parser.exception.StyleModelParseException;
 import de.be.thaw.style.parser.impl.DefaultStyleParser;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,7 +17,7 @@ import java.io.StringReader;
 public class StyleParserTest {
 
     @Test
-    public void simpleParserTest() throws ParseException {
+    public void simpleParserTest() throws StyleModelParseException {
         String source = "{\n" +
                 "\t\"DOCUMENT\": {\n" +
                 "\t\t\"size\": {\n" +

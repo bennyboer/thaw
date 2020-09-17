@@ -3,9 +3,9 @@ package de.be.thaw.style.parser.exception;
 /**
  * Exception thrown in case the style model could not be parsed.
  */
-public class ParseException extends Exception {
+public class StyleModelParseException extends Exception {
 
-    public ParseException(String message, Throwable cause) {
+    public StyleModelParseException(String message, Throwable cause) {
         super(message, cause);
     }
 
