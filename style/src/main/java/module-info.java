@@ -7,6 +7,7 @@ module de.be.thaw.style {
     exports de.be.thaw.style.parser.impl;
     exports de.be.thaw.style.parser.exception;
     requires com.fasterxml.jackson.databind;
+    requires org.jetbrains.annotations;
     requires de.be.thaw.font;
     requires de.be.thaw.util;
 

@@ -29,9 +29,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+// TODO Remove this file entirely
+
 /**
  * Deserializer for the style model JSON.
  */
+@Deprecated
 public class StyleModelDeserializer extends StdDeserializer<StyleModel> {
 
     public StyleModelDeserializer() {
