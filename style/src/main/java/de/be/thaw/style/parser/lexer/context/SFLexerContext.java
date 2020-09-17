@@ -43,6 +43,11 @@ public class SFLexerContext {
      */
     private final Function<Integer, Optional<Character>> lookAheadFunction;
 
+    /**
+     * Whether the current state is marked to be popped after accepting the currently processing character.
+     */
+    private boolean stateMarkedForPop = false;
+
     public SFLexerContext(Consumer<StyleFormatToken> tokenConsumer, Function<Integer, Optional<Character>> lookAheadFunction) {
         this.tokenConsumer = tokenConsumer;
         this.lookAheadFunction = lookAheadFunction;
@@ -87,6 +92,13 @@ public class SFLexerContext {
     }
 
     /**
+     * Mark the current state to be popped after accepting the current character to be included in the current token.
+     */
+    public void popStateAfter() {
+        stateMarkedForPop = true;
+    }
+
+    /**
      * Filter characters before processing them.
      *
      * @param c to filter
@@ -125,6 +137,11 @@ public class SFLexerContext {
             rangeCtx.setEndPos(1);
         } else {
             rangeCtx.setEndPos(rangeCtx.getEndPos() + 1);
+        }
+
+        if (stateMarkedForPop) {
+            stateMarkedForPop = false;
+            popState();
         }
     }
 

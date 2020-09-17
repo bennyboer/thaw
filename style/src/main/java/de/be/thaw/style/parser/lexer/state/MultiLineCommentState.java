@@ -1,32 +1,35 @@
 package de.be.thaw.style.parser.lexer.state;
 
 import de.be.thaw.style.parser.lexer.context.SFLexerContext;
-import de.be.thaw.style.parser.lexer.exception.StyleFormatLexerException;
 import de.be.thaw.style.parser.lexer.token.StyleFormatTokenType;
-
-import java.util.Optional;
 
 /**
  * Lexer state of being in a multi line comment.
  */
 public class MultiLineCommentState implements SFLexerState {
 
+    /**
+     * Whether we may leave the comment state the next character (when '/').
+     */
+    private boolean mayLeave = false;
+
     @Override
-    public void process(char c, SFLexerContext ctx) throws StyleFormatLexerException {
-        if (c == '*') {
-            // Check if we have to leave the multi-line comment state
-            Optional<Character> optNextChar = ctx.lookAhead(1);
-            if (optNextChar.isPresent()) {
-                char nextChar = optNextChar.orElseThrow();
-                if (nextChar == '/') {
-                    ctx.popState();
-                }
+    public void process(char c, SFLexerContext ctx) {
+        if (mayLeave) {
+            if (c == '/') {
+                ctx.popStateAfter();
+            } else {
+                mayLeave = false;
             }
+        }
+
+        if (c == '*') {
+            mayLeave = true;
         }
     }
 
     @Override
-    public StyleFormatTokenType getType() throws StyleFormatLexerException {
+    public StyleFormatTokenType getType() {
         return StyleFormatTokenType.MULTI_LINE_COMMENT;
     }
 

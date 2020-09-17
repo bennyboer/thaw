@@ -1,6 +1,5 @@
 package de.be.thaw.style.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.be.thaw.font.util.FontFamily;
 import de.be.thaw.font.util.FontManager;
 import de.be.thaw.font.util.FontVariant;
@@ -15,7 +14,6 @@ import de.be.thaw.style.model.style.impl.InsetsStyle;
 import de.be.thaw.style.model.style.impl.ReferenceStyle;
 import de.be.thaw.style.model.style.impl.SizeStyle;
 import de.be.thaw.style.model.style.impl.TextStyle;
-import de.be.thaw.style.parser.impl.StyleModelDeserializer;
 import de.be.thaw.util.HorizontalAlignment;
 
 import java.util.HashMap;
@@ -26,7 +24,6 @@ import java.util.Optional;
 /**
  * Representation of the Thaw document style format model.
  */
-@JsonDeserialize(using = StyleModelDeserializer.class)
 public class StyleModel {
 
     /**

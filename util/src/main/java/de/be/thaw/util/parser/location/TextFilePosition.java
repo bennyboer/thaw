@@ -38,4 +38,9 @@ public class TextFilePosition {
         return position;
     }
 
+    @Override
+    public String toString() {
+        return String.format("%d:%d", getLine(), getPosition());
+    }
+
 }

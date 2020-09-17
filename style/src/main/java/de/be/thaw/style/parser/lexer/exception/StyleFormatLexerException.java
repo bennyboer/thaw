@@ -42,7 +42,7 @@ public class StyleFormatLexerException extends Exception {
     public StyleFormatLexerException(String message, @Nullable Throwable cause, @Nullable TextFilePosition position) {
         super(String.format(
                 "Encountered a problem during lexing the provided style format%s with error message '%s'%s",
-                position != null ? String.format("in line %s at position %d", position.getLine(), position.getPosition()) : "",
+                position != null ? String.format(" in line %s at position %d", position.getLine(), position.getPosition()) : "",
                 message,
                 cause != null ? String.format(" and causing exception: '%s'", cause.getMessage()) : ""
         ));

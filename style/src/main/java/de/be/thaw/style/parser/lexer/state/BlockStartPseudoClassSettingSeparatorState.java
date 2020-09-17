@@ -5,15 +5,14 @@ import de.be.thaw.style.parser.lexer.exception.StyleFormatLexerException;
 import de.be.thaw.style.parser.lexer.token.StyleFormatTokenType;
 
 /**
- * State anticipating a pseudo class setting.
+ * State anticipating another pseudo class setting value.
  */
-public class BlockStartPseudoClassSettingsStartState implements SFLexerState {
+public class BlockStartPseudoClassSettingSeparatorState implements SFLexerState {
 
     @Override
     public void process(char c, SFLexerContext ctx) throws StyleFormatLexerException {
         if (Character.isLetterOrDigit(c)) {
             ctx.popState();
-            ctx.pushState(new BlockStartPseudoClassSettingState());
         } else {
             throw new StyleFormatLexerException(String.format(
                     "Anticipated a valid pseudo class setting value (digit or letter) and not '%c'",
@@ -24,7 +23,7 @@ public class BlockStartPseudoClassSettingsStartState implements SFLexerState {
 
     @Override
     public StyleFormatTokenType getType() {
-        return StyleFormatTokenType.BLOCK_START_PSEUDO_CLASS_SETTINGS_START;
+        return StyleFormatTokenType.BLOCK_START_PSEUDO_CLASS_SETTING_SEPARATOR;
     }
 
 }

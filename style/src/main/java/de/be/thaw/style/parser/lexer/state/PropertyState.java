@@ -5,18 +5,18 @@ import de.be.thaw.style.parser.lexer.exception.StyleFormatLexerException;
 import de.be.thaw.style.parser.lexer.token.StyleFormatTokenType;
 
 /**
- * State anticipating a pseudo class setting.
+ * State expecting characters for a property.
  */
-public class BlockStartPseudoClassSettingsStartState implements SFLexerState {
+public class PropertyState implements SFLexerState {
 
     @Override
     public void process(char c, SFLexerContext ctx) throws StyleFormatLexerException {
-        if (Character.isLetterOrDigit(c)) {
+        if (c == ':') {
             ctx.popState();
-            ctx.pushState(new BlockStartPseudoClassSettingState());
-        } else {
+            ctx.pushState(new PropertyValueSeparatorState());
+        } else if (!Character.isLetter(c) && c != ' ' && c != '-') {
             throw new StyleFormatLexerException(String.format(
-                    "Anticipated a valid pseudo class setting value (digit or letter) and not '%c'",
+                    "Expected a property name to only consist of letters and '-', instead got '%c'",
                     c
             ), ctx.getCurrentPosition());
         }
@@ -24,7 +24,7 @@ public class BlockStartPseudoClassSettingsStartState implements SFLexerState {
 
     @Override
     public StyleFormatTokenType getType() {
-        return StyleFormatTokenType.BLOCK_START_PSEUDO_CLASS_SETTINGS_START;
+        return StyleFormatTokenType.PROPERTY;
     }
 
 }

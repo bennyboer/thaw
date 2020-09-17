@@ -17,7 +17,7 @@ public class SingleLineCommentState implements SFLexerState {
     }
 
     @Override
-    public StyleFormatTokenType getType() throws StyleFormatLexerException {
+    public StyleFormatTokenType getType() {
         return StyleFormatTokenType.SINGLE_LINE_COMMENT;
     }
 

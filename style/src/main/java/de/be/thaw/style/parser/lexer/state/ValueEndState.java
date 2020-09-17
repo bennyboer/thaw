@@ -5,9 +5,9 @@ import de.be.thaw.style.parser.lexer.exception.StyleFormatLexerException;
 import de.be.thaw.style.parser.lexer.token.StyleFormatTokenType;
 
 /**
- * State of when a style block is opened using '{'.
+ * State representing the end of a value declaration.
  */
-public class BlockOpeningState extends AbstractSFLexerState {
+public class ValueEndState extends AbstractSFLexerState {
 
     @Override
     public void doProcess(char c, SFLexerContext ctx) throws StyleFormatLexerException {
@@ -17,9 +17,9 @@ public class BlockOpeningState extends AbstractSFLexerState {
         } else if (c == '}') {
             ctx.popState();
             ctx.pushState(new BlockClosingState());
-        } else if (Character.isDigit(c)) {
+        } else if (c != ' ' && c != '\n') {
             throw new StyleFormatLexerException(String.format(
-                    "Encountered illegal digit character '%c' when awaiting a property start",
+                    "Encountered unexpected character '%c' when anticipating a new property start or a style block end",
                     c
             ), ctx.getCurrentPosition());
         }
@@ -27,7 +27,7 @@ public class BlockOpeningState extends AbstractSFLexerState {
 
     @Override
     public StyleFormatTokenType getType() {
-        return StyleFormatTokenType.BLOCK_OPEN;
+        return StyleFormatTokenType.VALUE_END;
     }
 
 }

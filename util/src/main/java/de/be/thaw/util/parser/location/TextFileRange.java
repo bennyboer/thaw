@@ -38,4 +38,9 @@ public class TextFileRange {
         return end;
     }
 
+    @Override
+    public String toString() {
+        return String.format("Start: %s, End: %s", getStart().toString(), getEnd().toString());
+    }
+
 }
