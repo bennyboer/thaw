@@ -44,9 +44,14 @@ public class SFLexerContext {
     private final Function<Integer, Optional<Character>> lookAheadFunction;
 
     /**
-     * Whether the current state is marked to be popped after accepting the currently processing character.
+     * The currently processing character.
      */
-    private boolean stateMarkedForPop = false;
+    private char currentChar;
+
+    /**
+     * Whether the current char has already been accepted for the current dangling token.
+     */
+    private boolean alreadyAcceptedCurrentChar = false;
 
     public SFLexerContext(Consumer<StyleFormatToken> tokenConsumer, Function<Integer, Optional<Character>> lookAheadFunction) {
         this.tokenConsumer = tokenConsumer;
@@ -92,10 +97,21 @@ public class SFLexerContext {
     }
 
     /**
-     * Mark the current state to be popped after accepting the current character to be included in the current token.
+     * Accept the current char for the current dangling token.
      */
-    public void popStateAfter() {
-        stateMarkedForPop = true;
+    public void acceptCurrentChar() {
+        // Buffer the character
+        buffer.append(currentChar);
+
+        // Update text range context properly
+        if (currentChar == '\n') {
+            rangeCtx.setEndLine(rangeCtx.getEndLine() + 1);
+            rangeCtx.setEndPos(1);
+        } else {
+            rangeCtx.setEndPos(rangeCtx.getEndPos() + 1);
+        }
+
+        alreadyAcceptedCurrentChar = true;
     }
 
     /**
@@ -125,23 +141,15 @@ public class SFLexerContext {
         }
         c = (char) filteredChar;
 
+        // Save a currently processing character
+        currentChar = c;
+        alreadyAcceptedCurrentChar = false;
+
         // Process the character in the current state
         stateStack.peek().process(c, this);
 
-        // Buffer the character
-        buffer.append(c);
-
-        // Update text range context properly
-        if (c == '\n') {
-            rangeCtx.setEndLine(rangeCtx.getEndLine() + 1);
-            rangeCtx.setEndPos(1);
-        } else {
-            rangeCtx.setEndPos(rangeCtx.getEndPos() + 1);
-        }
-
-        if (stateMarkedForPop) {
-            stateMarkedForPop = false;
-            popState();
+        if (!alreadyAcceptedCurrentChar) {
+            acceptCurrentChar();
         }
     }
 

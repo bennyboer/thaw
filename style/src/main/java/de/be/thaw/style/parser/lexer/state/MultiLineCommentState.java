@@ -1,6 +1,7 @@
 package de.be.thaw.style.parser.lexer.state;
 
 import de.be.thaw.style.parser.lexer.context.SFLexerContext;
+import de.be.thaw.style.parser.lexer.exception.StyleFormatLexerException;
 import de.be.thaw.style.parser.lexer.token.StyleFormatTokenType;
 
 /**
@@ -14,10 +15,11 @@ public class MultiLineCommentState implements SFLexerState {
     private boolean mayLeave = false;
 
     @Override
-    public void process(char c, SFLexerContext ctx) {
+    public void process(char c, SFLexerContext ctx) throws StyleFormatLexerException {
         if (mayLeave) {
             if (c == '/') {
-                ctx.popStateAfter();
+                ctx.acceptCurrentChar(); // The '/' character belongs still to this state!
+                ctx.popState();
             } else {
                 mayLeave = false;
             }
