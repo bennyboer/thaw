@@ -517,9 +517,9 @@ public class StyleFormatLexerTest {
                 "   \n" +
                 "   ' (Start: 4:35, End: 6:4)\n" +
                 "[PROPERTY] 'another-property' (Start: 6:4, End: 6:20)\n" +
-                "[PROPERTY_VALUE_SEPARATOR] ': \"' (Start: 6:20, End: 6:23)\n" +
-                "[VALUE] 'yes\"\n" +
-                "' (Start: 6:23, End: 7:1)\n" +
+                "[PROPERTY_VALUE_SEPARATOR] ': ' (Start: 6:20, End: 6:22)\n" +
+                "[VALUE] '\"yes\"\n" +
+                "' (Start: 6:22, End: 7:1)\n" +
                 "[BLOCK_CLOSE] '}' (Start: 7:1, End: 7:2)\n" +
                 "[IGNORE] '\n" +
                 "' (Start: 7:2, End: 8:1)", tokensToString(tokens));

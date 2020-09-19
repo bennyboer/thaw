@@ -5,6 +5,14 @@ package de.be.thaw.style.parser.exception;
  */
 public class StyleModelParseException extends Exception {
 
+    public StyleModelParseException(String message) {
+        super(message);
+    }
+
+    public StyleModelParseException(Throwable cause) {
+        super(cause);
+    }
+
     public StyleModelParseException(String message, Throwable cause) {
         super(message, cause);
     }

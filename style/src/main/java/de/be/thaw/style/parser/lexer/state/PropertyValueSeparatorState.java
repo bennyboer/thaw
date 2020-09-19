@@ -11,14 +11,9 @@ public class PropertyValueSeparatorState implements SFLexerState {
 
     @Override
     public void process(char c, SFLexerContext ctx) throws StyleFormatLexerException {
-        if (Character.isLetterOrDigit(c)) {
+        if (c != ' ' && c != '\n') {
             ctx.popState();
             ctx.pushState(new ValueState());
-        } else if (c != ' ' && c != '"' && c != '\'') {
-            throw new StyleFormatLexerException(String.format(
-                    "Encountered unexpected character '%c' when expecting a property value",
-                    c
-            ), ctx.getCurrentPosition());
         }
     }
 

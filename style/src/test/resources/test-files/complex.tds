@@ -1,0 +1,93 @@
+document { // Styles applying to the whole document
+  width: 210mm;
+  height: 297mm;
+  font-family: url(my-cool-font.ttf); // Can also be "font-family: Arial", or alike
+  font-size: 12pt;
+  font-variant: plain; // Allowed are also 'bold', 'italic', 'underlined' or even a combination of them like 'bold italic underlined'
+  color: #333333; // Font color, also rgba(0.5, 0.5, 0.5, 1.0) or rgb(0.5, 0.5, 0.5) should be allowed
+  font-kerning: native; // Can also be "optical"
+  line-height: 1.0; // Can also be 100% or 10pt, (or another unit). When 100%/1.0 the line-height is calculated from the letter M as basis
+  text-align: center; // Alignment of the text paragraphs
+  text-justify: true; // Whether to justify text paragraphs
+  margin: 0; // Should work like the css spec says (except for the units where we do not allow px)
+  padding: 0; // See comment for margin
+  background-color: #EAEAEA; // Background color of the paragraph or page (Should work like the color attribute)
+  inline-code-font-family: 'Consolas'; // Special attribute to set the font-family for inline-code using backticks
+}
+
+page { // Styles applying to the current page
+  header: "my-header-folder"; // Header settings for the current page
+  footer: "my-footer-folder";
+}
+
+page:page(end=5) {
+  // Special page selector, meaning this will apply to all pages starting from page `undefined` (first page) until page 5
+  // So in this case this will apply to page 1 to 5.
+  // Another example would be :page(5) which means just page 5.
+  // To select the last page you would have to use :last-page, also :first-page should be available (for consistency) with a variable offset. For example :last-page(1) would mean the page before the last page.
+}
+
+paragraph {
+  // Styles applying to all paragraphs (including h1, h2, image, code, ...)
+}
+
+h1, h2, h3, h4, h5, h6 { // Multiple thingy names are allowed here as well
+  font-family: Calibri; // Will be applied for all the listed thingies
+}
+
+h { // Styles that apply to all headline thingies!
+  numbering: "%parent-heading%.%level-counter%"; // Customizable numbering
+  counter-style: decimal; // As well as upper-roman (I., II., III., ...) or lower-latin (a, b, c, d, ...), or upper-latin, or lower-roman.
+  // The variable %level-counter% is determined by the counter-style
+  // The variable %parent-heading% is the resulting parent heading string. e.g. the parent heading is "2.1" and the current level counter is 3, then the resulting numbering is "2.1.3".
+}
+
+h1.appendix { // Special class for appendix headlines
+  numbering: "%level-counter%";
+  counter-style: upper-latin;
+
+  // Result would be something like, A, B, C, D, ..., AA, AB, ...
+}
+
+h.appendix {
+  numbering: "%parent-heading%.%level-counter%";
+  counter-style: lower-latin;
+
+  // Result would be for a second-level-headline: "A.a" or "C.b", ...
+}
+
+image {
+  margin-top: 5mm;
+  margin-bottom: 5mm;
+  border: 1px solid #000000; // Border can be applied to all paragraphs
+}
+
+image.special-class { // Special class you can specify in the text file using #IMAGE, class=special-class#
+  margin-left: 5mm; // This could be useful to apply to images that are floating to the left or right
+}
+
+enumeration { // Enumeration specific styles
+  margin-left: 10mm; // Indent per level
+}
+
+enumeration:level(2) { // Style per level of indentation
+  list-style-type: circle; // Also allowed are 'square', 'upper-roman', 'lower-alpha', and so on (see https://www.w3schools.com/cssref/pr_list-style-type.asp)
+  color: #FF0000; // Also colors should be allowed as well as the font-variant or font settings in general!
+  margin: 10mm; // Also ok - why not!
+}
+
+toc { // Table of contents specific settings
+  margin-left: 5mm; // Indent per level
+  fill: dots; // Fill the toc-entry space between heading title and page number with dots, other options could be 'solid' (A solid line) or 'empty' // Not filling anything
+}
+
+toc:level(2) {
+  // Level specific table of contents settings
+  font-variant: italic;
+}
+
+style.highlighted { // This is used to format text in any way you want in a paragraph. e. g. "My normal text *.highlighted*Some highlighted text** now again normal text"
+  color: #FF0000; // Red color
+  font-variant: bold;
+  margin: 100mm; // Things like margin that cannot be applied to inline text are ignored
+}

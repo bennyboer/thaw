@@ -8,7 +8,7 @@ import java.io.Reader;
 /**
  * Parser for the Thaw document style format.
  */
-public interface StyleParser {
+public interface StyleFormatParser {
 
     /**
      * Parse the style model from the passed reader.
