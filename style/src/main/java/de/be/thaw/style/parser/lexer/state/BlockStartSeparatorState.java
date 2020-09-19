@@ -7,10 +7,10 @@ import de.be.thaw.style.parser.lexer.token.StyleFormatTokenType;
 /**
  * State of being between multiple block start names.
  */
-public class BlockStartSeparatorState implements SFLexerState {
+public class BlockStartSeparatorState extends AbstractSFLexerState {
 
     @Override
-    public void process(char c, SFLexerContext ctx) throws StyleFormatLexerException {
+    public void doProcess(char c, SFLexerContext ctx) throws StyleFormatLexerException {
         if (Character.isLetter(c)) {
             ctx.popState();
             ctx.pushState(new BlockStartNameState());

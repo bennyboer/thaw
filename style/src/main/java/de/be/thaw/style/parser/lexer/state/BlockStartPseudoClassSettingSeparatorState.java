@@ -13,7 +13,7 @@ public class BlockStartPseudoClassSettingSeparatorState implements SFLexerState 
     public void process(char c, SFLexerContext ctx) throws StyleFormatLexerException {
         if (Character.isLetterOrDigit(c)) {
             ctx.popState();
-        } else {
+        } else if (c != ' ') {
             throw new StyleFormatLexerException(String.format(
                     "Anticipated a valid pseudo class setting value (digit or letter) and not '%c'",
                     c

@@ -14,6 +14,10 @@ public class BlockStartPseudoClassSettingsStartState implements SFLexerState {
         if (Character.isLetterOrDigit(c)) {
             ctx.popState();
             ctx.pushState(new BlockStartPseudoClassSettingState());
+        } else if (c == ')') {
+            // Ending the settings without specifying arguments, which is OK I suppose
+            ctx.popState();
+            ctx.pushState(new BlockStartPseudoClassSettingsEndState());
         } else {
             throw new StyleFormatLexerException(String.format(
                     "Anticipated a valid pseudo class setting value (digit or letter) and not '%c'",

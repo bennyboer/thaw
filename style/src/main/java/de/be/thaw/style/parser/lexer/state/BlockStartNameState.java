@@ -14,12 +14,7 @@ public class BlockStartNameState implements SFLexerState {
 
     @Override
     public void process(char c, SFLexerContext ctx) throws StyleFormatLexerException {
-        if (Character.isDigit(c)) {
-            throw new StyleFormatLexerException(String.format(
-                    "Digits like %c are not allowed in a style block name",
-                    c
-            ), ctx.getCurrentPosition());
-        } else if (c == ',') {
+        if (c == ',') {
             ctx.popState();
             ctx.pushState(new BlockStartSeparatorState());
         } else if (c == ':') {

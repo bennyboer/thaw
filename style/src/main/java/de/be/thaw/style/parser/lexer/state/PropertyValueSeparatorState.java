@@ -14,7 +14,7 @@ public class PropertyValueSeparatorState implements SFLexerState {
         if (Character.isLetterOrDigit(c)) {
             ctx.popState();
             ctx.pushState(new ValueState());
-        } else if (c != ' ') {
+        } else if (c != ' ' && c != '"' && c != '\'') {
             throw new StyleFormatLexerException(String.format(
                     "Encountered unexpected character '%c' when expecting a property value",
                     c

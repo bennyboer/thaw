@@ -14,9 +14,12 @@ public class ValueState implements SFLexerState {
         if (c == ';') {
             ctx.popState();
             ctx.pushState(new ValueEndState());
-        } else if (c == '\n') {
+        } else if (c == '}') {
+            ctx.popState();
+            ctx.pushState(new BlockClosingState());
+        } else if (c == ':') {
             throw new StyleFormatLexerException(
-                    "Anticipated end of a value using a semicolon (';') character, instead got a new line ('\\n')",
+                    "Encountered ':' character in a value. Most likely you forgot to add a semicolon (';') after a property?",
                     ctx.getCurrentPosition()
             );
         }

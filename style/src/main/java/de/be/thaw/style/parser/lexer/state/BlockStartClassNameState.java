@@ -20,9 +20,9 @@ public class BlockStartClassNameState implements SFLexerState {
         } else if (c == ':') {
             ctx.popState();
             ctx.pushState(new BlockStartPseudoClassSeparatorState());
-        } else if (!Character.isLetter(c) && c != ' ') {
+        } else if (!Character.isLetter(c) && c != ' ' && c != '-') {
             throw new StyleFormatLexerException(String.format(
-                    "A class name must only contain letters and not a character like '%c'",
+                    "A class name must only contain letters & '-' and not a character like '%c'",
                     c
             ), ctx.getCurrentPosition());
         }

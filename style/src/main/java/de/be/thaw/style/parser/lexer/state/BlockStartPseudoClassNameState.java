@@ -17,7 +17,7 @@ public class BlockStartPseudoClassNameState implements SFLexerState {
         } else if (c == '{') {
             ctx.popState();
             ctx.pushState(new BlockOpeningState());
-        } else if (!Character.isLetter(c)) {
+        } else if (!Character.isLetter(c) && c != ' ' && c != '-') {
             throw new StyleFormatLexerException(String.format(
                     "Unexpected letter %c in a pseudo class name",
                     c
