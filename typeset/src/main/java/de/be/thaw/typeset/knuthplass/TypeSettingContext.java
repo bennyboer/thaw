@@ -6,8 +6,8 @@ import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.source.DocumentBuildSource;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.util.PageRange;
-import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
 import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.impl.HeaderFooterStyle;
@@ -25,6 +25,7 @@ import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
+import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.StringReader;
@@ -38,16 +39,6 @@ import java.util.Map;
  * Context used during typesetting.
  */
 public class TypeSettingContext {
-
-    /**
-     * Inches per printer point conversion factor.
-     */
-    private static final double INCHES_PER_POINT = 1.0 / 72;
-
-    /**
-     * Millimeters per inch conversion factor.
-     */
-    private static final double MM_PER_INCH = 25.4;
 
     /**
      * Configuration of the Knuth-Plass type setting algorithm.
@@ -467,7 +458,7 @@ public class TypeSettingContext {
      * @return the typeset pages
      * @throws TypeSettingException in case the passed text could not be typset to pages properly
      */
-    public List<Page> typesetThawTextFormat(String text, double width, @Nullable StyleModel customStyleModel) throws TypeSettingException {
+    public List<Page> typesetThawTextFormat(String text, double width, @Nullable DefaultStyleModel customStyleModel) throws TypeSettingException {
         // Parse Thaw document text format.
         TextModel textModel;
         try {
@@ -481,10 +472,10 @@ public class TypeSettingContext {
         }
 
         // Create style model to use.
-        StyleModel styleModel = new StyleModel(new HashMap<>()).merge(getDocument().getStyleModel());
+        DefaultStyleModel styleModel = new DefaultStyleModel(new HashMap<>()).merge(getDocument().getStyleModel());
 
         Map<StyleType, Style> styles = new HashMap<>();
-        double mmWidth = width * INCHES_PER_POINT * MM_PER_INCH;
+        double mmWidth = Unit.convert(width, Unit.POINTS, Unit.MILLIMETER);
         styles.put(StyleType.SIZE, new SizeStyle(mmWidth, Double.MAX_VALUE));
         styles.put(StyleType.INSETS, new InsetsStyle(0.0, 0.0, 0.0, 0.0));
         styles.put(StyleType.HEADER_FOOTER, new HeaderFooterStyle(null, null));

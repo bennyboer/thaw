@@ -4,7 +4,7 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
-import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -34,7 +34,7 @@ public class Document {
     /**
      * Model managing styles.
      */
-    private final StyleModel styleModel;
+    private final DefaultStyleModel styleModel;
 
     /**
      * Lookup of the document nodes by their ID.
@@ -61,7 +61,7 @@ public class Document {
             ThawInfo info,
             DocumentNode root,
             ReferenceModel referenceModel,
-            StyleModel styleModel,
+            DefaultStyleModel styleModel,
             Map<PageRange, DocumentNode> headerNodes,
             Map<PageRange, DocumentNode> footerNodes,
             Map<String, DocumentNode> footNotes
@@ -82,7 +82,7 @@ public class Document {
             ThawInfo info,
             DocumentNode root,
             ReferenceModel referenceModel,
-            StyleModel styleModel,
+            DefaultStyleModel styleModel,
             Map<PageRange, DocumentNode> headerNodes,
             Map<PageRange, DocumentNode> footerNodes,
             Map<String, DocumentNode> footNotes,
@@ -151,7 +151,7 @@ public class Document {
      *
      * @return style model
      */
-    public StyleModel getStyleModel() {
+    public DefaultStyleModel getStyleModel() {
         return styleModel;
     }
 

@@ -5,7 +5,7 @@ import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.thingy.ThingyHandler;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.shared.ThawContext;
-import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
 import de.be.thaw.style.parser.exception.StyleModelParseException;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.model.tree.Node;
@@ -96,7 +96,7 @@ public class IncludeHandler implements ThingyHandler {
         }
 
         // Find and parse style file (if there is one, otherwise take the current one).
-        StyleModel styleModel = ctx.getStyleModel();
+        DefaultStyleModel styleModel = ctx.getStyleModel();
         String[] styleFiles = subFolder.list((dir, name) -> name.endsWith(".tds"));
         if (styleFiles.length > 1) {
             throw new DocumentBuildException(String.format(
@@ -128,7 +128,7 @@ public class IncludeHandler implements ThingyHandler {
 
         // SET CONTEXT TO THE NEW SETTINGS
         ThawContext.getInstance().setCurrentFolder(subFolder); // Set the currently processing folder for nested #INCLUDE# Thingies
-        StyleModel oldStyleModel = ctx.getStyleModel();
+        DefaultStyleModel oldStyleModel = ctx.getStyleModel();
         ctx.setStyleModel(styleModel); // Set the new style model
 
         // Create nodes in the included folder

@@ -33,6 +33,7 @@ import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Size;
+import de.be.thaw.util.unit.Unit;
 import org.apache.fontbox.ttf.TTFParser;
 import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -66,21 +67,6 @@ public class PdfExporter implements Exporter {
      */
     private static final Logger LOGGER = Logger.getLogger(PdfExporter.class.getSimpleName());
 
-    /**
-     * Printer points per inch.
-     */
-    private static final float POINTS_PER_INCH = 72;
-
-    /**
-     * Printer points per millimeter.
-     */
-    private static final double POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
-
-    /**
-     * Points per pixel to calculate size with.
-     */
-    private static final double POINTS_PER_PX = 0.75;
-
     @Override
     public void export(Document document, Path path) throws ExportException {
         try (PDDocument doc = new PDDocument()) {
@@ -91,8 +77,8 @@ public class PdfExporter implements Exporter {
                     style -> Optional.ofNullable(((SizeStyle) style))
             ).orElseThrow();
             ctx.setPageSize(new Size(
-                    sizeStyle.getWidth() * POINTS_PER_MM,
-                    sizeStyle.getHeight() * POINTS_PER_MM
+                    Unit.convert(sizeStyle.getWidth(), Unit.MILLIMETER, Unit.POINTS),
+                    Unit.convert(sizeStyle.getHeight(), Unit.MILLIMETER, Unit.POINTS)
             ));
 
             InsetsStyle insetsStyle = document.getRoot().getStyle().getStyleAttribute(
@@ -100,10 +86,10 @@ public class PdfExporter implements Exporter {
                     style -> Optional.ofNullable(((InsetsStyle) style))
             ).orElseThrow();
             ctx.setPageInsets(new Insets(
-                    insetsStyle.getTop() * POINTS_PER_MM,
-                    insetsStyle.getLeft() * POINTS_PER_MM,
-                    insetsStyle.getBottom() * POINTS_PER_MM,
-                    insetsStyle.getRight() * POINTS_PER_MM
+                    Unit.convert(insetsStyle.getTop(), Unit.MILLIMETER, Unit.POINTS),
+                    Unit.convert(insetsStyle.getLeft(), Unit.MILLIMETER, Unit.POINTS),
+                    Unit.convert(insetsStyle.getBottom(), Unit.MILLIMETER, Unit.POINTS),
+                    Unit.convert(insetsStyle.getRight(), Unit.MILLIMETER, Unit.POINTS)
             ));
 
             ThawFont mathFont;

@@ -16,7 +16,7 @@ import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
 import de.be.thaw.reference.citation.CitationManager;
 import de.be.thaw.shared.ThawContext;
-import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
@@ -90,7 +90,7 @@ public class DocumentBuildContext {
     /**
      * Style model of the document.
      */
-    private StyleModel styleModel;
+    private DefaultStyleModel styleModel;
 
     /**
      * Mapping of all loaded header nodes.
@@ -117,7 +117,7 @@ public class DocumentBuildContext {
             ThawInfo info,
             TextModel textModel,
             ReferenceModel referenceModel,
-            StyleModel styleModel
+            DefaultStyleModel styleModel
     ) {
         this.info = info;
         this.textModel = textModel;
@@ -166,11 +166,11 @@ public class DocumentBuildContext {
         return referenceModel;
     }
 
-    public StyleModel getStyleModel() {
+    public DefaultStyleModel getStyleModel() {
         return styleModel;
     }
 
-    public void setStyleModel(StyleModel styleModel) {
+    public void setStyleModel(DefaultStyleModel styleModel) {
         this.styleModel = styleModel;
     }
 
@@ -345,7 +345,7 @@ public class DocumentBuildContext {
      * @param blockName        the specific block name (if any)
      * @return style block
      */
-    private StyleBlock getStyleBlock(String defaultBlockName, String blockName, StyleModel styleModel) {
+    private StyleBlock getStyleBlock(String defaultBlockName, String blockName, DefaultStyleModel styleModel) {
         Map<StyleType, Style> styles = new HashMap<>();
 
         // Apply default styles
@@ -410,7 +410,7 @@ public class DocumentBuildContext {
         }
 
         // Get style model
-        StyleModel styleModel = getStyleModel();
+        DefaultStyleModel styleModel = getStyleModel();
         String[] styleFiles = folder.list((dir, name) -> name.endsWith(".tds"));
         if (styleFiles.length > 1) {
             throw new DocumentBuildException(String.format(
@@ -441,7 +441,7 @@ public class DocumentBuildContext {
 
         File oldProcessingFolder = ThawContext.getInstance().getCurrentFolder();
         ThawContext.getInstance().setCurrentFolder(folder); // Set the currently processing folder
-        StyleModel oldStyleModel = getStyleModel();
+        DefaultStyleModel oldStyleModel = getStyleModel();
         setStyleModel(styleModel); // Set the new style model
 
         for (Node node : textModel.getRoot().children()) {

@@ -1,6 +1,6 @@
 package de.be.thaw.style.parser;
 
-import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
 import de.be.thaw.style.parser.exception.StyleModelParseException;
 
 import java.io.Reader;
@@ -17,6 +17,6 @@ public interface StyleFormatParser {
      * @return the parsed style model
      * @throws StyleModelParseException in case the style model could not be parsed
      */
-    StyleModel parse(Reader reader) throws StyleModelParseException;
+    DefaultStyleModel parse(Reader reader) throws StyleModelParseException;
 
 }

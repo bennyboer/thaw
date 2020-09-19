@@ -1,6 +1,6 @@
 package de.be.thaw.style.parser.impl;
 
-import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
 import de.be.thaw.style.parser.StyleFormatParser;
 import de.be.thaw.style.parser.exception.StyleModelParseException;
 import de.be.thaw.style.parser.lexer.StyleFormatLexerFactory;
@@ -21,12 +21,8 @@ import java.util.Optional;
 public class DefaultStyleFormatParser implements StyleFormatParser {
 
     @Override
-    public StyleModel parse(Reader reader) throws StyleModelParseException {
-        Map<List<StyleBlockSelector>, Map<String, String>> styleBlocks = parseStyleBlocksFromTokens(tokenize(reader));
-
-        // TODO Convert style blocks to a style model
-
-        return null; // TODO
+    public DefaultStyleModel parse(Reader reader) throws StyleModelParseException {
+        return convertStyleBlocksToStyleModel(parseStyleBlocksFromTokens(tokenize(reader)));
     }
 
     /**
@@ -42,6 +38,20 @@ public class DefaultStyleFormatParser implements StyleFormatParser {
         } catch (StyleFormatLexerException e) {
             throw new StyleModelParseException(e);
         }
+    }
+
+    /**
+     * Convert the passed style blocks to a style model.
+     *
+     * @param styleBlocks to convert
+     * @return style model
+     * @throws StyleModelParseException in case the style blocks could not be converted to a style model
+     */
+    private DefaultStyleModel convertStyleBlocksToStyleModel(Map<List<StyleBlockSelector>, Map<String, String>> styleBlocks) throws StyleModelParseException {
+        // TODO Parse integer and double values using units (mm, px, pt, in) -> calculate in base value millimeters!
+
+        // TODO Create style model
+        return null;
     }
 
     /**

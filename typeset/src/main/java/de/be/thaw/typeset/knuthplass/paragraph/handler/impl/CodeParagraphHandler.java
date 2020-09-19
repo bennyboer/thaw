@@ -11,7 +11,7 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.font.util.KerningMode;
-import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
@@ -108,7 +108,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         Map<StyleType, Style> styles = new HashMap<>();
         styles.put(StyleType.TEXT, new TextStyle(0.0, null, null, null, null, null, null, null));
         StyleBlock documentStyleBlock = new StyleBlock("DOCUMENT", styles);
-        StyleModel styleModel = new StyleModel(new HashMap<>());
+        DefaultStyleModel styleModel = new DefaultStyleModel(new HashMap<>());
         styleModel.addBlock(documentStyleBlock.getName(), documentStyleBlock);
 
         List<Page> pages = ctx.typesetThawTextFormat(String.format(
