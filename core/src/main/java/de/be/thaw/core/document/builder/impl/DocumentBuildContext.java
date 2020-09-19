@@ -10,16 +10,14 @@ import de.be.thaw.core.document.builder.impl.thingy.impl.IncludeHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.RefHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.ReferenceListHandler;
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
 import de.be.thaw.reference.citation.CitationManager;
 import de.be.thaw.shared.ThawContext;
-import de.be.thaw.style.model.impl.DefaultStyleModel;
-import de.be.thaw.style.model.block.StyleBlock;
-import de.be.thaw.style.model.style.Style;
-import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
+import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.parser.exception.StyleModelParseException;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.model.tree.Node;
@@ -90,7 +88,7 @@ public class DocumentBuildContext {
     /**
      * Style model of the document.
      */
-    private DefaultStyleModel styleModel;
+    private StyleModel styleModel;
 
     /**
      * Mapping of all loaded header nodes.
@@ -117,7 +115,7 @@ public class DocumentBuildContext {
             ThawInfo info,
             TextModel textModel,
             ReferenceModel referenceModel,
-            DefaultStyleModel styleModel
+            StyleModel styleModel
     ) {
         this.info = info;
         this.textModel = textModel;
@@ -166,11 +164,11 @@ public class DocumentBuildContext {
         return referenceModel;
     }
 
-    public DefaultStyleModel getStyleModel() {
+    public StyleModel getStyleModel() {
         return styleModel;
     }
 
-    public void setStyleModel(DefaultStyleModel styleModel) {
+    public void setStyleModel(StyleModel styleModel) {
         this.styleModel = styleModel;
     }
 
@@ -193,11 +191,10 @@ public class DocumentBuildContext {
     /**
      * Process a box node that represents a paragraph.
      *
-     * @param node            to process
-     * @param parent          the parent document node
-     * @param parentStyleNode style node of the parent
+     * @param node   to process
+     * @param parent the parent document node
      */
-    public void processBoxNode(BoxNode node, DocumentNode parent, DocumentNodeStyle parentStyleNode) throws DocumentBuildException {
+    public void processBoxNode(BoxNode node, DocumentNode parent) throws DocumentBuildException {
         // Find child node that may be a thingy node -> in that case we can apply special styles from the style model
         Optional<ThingyNode> optionalThingyNode = getFirstThingyNodeInBox(node);
         String blockName = null;
@@ -230,14 +227,28 @@ public class DocumentBuildContext {
             }
         }
 
-        StyleBlock styleBlock = getStyleBlock("PARAGRAPH", blockName, getStyleModel());
+        // Get styles for the paragraph from the style model.
+        Styles styles;
+        if (blockName == null || blockName.equalsIgnoreCase("paragraph")) {
+            styles = getStyleModel().select(new StyleSelectorBuilder().setTargetName("paragraph").build());
+        } else if (isHeadlineThingyName(blockName)) {
+            styles = getStyleModel().select(
+                    new StyleSelectorBuilder().setTargetName(blockName.toLowerCase()).build(),
+                    new StyleSelectorBuilder().setTargetName("h").build(),
+                    new StyleSelectorBuilder().setTargetName("paragraph").build()
+            );
+        } else {
+            styles = getStyleModel().select(
+                    new StyleSelectorBuilder().setTargetName(blockName.toLowerCase()).build(),
+                    new StyleSelectorBuilder().setTargetName("paragraph").build()
+            );
+        }
 
-        DocumentNodeStyle styleNode = new DocumentNodeStyle(parentStyleNode, styleBlock.getStyles());
+        DocumentNode documentNode = new DocumentNode(node, parent, styles);
 
-        DocumentNode documentNode = new DocumentNode(node, parent, styleNode);
         if (node.hasChildren()) {
             for (Node child : node.children()) {
-                processNode(child, documentNode, styleNode);
+                processNode(child, documentNode);
             }
         }
     }
@@ -281,18 +292,19 @@ public class DocumentBuildContext {
     /**
      * Process another node.
      *
-     * @param node            to process
-     * @param parent          the parent document node
-     * @param parentStyleNode the parent style node
+     * @param node   to process
+     * @param parent the parent document node
      */
-    private void processNode(Node node, DocumentNode parent, DocumentNodeStyle parentStyleNode) throws DocumentBuildException {
-        DocumentNodeStyle style = new DocumentNodeStyle(parentStyleNode, null); // Empty node style TODO Allow styling every node?
-
-        DocumentNode documentNode = new DocumentNode(node, parent, style);
+    private void processNode(Node node, DocumentNode parent) throws DocumentBuildException {
+        DocumentNode documentNode = new DocumentNode(
+                node,
+                parent,
+                parent.getStyles() // In this case styles of the paragraph (box node) are taken over
+        );
 
         if (node.hasChildren()) {
             for (Node child : node.children()) {
-                processNode(child, documentNode, style);
+                processNode(child, documentNode);
             }
         }
 
@@ -339,37 +351,6 @@ public class DocumentBuildContext {
     }
 
     /**
-     * Get a style block.
-     *
-     * @param defaultBlockName the name of the default styles block name
-     * @param blockName        the specific block name (if any)
-     * @return style block
-     */
-    private StyleBlock getStyleBlock(String defaultBlockName, String blockName, DefaultStyleModel styleModel) {
-        Map<StyleType, Style> styles = new HashMap<>();
-
-        // Apply default styles
-        styleModel.getBlock(defaultBlockName).ifPresent(styleBlock -> {
-            for (Map.Entry<StyleType, Style> styleEntry : styleBlock.getStyles().entrySet()) {
-                styles.put(styleEntry.getKey(), styleEntry.getValue());
-            }
-        });
-
-        styleModel.getBlock(blockName).ifPresent(styleBlock -> {
-            for (Map.Entry<StyleType, Style> styleEntry : styleBlock.getStyles().entrySet()) {
-                Style style = styles.get(styleEntry.getKey());
-                if (style != null) {
-                    styles.put(styleEntry.getKey(), styleEntry.getValue().merge(style));
-                } else {
-                    styles.put(styleEntry.getKey(), styleEntry.getValue());
-                }
-            }
-        });
-
-        return new StyleBlock(blockName, styles);
-    }
-
-    /**
      * Load the header or footer node from the passed folder.
      *
      * @param folder to load from
@@ -410,7 +391,7 @@ public class DocumentBuildContext {
         }
 
         // Get style model
-        DefaultStyleModel styleModel = getStyleModel();
+        StyleModel styleModel = getStyleModel();
         String[] styleFiles = folder.list((dir, name) -> name.endsWith(".tds"));
         if (styleFiles.length > 1) {
             throw new DocumentBuildException(String.format(
@@ -436,17 +417,17 @@ public class DocumentBuildContext {
         DocumentNode root = new DocumentNode(
                 textModel.getRoot(),
                 null,
-                new DocumentNodeStyle(null, styleModel.getBlock("DOCUMENT").orElseThrow().getStyles())
+                styleModel.select(new StyleSelectorBuilder().build())
         );
 
         File oldProcessingFolder = ThawContext.getInstance().getCurrentFolder();
         ThawContext.getInstance().setCurrentFolder(folder); // Set the currently processing folder
-        DefaultStyleModel oldStyleModel = getStyleModel();
+        StyleModel oldStyleModel = getStyleModel();
         setStyleModel(styleModel); // Set the new style model
 
         for (Node node : textModel.getRoot().children()) {
             if (node.getType() == NodeType.BOX) {
-                processBoxNode((BoxNode) node, root, root.getStyle());
+                processBoxNode((BoxNode) node, root);
             }
         }
 

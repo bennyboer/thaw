@@ -1,14 +1,16 @@
 package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
 
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.font.util.FontVariant;
-import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.ColorStyle;
-import de.be.thaw.style.model.style.impl.FontStyle;
-import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.impl.TextStyle;
+import de.be.thaw.style.model.style.Styles;
+import de.be.thaw.style.model.style.value.BooleanStyleValue;
+import de.be.thaw.style.model.style.value.ColorStyleValue;
+import de.be.thaw.style.model.style.value.DoubleStyleValue;
+import de.be.thaw.style.model.style.value.FontVariantStyleValue;
+import de.be.thaw.style.model.style.value.HorizontalAlignmentStyleValue;
+import de.be.thaw.style.model.style.value.StringStyleValue;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.KnuthPlassAlgorithm;
@@ -34,12 +36,11 @@ import de.be.thaw.typeset.page.impl.TextElement;
 import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
+import de.be.thaw.util.color.Color;
+import de.be.thaw.util.unit.Unit;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.function.IntToDoubleFunction;
 
 /**
@@ -62,35 +63,37 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         TextParagraph textParagraph = (TextParagraph) paragraph;
 
         // Fetch some paragraph styles
-        final double lineHeight = getLineHeightForNode(paragraph.getNode());
-        final InsetsStyle insetsStyle = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.INSETS,
-                style -> Optional.ofNullable((InsetsStyle) style)
-        ).orElseThrow();
-        final HorizontalAlignment alignment = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getAlignment())
-        ).orElse(HorizontalAlignment.LEFT);
-        final boolean justify = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getJustify())
-        ).orElse(true);
-        final boolean showLineNumbers = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).isShowLineNumbers())
-        ).orElse(false);
-        final String lineNumberFontFamily = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getLineNumberFontFamily())
-        ).orElse("Cambria");
-        final Double lineNumberFontSize = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getLineNumberFontSize())
-        ).orElse(7.0);
-        final ColorStyle lineNumberColor = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getLineNumberColor())
-        ).orElse(null);
+        Styles styles = paragraph.getNode().getStyles();
+
+        double lineHeight;
+        StyleValue lineHeightStyleValue = styles.resolve(StyleType.LINE_HEIGHT).orElseThrow();
+        if (lineHeightStyleValue.unit().isEmpty()) {
+            // Is relative line-height -> Calculate line height from the font size
+            StyleValue fontSizeValue = styles.resolve(StyleType.FONT_SIZE).orElseThrow();
+            lineHeight = Unit.convert(fontSizeValue.doubleValue(), fontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS) * lineHeightStyleValue.doubleValue();
+        } else {
+            lineHeight = Unit.convert(lineHeightStyleValue.doubleValue(), lineHeightStyleValue.unit().get(), Unit.POINTS);
+        }
+
+        final HorizontalAlignment alignment = styles.resolve(StyleType.TEXT_ALIGN).orElse(new HorizontalAlignmentStyleValue(HorizontalAlignment.LEFT)).horizontalAlignment();
+        final boolean justify = styles.resolve(StyleType.TEXT_JUSTIFY).orElse(new BooleanStyleValue(true)).booleanValue();
+        final boolean showLineNumbers = styles.resolve(StyleType.SHOW_LINE_NUMBERS).orElse(new BooleanStyleValue(false)).booleanValue();
+        final String lineNumberFontFamily = styles.resolve(StyleType.SHOW_LINE_NUMBERS).orElseThrow().value();
+
+        StyleValue lineNumberFontSizeValue = styles.resolve(StyleType.LINE_NUMBER_FONT_SIZE).orElseThrow();
+        final double lineNumberFontSize = Unit.convert(lineNumberFontSizeValue.doubleValue(), lineNumberFontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS);
+
+        final Color lineNumberColor = styles.resolve(StyleType.LINE_NUMBER_COLOR).orElseThrow().colorValue();
+
+        StyleValue marginTopValue = styles.resolve(StyleType.MARGIN_TOP).orElseThrow();
+        StyleValue marginBottomValue = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow();
+        StyleValue marginLeftValue = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
+        StyleValue marginRightValue = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow();
+
+        final double marginTop = Unit.convert(marginTopValue.doubleValue(), marginTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double marginBottom = Unit.convert(marginBottomValue.doubleValue(), marginBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double marginRight = Unit.convert(marginRightValue.doubleValue(), marginRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
 
         // Calculate some metrics
         double baseline;
@@ -101,8 +104,8 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         }
 
         // Set up the initial position of the paragraph
-        ctx.getPositionContext().increaseY(insetsStyle.getTop());
-        ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + insetsStyle.getLeft());
+        ctx.getPositionContext().increaseY(marginTop);
+        ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + marginLeft);
 
         // Check if we have a floating element nearby
         if (ctx.getFloatConfig().getFloatUntilY() > ctx.getPositionContext().getY()) {
@@ -129,8 +132,8 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         }
 
         // Reduce line width supplier line width by the paragraphs left and right indents
-        if (insetsStyle.getLeft() != 0 || insetsStyle.getRight() != 0) {
-            final double reduceBy = insetsStyle.getLeft() + insetsStyle.getRight();
+        if (marginLeft != 0 || marginRight != 0) {
+            final double reduceBy = marginLeft + marginRight;
             IntToDoubleFunction oldLineWidthSupplier = textParagraph.getLineWidthSupplier();
             textParagraph.setLineWidthSupplier(lineNumber -> {
                 if (oldLineWidthSupplier != null) {
@@ -152,7 +155,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         List<List<Item>> lines = splitParagraphIntoLines(textParagraph, result);
 
         // Lay out the found lines
-        double indent = insetsStyle.getLeft(); // Indent of the paragraph (if any), set for example for enumerations.
+        double indent = marginLeft; // Indent of the paragraph (if any), set for example for enumerations.
         for (int i = 0; i < lines.size(); i++) {
             List<Item> line = lines.get(i);
 
@@ -220,10 +223,13 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                 String lineNumberStr = String.valueOf(currentLineNumber);
 
                 // Create dummy document node representing the line number string
-                Map<StyleType, Style> lineNumberStyles = new HashMap<>();
-                lineNumberStyles.put(StyleType.FONT, new FontStyle(lineNumberFontFamily, FontVariant.MONOSPACE, lineNumberFontSize, lineNumberColor, null, null));
-                DocumentNodeStyle lineNumberNodeStyle = new DocumentNodeStyle(paragraph.getNode().getStyle(), lineNumberStyles);
-                DocumentNode lineNumberDocumentNode = new DocumentNode(new TextNode(lineNumberStr, null), paragraph.getNode(), lineNumberNodeStyle);
+                Styles lineNumberDocumentNodeStyles = new Styles(paragraph.getNode().getStyles());
+                lineNumberDocumentNodeStyles.overrideStyle(StyleType.FONT_FAMILY, new StringStyleValue(lineNumberFontFamily));
+                lineNumberDocumentNodeStyles.overrideStyle(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.MONOSPACE));
+                lineNumberDocumentNodeStyles.overrideStyle(StyleType.FONT_SIZE, new DoubleStyleValue(lineNumberFontSize, Unit.POINTS));
+                lineNumberDocumentNodeStyles.overrideStyle(StyleType.COLOR, new ColorStyleValue(lineNumberColor));
+
+                DocumentNode lineNumberDocumentNode = new DocumentNode(new TextNode(lineNumberStr, null), paragraph.getNode(), lineNumberDocumentNodeStyles);
 
                 // Measure line number string
                 FontDetailsSupplier.StringMetrics lineNumberStrMetrics;
@@ -312,7 +318,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             }
         }
 
-        ctx.getPositionContext().increaseY(insetsStyle.getBottom());
+        ctx.getPositionContext().increaseY(marginBottom);
     }
 
     /**
@@ -400,22 +406,6 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         }
 
         throw new TypeSettingException();
-    }
-
-    /**
-     * Get the font size for the passed node.
-     *
-     * @param node to get font size for
-     * @return font size
-     */
-    private double getLineHeightForNode(DocumentNode node) {
-        return node.getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getLineHeight())
-        ).orElse(node.getStyle().getStyleAttribute(
-                StyleType.FONT,
-                style -> Optional.ofNullable(((FontStyle) style).getSize())
-        ).orElseThrow());
     }
 
     /**

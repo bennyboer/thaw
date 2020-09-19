@@ -7,5 +7,6 @@ module de.be.thaw.util {
     exports de.be.thaw.util.cache.exception;
     exports de.be.thaw.util.parser.location;
     exports de.be.thaw.util.unit;
+    exports de.be.thaw.util.color;
 
 }

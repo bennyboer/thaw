@@ -2,10 +2,10 @@ package de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl;
 
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.core.document.node.style.DocumentNodeStyle;
-import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.FontStyle;
+import de.be.thaw.style.model.style.Styles;
+import de.be.thaw.style.model.style.value.DoubleStyleValue;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
@@ -14,10 +14,8 @@ import de.be.thaw.typeset.knuthplass.item.Item;
 import de.be.thaw.typeset.knuthplass.item.impl.Glue;
 import de.be.thaw.typeset.knuthplass.item.impl.box.FootNoteBox;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
+import de.be.thaw.util.unit.Unit;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -50,14 +48,13 @@ public class FootNoteHandler implements ThingyHandler {
             paragraph.items().remove(paragraph.items().size() - 1);
         }
 
-        double fontSize = documentNode.getStyle().getStyleAttribute(
-                StyleType.FONT,
-                style -> Optional.ofNullable(((FontStyle) style).getSize())
-        ).orElseThrow();
+        StyleValue fontSizeValue = documentNode.getStyles().resolve(StyleType.FONT_SIZE).orElseThrow();
+        double fontSize = Unit.convert(fontSizeValue.doubleValue(), fontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS);
 
-        Map<StyleType, Style> styles = new HashMap<>();
-        styles.put(StyleType.FONT, new FontStyle(null, null, Math.max(8.0, fontSize * 0.6), null, null, null));
-        DocumentNode footNoteDocumentNode = new DocumentNode("FOOTNOTE_NODE_" + counter, node, null, new DocumentNodeStyle(documentNode.getStyle(), styles));
+        Styles footNoteStyles = new Styles(documentNode.getStyles());
+        footNoteStyles.overrideStyle(StyleType.FONT_SIZE, new DoubleStyleValue(Math.max(8.0, fontSize * 0.6), Unit.POINTS));
+
+        DocumentNode footNoteDocumentNode = new DocumentNode("FOOTNOTE_NODE_" + counter, node, null, footNoteStyles);
 
         // Remap foot note document note to the new foot note dummy node
         DocumentNode footNoteContentNode = ctx.getDocument().getFootNotes().get(documentNode.getId());

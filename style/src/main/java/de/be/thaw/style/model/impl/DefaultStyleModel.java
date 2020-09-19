@@ -7,17 +7,22 @@ import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.selector.StyleSelector;
-import de.be.thaw.style.model.style.Style;
+import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.BackgroundStyle;
-import de.be.thaw.style.model.style.impl.ColorStyle;
-import de.be.thaw.style.model.style.impl.FontStyle;
-import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.impl.ReferenceStyle;
-import de.be.thaw.style.model.style.impl.SizeStyle;
-import de.be.thaw.style.model.style.impl.TextStyle;
+import de.be.thaw.style.model.style.Styles;
+import de.be.thaw.style.model.style.value.BooleanStyleValue;
+import de.be.thaw.style.model.style.value.ColorStyleValue;
+import de.be.thaw.style.model.style.value.DoubleStyleValue;
+import de.be.thaw.style.model.style.value.FontVariantStyleValue;
+import de.be.thaw.style.model.style.value.HorizontalAlignmentStyleValue;
+import de.be.thaw.style.model.style.value.IntStyleValue;
+import de.be.thaw.style.model.style.value.KerningModeStyleValue;
+import de.be.thaw.style.model.style.value.StringStyleValue;
 import de.be.thaw.util.HorizontalAlignment;
+import de.be.thaw.util.color.Color;
+import de.be.thaw.util.unit.Unit;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,37 +46,25 @@ public class DefaultStyleModel implements StyleModel {
     };
 
     /**
-     * Map of blocks in the model.
-     * Mapped by their name.
+     * Style blocks in the model.
      */
-    private final Map<String, StyleBlock> blocks;
+    private final List<StyleBlock> blocks;
 
-    public DefaultStyleModel(Map<String, StyleBlock> blocks) {
+    /**
+     * Lookup of style blocks by their selector.
+     */
+    private final Map<String, StyleBlock> blockLookup = new HashMap<>();
+
+    public DefaultStyleModel() {
+        this.blocks = new ArrayList<>();
+    }
+
+    public DefaultStyleModel(List<StyleBlock> blocks) {
         this.blocks = blocks;
-    }
 
-    /**
-     * Get a block by its name.
-     *
-     * @param name to get block for
-     * @return block
-     */
-    public Optional<StyleBlock> getBlock(String name) {
-        if (name == null) {
-            return Optional.empty();
+        for (StyleBlock block : blocks) {
+            blockLookup.put(block.getSelector().toString(), block);
         }
-
-        return Optional.ofNullable(blocks.get(name.toLowerCase()));
-    }
-
-    /**
-     * Add a style block to the model.
-     *
-     * @param name  of the block
-     * @param block the block to add
-     */
-    public void addBlock(String name, StyleBlock block) {
-        blocks.put(name.toLowerCase(), block);
     }
 
     /**
@@ -79,141 +72,176 @@ public class DefaultStyleModel implements StyleModel {
      *
      * @return default style model
      */
-    public static DefaultStyleModel defaultModel() {
-        DefaultStyleModel model = new DefaultStyleModel(new HashMap<>());
+    public static StyleModel defaultModel() {
+        DefaultStyleModel model = new DefaultStyleModel();
 
-        // Document styles
-        final Map<StyleType, Style> documentStyles = new HashMap<>();
+        List<FontFamily> monospaceFamilies = FontManager.getInstance().getFamiliesSupportingVariant(FontVariant.MONOSPACE);
+        List<FontFamily> plainFamilies = FontManager.getInstance().getFamiliesSupportingVariant(FontVariant.PLAIN);
 
-        documentStyles.put(StyleType.SIZE, new SizeStyle(210.0, 297.0));
-        documentStyles.put(StyleType.INSETS, new InsetsStyle(20.0, 25.0, 20.0, 25.0));
-        documentStyles.put(StyleType.BACKGROUND, new BackgroundStyle(new ColorStyle(1.0, 1.0, 1.0, 1.0)));
-        documentStyles.put(StyleType.TEXT, new TextStyle(
-                10.0,
-                null,
-                HorizontalAlignment.LEFT,
-                Boolean.TRUE,
-                false,
-                "Consolas",
-                7.0,
-                new ColorStyle(0.6, 0.6, 0.6, 1.0)
-        ));
-        documentStyles.put(StyleType.REFERENCE, new ReferenceStyle(
-                new ColorStyle(
-                        0.439,
-                        0.503,
-                        0.565,
-                        1.0
-                ),
-                new ColorStyle(
-                        0.439,
-                        0.503,
-                        0.565,
-                        1.0
+        // Document style block
+        model.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("document")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.WIDTH, new IntStyleValue(210, Unit.MILLIMETER)),
+                        Map.entry(StyleType.HEIGHT, new IntStyleValue(297, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(25.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(25.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(20.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(20.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.BACKGROUND_COLOR, new ColorStyleValue(new Color(1.0, 1.0, 1.0))), // White background color
+                        Map.entry(StyleType.FIRST_LINE_INDENT, new IntStyleValue(1, Unit.CENTIMETER)),
+                        Map.entry(StyleType.TEXT_ALIGN, new HorizontalAlignmentStyleValue(HorizontalAlignment.LEFT)),
+                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.2)),
+                        Map.entry(StyleType.TEXT_JUSTIFY, new BooleanStyleValue(true)),
+                        Map.entry(StyleType.SHOW_LINE_NUMBERS, new BooleanStyleValue(false)),
+                        Map.entry(StyleType.LINE_NUMBER_FONT_FAMILY, new StringStyleValue(monospaceFamilies.isEmpty() ? "" : monospaceFamilies.get(0).getName())),
+                        Map.entry(StyleType.LINE_NUMBER_FONT_SIZE, new DoubleStyleValue(7.0, Unit.POINTS)),
+                        Map.entry(StyleType.LINE_NUMBER_COLOR, new ColorStyleValue(new Color(0.6, 0.6, 0.6))),
+                        Map.entry(StyleType.FONT_FAMILY, new StringStyleValue(plainFamilies.isEmpty() ? "" : plainFamilies.get(0).getName())),
+                        Map.entry(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.PLAIN)),
+                        Map.entry(StyleType.FONT_SIZE, new IntStyleValue(12, Unit.POINTS)),
+                        Map.entry(StyleType.FONT_KERNING, new KerningModeStyleValue(KerningMode.NATIVE)),
+                        Map.entry(StyleType.COLOR, new ColorStyleValue(new Color(0.0, 0.0, 0.0))),
+                        Map.entry(StyleType.INTERNAL_LINK_COLOR, new ColorStyleValue(new Color(0.439, 0.503, 0.565))),
+                        Map.entry(StyleType.EXTERNAL_LINK_COLOR, new ColorStyleValue(new Color(0.439, 0.503, 0.565)))
                 )
         ));
 
-        List<FontFamily> families = FontManager.getInstance().getFamiliesSupportingVariant(FontVariant.MONOSPACE);
-        documentStyles.put(StyleType.FONT, new FontStyle(
-                "Cambria",
-                FontVariant.PLAIN,
-                12.0,
-                new ColorStyle(0.0, 0.0, 0.0, 1.0),
-                families.isEmpty() ? null : families.get(0).getName(),
-                KerningMode.NATIVE
+        // Paragraph style block
+        model.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("paragraph")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.MARGIN_BOTTOM, new IntStyleValue(2, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(0.0, Unit.MILLIMETER))
+                )
         ));
 
-        StyleBlock documentStyleBlock = new StyleBlock("DOCUMENT", documentStyles);
-        model.addBlock(documentStyleBlock.getName(), documentStyleBlock);
+        // General headline 'h' style block
+        model.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("h")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.FIRST_LINE_INDENT, new IntStyleValue(0, Unit.CENTIMETER)),
+                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.4)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(15, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(3, Unit.MILLIMETER)),
+                        Map.entry(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.BOLD))
+                )
+        ));
 
-        // Paragraph styles
-        final Map<StyleType, Style> paragraphStyles = new HashMap<>();
-
-        paragraphStyles.put(StyleType.INSETS, new InsetsStyle(0.0, 0.0, 2.0, 0.0));
-
-        StyleBlock paragraphStyleBlock = new StyleBlock("PARAGRAPH", paragraphStyles);
-        model.addBlock(paragraphStyleBlock.getName(), paragraphStyleBlock);
-
-        // Headline styles
+        // Headline level-specific style blocks
         for (int i = 1; i <= 6; i++) {
-            String name = String.format("H%d", i);
-
-            double fontSize = DEFAULT_HEADLINE_FONTSIZES[i - 1];
-            double lineHeight = (fontSize - 10 * 0.5) * 1.2; // Just an estimation here!
-            double insetsTop = 15;
-            double insetsBottom = 3;
-
-            Map<StyleType, Style> headlineStyles = new HashMap<>();
-            headlineStyles.put(StyleType.TEXT, new TextStyle(0.0, lineHeight, HorizontalAlignment.LEFT, false, null, null, null, null));
-            headlineStyles.put(StyleType.FONT, new FontStyle(null, FontVariant.BOLD, fontSize, null, null, null));
-            headlineStyles.put(StyleType.INSETS, new InsetsStyle(insetsTop, 0.0, insetsBottom, 0.0));
-
-            StyleBlock headlineStyleBlock = new StyleBlock(name, headlineStyles);
-            model.addBlock(headlineStyleBlock.getName(), headlineStyleBlock);
+            model.addBlock(new StyleBlock(
+                    new StyleSelectorBuilder()
+                            .setTargetName(String.format("h%d", i))
+                            .build(),
+                    Map.ofEntries(
+                            Map.entry(StyleType.FONT_SIZE, new DoubleStyleValue(DEFAULT_HEADLINE_FONTSIZES[i - 1], Unit.POINTS))
+                    )
+            ));
         }
 
-        // Code styles
-        final Map<StyleType, Style> codeStyles = new HashMap<>();
-        codeStyles.put(StyleType.FONT, new FontStyle(
-                null,
-                null,
-                9.0,
-                null,
-                null,
-                null
+        // Code style block
+        model.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("code")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.FONT_FAMILY, new StringStyleValue(monospaceFamilies.isEmpty() ? "" : monospaceFamilies.get(0).getName())),
+                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.2)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(6, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(6, Unit.MILLIMETER)),
+                        Map.entry(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.MONOSPACE)),
+                        Map.entry(StyleType.FONT_SIZE, new IntStyleValue(9, Unit.POINTS)),
+                        Map.entry(StyleType.FONT_KERNING, new KerningModeStyleValue(KerningMode.NATIVE)),
+                        Map.entry(StyleType.SHOW_LINE_NUMBERS, new BooleanStyleValue(true)),
+                        Map.entry(StyleType.LINE_NUMBER_FONT_FAMILY, new StringStyleValue(monospaceFamilies.isEmpty() ? "" : monospaceFamilies.get(0).getName())),
+                        Map.entry(StyleType.LINE_NUMBER_FONT_SIZE, new IntStyleValue(8, Unit.POINTS)),
+                        Map.entry(StyleType.LINE_NUMBER_COLOR, new ColorStyleValue(new Color(0.7, 0.7, 0.7)))
+                )
         ));
-        codeStyles.put(StyleType.TEXT, new TextStyle(
-                null,
-                10.0,
-                null,
-                null,
-                true,
-                "Consolas",
-                8.0,
-                new ColorStyle(0.7, 0.7, 0.7, 1.0)
-        ));
-        StyleBlock codeStyleBlock = new StyleBlock("CODE", codeStyles);
-        model.addBlock(codeStyleBlock.getName(), codeStyleBlock);
 
         return model;
     }
 
-    /**
-     * Merge this style model with the passed one.
-     *
-     * @param other to merge with
-     * @return the merged style model
-     */
-    public DefaultStyleModel merge(DefaultStyleModel other) {
+    @Override
+    public List<StyleBlock> getBlocks() {
+        return blocks;
+    }
+
+    @Override
+    public void addBlock(StyleBlock block) {
+        // Check if there is already a style block with the same selector -> if yes: merge them!
+        Optional<StyleBlock> oldStyleBlock = getBlock(block.getSelector());
+        if (oldStyleBlock.isPresent()) {
+            blocks.remove(oldStyleBlock.get());
+            block = block.merge(oldStyleBlock.get()); // Merge blocks
+        }
+
+        blocks.add(block);
+        blockLookup.put(block.getSelector().toString(), block);
+    }
+
+    @Override
+    public Optional<StyleBlock> getBlock(StyleSelector selector) {
+        return Optional.ofNullable(blockLookup.get(selector.toString()));
+    }
+
+    @Override
+    public StyleModel merge(StyleModel other) {
         if (other == null) {
             return this;
         }
 
-        Map<String, StyleBlock> mergedBlocks = new HashMap<>();
-        for (Map.Entry<String, StyleBlock> blockEntry : blocks.entrySet()) {
-            Optional<StyleBlock> otherBlock = other.getBlock(blockEntry.getKey());
-            if (otherBlock.isPresent()) {
-                // Other style model does have the block -> merge the blocks
-                mergedBlocks.put(blockEntry.getKey(), blockEntry.getValue().merge(otherBlock.get()));
-            } else {
-                // Does not have block -> keep it as is
-                mergedBlocks.put(blockEntry.getKey(), blockEntry.getValue());
-            }
+        DefaultStyleModel mergedModel = new DefaultStyleModel(new ArrayList<>(other.getBlocks()));
+
+        for (StyleBlock block : getBlocks()) {
+            mergedModel.addBlock(block);
         }
 
-        // Add remaining blocks from the other style model (if any)
-        for (Map.Entry<String, StyleBlock> blockEntry : other.blocks.entrySet()) {
-            if (!mergedBlocks.containsKey(blockEntry.getKey())) {
-                mergedBlocks.put(blockEntry.getKey(), blockEntry.getValue());
-            }
-        }
-
-        return new DefaultStyleModel(mergedBlocks);
+        return mergedModel;
     }
 
     @Override
-    public Map<StyleType, Style> select(StyleSelector selector) {
-        return null; // TODO
+    public Styles select(StyleSelector... selectors) {
+        List<StyleBlock> styleBlocks = new ArrayList<>();
+
+        // Add style blocks for selectors in descending priority (latter added are less important)
+        for (StyleSelector selector : selectors) {
+            // Add pseudo-class specific selector (if pseudo class name is specified)
+            if (selector.targetName().isPresent() && selector.className().isPresent() && selector.pseudoClassName().isPresent()) {
+                getBlock(selector).ifPresent(styleBlocks::add);
+            }
+
+            // Add style block with only the target name and class name
+            if (selector.targetName().isPresent() && selector.className().isPresent()) {
+                getBlock(new StyleSelectorBuilder()
+                        .setTargetName(selector.targetName().orElseThrow())
+                        .setClassName(selector.className().orElseThrow())
+                        .build()).ifPresent(styleBlocks::add);
+            }
+
+            // Add style block with only the target name
+            selector.targetName().flatMap(targetName -> getBlock(new StyleSelectorBuilder()
+                    .setTargetName(targetName)
+                    .build())).ifPresent(styleBlocks::add);
+        }
+
+        // Add document styles as the last block anyway (contains defaults for everything)
+        styleBlocks.add(getBlock(new StyleSelectorBuilder().setTargetName("document").build()).orElseThrow());
+
+        return new Styles(styleBlocks);
     }
 
 }

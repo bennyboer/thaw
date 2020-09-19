@@ -1,8 +1,7 @@
 package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
 
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.FontStyle;
-import de.be.thaw.style.model.style.impl.TextStyle;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
@@ -12,8 +11,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.impl.toc.TableOfContentsItemParag
 import de.be.thaw.typeset.page.impl.PageNumberPlaceholderElement;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
-
-import java.util.Optional;
+import de.be.thaw.util.unit.Unit;
 
 /**
  * Handler dealing with typesetting a table of contents item paragraph.
@@ -30,13 +28,15 @@ public class TableOfContentsItemParagraphHandler extends TextParagraphHandler {
         super.handle(paragraph, ctx);
 
         TableOfContentsItemParagraph p = (TableOfContentsItemParagraph) paragraph;
-        double lineHeight = p.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getLineHeight())
-        ).orElse(p.getNode().getStyle().getStyleAttribute(
-                StyleType.FONT,
-                style -> Optional.ofNullable(((FontStyle) style).getSize())
-        ).orElseThrow());
+        StyleValue lineHeightStyleValue = paragraph.getNode().getStyles().resolve(StyleType.LINE_HEIGHT).orElseThrow();
+        double lineHeight;
+        if (lineHeightStyleValue.unit().isEmpty()) {
+            // Is relative line-height -> Calculate line height from the font size
+            StyleValue fontSizeValue = paragraph.getNode().getStyles().resolve(StyleType.FONT_SIZE).orElseThrow();
+            lineHeight = Unit.convert(fontSizeValue.doubleValue(), fontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS) * lineHeightStyleValue.doubleValue();
+        } else {
+            lineHeight = Unit.convert(lineHeightStyleValue.doubleValue(), lineHeightStyleValue.unit().orElseThrow(), Unit.POINTS);
+        }
 
         double pageNumberMaxX = ctx.getConfig().getPageSize().getWidth() - ctx.getConfig().getPageInsets().getRight();
 

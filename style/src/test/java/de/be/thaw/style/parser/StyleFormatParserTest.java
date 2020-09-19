@@ -1,6 +1,6 @@
 package de.be.thaw.style.parser;
 
-import de.be.thaw.style.model.impl.DefaultStyleModel;
+import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.parser.exception.StyleModelParseException;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +18,7 @@ public class StyleFormatParserTest {
      * @param text to parse
      * @return the parsed style model
      */
-    private DefaultStyleModel parse(String text) throws StyleModelParseException {
+    private StyleModel parse(String text) throws StyleModelParseException {
         return StyleFormatParserFactory.getInstance().getParser().parse(new StringReader(text));
     }
 
@@ -26,14 +26,14 @@ public class StyleFormatParserTest {
     public void emptyBlockTest() throws StyleModelParseException {
         String text = "document {}";
 
-        DefaultStyleModel model = parse(text);
+        StyleModel model = parse(text);
 
         System.out.println("Test!");
     }
 
     @Test
     public void complexTest() throws StyleModelParseException, IOException {
-        DefaultStyleModel model;
+        StyleModel model;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(
                 StyleFormatParserTest.class.getResourceAsStream("/test-files/complex.tds"),
                 StandardCharsets.UTF_8

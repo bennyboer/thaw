@@ -11,6 +11,7 @@ import de.be.thaw.info.parser.InfoParser;
 import de.be.thaw.info.parser.impl.DefaultInfoParser;
 import de.be.thaw.reference.citation.CitationManagerFactory;
 import de.be.thaw.shared.ThawContext;
+import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.impl.DefaultStyleModel;
 import de.be.thaw.style.parser.StyleFormatParser;
 import de.be.thaw.style.parser.exception.StyleModelParseException;
@@ -193,7 +194,7 @@ public class CLI implements Callable<Integer> {
 
         StyleFormatParser styleFormatParser = new DefaultStyleFormatParser();
         ThawContext.getInstance().setStyleParser(styleFormatParser);
-        DefaultStyleModel styleModel;
+        StyleModel styleModel;
         if (styleFiles.length > 1) {
             System.err.println(String.format("There are more than one Thaw style files (ending with *.tds) in the folder at '%s'", root.getAbsolutePath()));
             return ErrorResult.MORE_THAN_ONE_STYLE_FILE.getCode();

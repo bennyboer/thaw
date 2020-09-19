@@ -1,33 +1,37 @@
 package de.be.thaw.core.document.util;
 
-import java.util.Optional;
-
 /**
  * Range of pages.
  */
 public class PageRange {
 
     /**
+     * Identifier for the last page.
+     */
+    public static final int LAST_PAGE = -1;
+
+    /**
      * The start page of the range.
      */
-    private final Integer startPage;
+    private int startPage = 1;
 
     /**
      * The end page of the range.
+     * If this is -1 it means that it is the last page.
      */
-    private final Integer endPage;
+    private int endPage = LAST_PAGE;
 
-    public PageRange(Integer startPage, Integer endPage) {
+    public PageRange(int startPage, int endPage) {
         this.startPage = startPage;
         this.endPage = endPage;
     }
 
-    public Optional<Integer> getStartPage() {
-        return Optional.ofNullable(startPage);
+    public int getStartPage() {
+        return startPage;
     }
 
-    public Optional<Integer> getEndPage() {
-        return Optional.ofNullable(endPage);
+    public int getEndPage() {
+        return endPage;
     }
 
 }

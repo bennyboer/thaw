@@ -5,6 +5,7 @@ import de.be.thaw.info.ThawInfo;
 import de.be.thaw.reference.ReferenceModel;
 import de.be.thaw.reference.citation.CitationManager;
 import de.be.thaw.reference.impl.DefaultReferenceModel;
+import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.impl.DefaultStyleModel;
 import de.be.thaw.text.model.TextModel;
 import org.jetbrains.annotations.Nullable;
@@ -27,7 +28,7 @@ public class DocumentBuildSource {
     /**
      * The style model.
      */
-    private final DefaultStyleModel styleModel;
+    private final StyleModel styleModel;
 
     /**
      * Reference model to use during building.
@@ -40,11 +41,11 @@ public class DocumentBuildSource {
     @Nullable
     private final Document parentDocument;
 
-    public DocumentBuildSource(ThawInfo info, TextModel textModel, DefaultStyleModel styleModel, CitationManager citationManager) {
+    public DocumentBuildSource(ThawInfo info, TextModel textModel, StyleModel styleModel, CitationManager citationManager) {
         this(info, textModel, styleModel, new DefaultReferenceModel(citationManager), null);
     }
 
-    public DocumentBuildSource(ThawInfo info, TextModel textModel, DefaultStyleModel styleModel, ReferenceModel referenceModel, @Nullable Document parentDocument) {
+    public DocumentBuildSource(ThawInfo info, TextModel textModel, StyleModel styleModel, ReferenceModel referenceModel, @Nullable Document parentDocument) {
         this.info = info;
         this.textModel = textModel;
         this.styleModel = styleModel;
@@ -60,7 +61,7 @@ public class DocumentBuildSource {
         return textModel;
     }
 
-    public DefaultStyleModel getStyleModel() {
+    public StyleModel getStyleModel() {
         return styleModel;
     }
 

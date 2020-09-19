@@ -6,13 +6,13 @@ import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.source.DocumentBuildSource;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.util.PageRange;
+import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.impl.DefaultStyleModel;
-import de.be.thaw.style.model.style.Style;
+import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.HeaderFooterStyle;
-import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.impl.SizeStyle;
+import de.be.thaw.style.model.style.value.DoubleStyleValue;
+import de.be.thaw.style.model.style.value.StringStyleValue;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.parser.exception.ParseException;
 import de.be.thaw.typeset.exception.TypeSettingException;
@@ -31,7 +31,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -348,9 +347,10 @@ public class TypeSettingContext {
                 continue; // Skip the default header or footer entry
             }
 
-            int startPage = range.getStartPage().orElse(1);
+            int startPage = range.getStartPage();
+            int endPage = range.getEndPage();
 
-            if (startPage <= pageNumber && (range.getEndPage().isEmpty() || range.getEndPage().get() >= pageNumber)) {
+            if (startPage <= pageNumber && (endPage >= pageNumber || endPage == PageRange.LAST_PAGE)) {
                 return entry.getValue();
             }
         }
@@ -458,7 +458,7 @@ public class TypeSettingContext {
      * @return the typeset pages
      * @throws TypeSettingException in case the passed text could not be typset to pages properly
      */
-    public List<Page> typesetThawTextFormat(String text, double width, @Nullable DefaultStyleModel customStyleModel) throws TypeSettingException {
+    public List<Page> typesetThawTextFormat(String text, double width, @Nullable StyleModel customStyleModel) throws TypeSettingException {
         // Parse Thaw document text format.
         TextModel textModel;
         try {
@@ -472,16 +472,28 @@ public class TypeSettingContext {
         }
 
         // Create style model to use.
-        DefaultStyleModel styleModel = new DefaultStyleModel(new HashMap<>()).merge(getDocument().getStyleModel());
-
-        Map<StyleType, Style> styles = new HashMap<>();
-        double mmWidth = Unit.convert(width, Unit.POINTS, Unit.MILLIMETER);
-        styles.put(StyleType.SIZE, new SizeStyle(mmWidth, Double.MAX_VALUE));
-        styles.put(StyleType.INSETS, new InsetsStyle(0.0, 0.0, 0.0, 0.0));
-        styles.put(StyleType.HEADER_FOOTER, new HeaderFooterStyle(null, null));
-        StyleBlock newDocumentBlock = new StyleBlock("DOCUMENT", styles);
-
-        styleModel.addBlock(newDocumentBlock.getName(), newDocumentBlock.merge(styleModel.getBlock(newDocumentBlock.getName()).orElseThrow()));
+        StyleModel styleModel = new DefaultStyleModel().merge(getDocument().getStyleModel());
+        styleModel.addBlock(new StyleBlock(
+                new StyleSelectorBuilder().setTargetName("document").build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.WIDTH, new DoubleStyleValue(Unit.convert(width, Unit.POINTS, Unit.MILLIMETER))),
+                        Map.entry(StyleType.HEIGHT, new DoubleStyleValue(Double.MAX_VALUE, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(0.0, Unit.MILLIMETER))
+                )
+        ));
+        styleModel.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("document")
+                        .setPseudoClassName("first-page")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.HEADER, new StringStyleValue(null)),
+                        Map.entry(StyleType.FOOTER, new StringStyleValue(null))
+                )
+        ));
 
         if (customStyleModel != null) {
             styleModel = customStyleModel.merge(styleModel);

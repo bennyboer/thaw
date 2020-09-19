@@ -1,7 +1,7 @@
-package de.be.thaw.style.model.style.value;
+package de.be.thaw.util.color;
 
 /**
- * A color value that a style property like "color", "background", .. can have.
+ * A color value expressed in RGB.
  */
 public class Color {
 
@@ -70,6 +70,11 @@ public class Color {
      */
     public double getAlpha() {
         return alpha;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("rgba(%f, %f, %f, %f)", getRed(), getGreen(), getBlue(), getAlpha());
     }
 
 }

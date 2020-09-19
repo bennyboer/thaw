@@ -1,19 +1,24 @@
 package de.be.thaw.style.parser.impl;
 
+import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.block.StyleBlock;
 import de.be.thaw.style.model.impl.DefaultStyleModel;
+import de.be.thaw.style.model.selector.StyleSelector;
+import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
+import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.style.parser.StyleFormatParser;
 import de.be.thaw.style.parser.exception.StyleModelParseException;
 import de.be.thaw.style.parser.lexer.StyleFormatLexerFactory;
 import de.be.thaw.style.parser.lexer.exception.StyleFormatLexerException;
 import de.be.thaw.style.parser.lexer.token.StyleFormatToken;
-import org.jetbrains.annotations.Nullable;
+import de.be.thaw.style.parser.value.exception.StyleValueParseException;
 
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * The default style format parser.
@@ -21,7 +26,7 @@ import java.util.Optional;
 public class DefaultStyleFormatParser implements StyleFormatParser {
 
     @Override
-    public DefaultStyleModel parse(Reader reader) throws StyleModelParseException {
+    public StyleModel parse(Reader reader) throws StyleModelParseException {
         return convertStyleBlocksToStyleModel(parseStyleBlocksFromTokens(tokenize(reader)));
     }
 
@@ -47,11 +52,64 @@ public class DefaultStyleFormatParser implements StyleFormatParser {
      * @return style model
      * @throws StyleModelParseException in case the style blocks could not be converted to a style model
      */
-    private DefaultStyleModel convertStyleBlocksToStyleModel(Map<List<StyleBlockSelector>, Map<String, String>> styleBlocks) throws StyleModelParseException {
-        // TODO Parse integer and double values using units (mm, px, pt, in) -> calculate in base value millimeters!
+    private StyleModel convertStyleBlocksToStyleModel(Map<List<StyleSelector>, Map<String, String>> styleBlocks) throws StyleModelParseException {
+        List<StyleBlock> blocks = new ArrayList<>();
+        for (Map.Entry<List<StyleSelector>, Map<String, String>> entry : styleBlocks.entrySet()) {
+            Map<StyleType, StyleValue> propertyMap = parseProperties(entry.getValue());
 
-        // TODO Create style model
-        return null;
+            for (StyleSelector selector : entry.getKey()) {
+                blocks.add(new StyleBlock(selector, propertyMap));
+            }
+        }
+
+        return new DefaultStyleModel(blocks);
+    }
+
+    /**
+     * Parse the passed properties map.
+     *
+     * @param src map to parse
+     * @return the parsed properties
+     * @throws StyleModelParseException in case the properties could not be parsed
+     */
+    private Map<StyleType, StyleValue> parseProperties(Map<String, String> src) throws StyleModelParseException {
+        Map<StyleType, StyleValue> result = new HashMap<>();
+
+        for (Map.Entry<String, String> entry : src.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            StyleType type = StyleType.forKey(key);
+            if (type == null) {
+                throw new StyleModelParseException(String.format(
+                        "Could not find style property '%s'",
+                        key
+                ));
+            }
+
+            StyleValue styleValue;
+            try {
+                styleValue = type.getParser().parse(value);
+            } catch (StyleValueParseException e) {
+                throw new StyleModelParseException(e);
+            }
+
+            result.put(type, styleValue);
+        }
+
+        return result;
+    }
+
+    /**
+     * Parse a value from the passed string.
+     *
+     * @param styleType the type of the value to parse
+     * @param valueStr  to parse
+     * @return the parsed value
+     * @throws StyleModelParseException in case the passed value string could not be parsed properly
+     */
+    private StyleValue parseValue(StyleType styleType, String valueStr) throws StyleModelParseException {
+        return null; // TODO
     }
 
     /**
@@ -61,11 +119,11 @@ public class DefaultStyleFormatParser implements StyleFormatParser {
      * @return style blocks
      * @throws StyleModelParseException in case style blocks could not be parsed properly
      */
-    private Map<List<StyleBlockSelector>, Map<String, String>> parseStyleBlocksFromTokens(List<StyleFormatToken> tokens) throws StyleModelParseException {
-        Map<List<StyleBlockSelector>, Map<String, String>> styleBlocks = new HashMap<>();
+    private Map<List<StyleSelector>, Map<String, String>> parseStyleBlocksFromTokens(List<StyleFormatToken> tokens) throws StyleModelParseException {
+        Map<List<StyleSelector>, Map<String, String>> styleBlocks = new HashMap<>();
 
         // Temporary collections for parsing selectors and properties of a style block
-        List<StyleBlockSelector> selectors = new ArrayList<>();
+        List<StyleSelector> selectors = new ArrayList<>();
         Map<String, String> propertyMap = new HashMap<>();
 
         // Temporary variables for parsing selectors
@@ -104,12 +162,12 @@ public class DefaultStyleFormatParser implements StyleFormatParser {
                         }
 
                         // Add selector
-                        selectors.add(new StyleBlockSelector(
-                                currentSelectorTargetName,
-                                currentSelectorClassName,
-                                currentSelectorPseudoClass,
-                                currentSelectorPseudoClassSettings
-                        ));
+                        selectors.add(new StyleSelectorBuilder()
+                                .setTargetName(currentSelectorTargetName)
+                                .setClassName(currentSelectorClassName)
+                                .setPseudoClassName(currentSelectorPseudoClass)
+                                .setPseudoClassSettings(currentSelectorPseudoClassSettings)
+                                .build());
 
                         // Reset temporary variables
                         currentSelectorTargetName = null;
@@ -141,91 +199,6 @@ public class DefaultStyleFormatParser implements StyleFormatParser {
         }
 
         return styleBlocks;
-    }
-
-    /**
-     * A selector in the style block (consisting of target name, class name and pseudo class (+ settings)).
-     */
-    private static class StyleBlockSelector {
-
-        /**
-         * Target name of the selector: 'document', 'page', 'paragraph', 'image', ...
-         */
-        private final String targetName;
-
-        /**
-         * Name of the class (if any).
-         */
-        @Nullable
-        private final String className;
-
-        /**
-         * Name of the pseudo class (if any).
-         */
-        @Nullable
-        private final String pseudoClassName;
-
-        /**
-         * Settings of the pseudo class (can be empty).
-         * Can be null if there is no pseudo class name specified.
-         */
-        @Nullable
-        private final List<String> pseudoClassSettings;
-
-        public StyleBlockSelector(
-                String targetName,
-                @Nullable String className,
-                @Nullable String pseudoClassName,
-                @Nullable List<String> pseudoClassSettings
-        ) {
-            this.targetName = targetName;
-            this.className = className;
-            this.pseudoClassName = pseudoClassName;
-            this.pseudoClassSettings = pseudoClassSettings;
-        }
-
-        public String getTargetName() {
-            return targetName;
-        }
-
-        public Optional<String> getClassName() {
-            return Optional.ofNullable(className);
-        }
-
-        public Optional<String> getPseudoClassName() {
-            return Optional.ofNullable(pseudoClassName);
-        }
-
-        public Optional<List<String>> getPseudoClassSettings() {
-            return Optional.ofNullable(pseudoClassSettings);
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-
-            sb.append(getTargetName());
-
-            getClassName().ifPresent(n -> {
-                sb.append('.');
-                sb.append(n);
-            });
-
-            getPseudoClassName().ifPresent(n -> {
-                sb.append(':');
-                sb.append(n);
-            });
-
-            getPseudoClassSettings().ifPresent(settings -> {
-                if (!settings.isEmpty()) {
-                    sb.append('(');
-                    sb.append(String.join(", ", settings));
-                    sb.append(')');
-                }
-            });
-
-            return sb.toString();
-        }
     }
 
 }

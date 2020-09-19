@@ -8,17 +8,19 @@ import com.rtfparserkit.parser.standard.StandardRtfParser;
 import com.rtfparserkit.rtf.Command;
 import com.rtfparserkit.rtf.CommandType;
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.font.util.FontVariant;
-import de.be.thaw.font.util.KerningMode;
-import de.be.thaw.style.model.impl.DefaultStyleModel;
+import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
-import de.be.thaw.style.model.style.Style;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
+import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.ColorStyle;
-import de.be.thaw.style.model.style.impl.FontStyle;
-import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.impl.TextStyle;
+import de.be.thaw.style.model.style.Styles;
+import de.be.thaw.style.model.style.value.BooleanStyleValue;
+import de.be.thaw.style.model.style.value.ColorStyleValue;
+import de.be.thaw.style.model.style.value.DoubleStyleValue;
+import de.be.thaw.style.model.style.value.FontVariantStyleValue;
+import de.be.thaw.style.model.style.value.StringStyleValue;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
@@ -33,13 +35,14 @@ import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.page.impl.TextElement;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
+import de.be.thaw.util.color.Color;
+import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,12 +67,12 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
     public void handle(Paragraph paragraph, TypeSettingContext ctx) throws TypeSettingException {
         CodeParagraph codeParagraph = (CodeParagraph) paragraph;
 
-        InsetsStyle insetsStyle = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.INSETS,
-                style -> Optional.ofNullable((InsetsStyle) style)
-        ).orElseThrow();
+        Styles styles = paragraph.getNode().getStyles();
 
-        ctx.getPositionContext().increaseY(insetsStyle.getTop());
+        final double marginTop = styles.resolve(StyleType.MARGIN_TOP).orElseThrow().doubleValue();
+        final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow().doubleValue();
+
+        ctx.getPositionContext().increaseY(marginTop);
 
         // Parse the RTF code
         IRtfSource source = new RtfStreamSource(new ByteArrayInputStream(codeParagraph.getRtfCode().getBytes(StandardCharsets.UTF_8)));
@@ -88,35 +91,44 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         // Add caption (if any)
         if (codeParagraph.getCaption().isPresent()) {
             String caption = codeParagraph.getCaption().orElseThrow();
-            addCaption(caption, codeParagraph, insetsStyle, ctx);
+            addCaption(caption, codeParagraph, ctx);
         }
 
-        ctx.getPositionContext().increaseY(insetsStyle.getBottom());
+        ctx.getPositionContext().increaseY(marginBottom);
     }
 
     /**
      * Add a caption under the code paragraph.
      *
-     * @param caption     to add
-     * @param paragraph   the code paragraph
-     * @param insetsStyle of the code paragraph to use
-     * @param ctx         the typesetting context
+     * @param caption   to add
+     * @param paragraph the code paragraph
+     * @param ctx       the typesetting context
      * @throws TypeSettingException in case the caption could not be added properly
      */
-    private void addCaption(String caption, CodeParagraph paragraph, InsetsStyle insetsStyle, TypeSettingContext ctx) throws TypeSettingException {
+    private void addCaption(String caption, CodeParagraph paragraph, TypeSettingContext ctx) throws TypeSettingException {
+        Styles styles = paragraph.getNode().getStyles();
+
+        StyleValue marginLeftValue = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
+        StyleValue marginRightValue = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow();
+
+        final double marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double marginRight = Unit.convert(marginRightValue.doubleValue(), marginRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+
         // Typeset the caption
-        Map<StyleType, Style> styles = new HashMap<>();
-        styles.put(StyleType.TEXT, new TextStyle(0.0, null, null, null, null, null, null, null));
-        StyleBlock documentStyleBlock = new StyleBlock("DOCUMENT", styles);
-        DefaultStyleModel styleModel = new DefaultStyleModel(new HashMap<>());
-        styleModel.addBlock(documentStyleBlock.getName(), documentStyleBlock);
+        StyleModel styleModel = new DefaultStyleModel();
+        styleModel.addBlock(new StyleBlock(
+                new StyleSelectorBuilder().setTargetName("document").build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.FIRST_LINE_INDENT, new DoubleStyleValue(0.0, Unit.MILLIMETER))
+                )
+        ));
 
         List<Page> pages = ctx.typesetThawTextFormat(String.format(
                 "**%s %d**: %s",
                 paragraph.getCaptionPrefix() != null ? paragraph.getCaptionPrefix() : ctx.getConfig().getProperties().getOrDefault("code.caption.prefix", DEFAULT_CODE_CAPTION_PREFIX),
                 ctx.getDocument().getReferenceModel().getReferenceNumber(paragraph.getNode().getId()),
                 caption
-        ), paragraph.getDefaultLineWidth() - insetsStyle.getLeft() - insetsStyle.getRight(), styleModel);
+        ), paragraph.getDefaultLineWidth() - marginLeft - marginRight, styleModel);
 
         // Re-layout the elements below the code paragraph
         double endY = ctx.getPositionContext().getY();
@@ -191,7 +203,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
          * The currently used font color.
          */
         @Nullable
-        private ColorStyle color;
+        private Color color;
 
         /**
          * Whether the group allows for adding page elements.
@@ -234,17 +246,17 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             this.italic = italic;
         }
 
-        public ColorStyle getColor() {
+        public Color getColor() {
             if (color != null) {
                 return color;
             } else if (parent != null) {
                 return parent.getColor();
             } else {
-                return new ColorStyle(0.0, 0.0, 0.0, 1.0);
+                return new Color(0.0, 0.0, 0.0, 1.0);
             }
         }
 
-        public void setColor(@Nullable ColorStyle color) {
+        public void setColor(@Nullable Color color) {
             this.color = color;
         }
 
@@ -283,7 +295,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         /**
          * Colors listed in the RTF color table.
          */
-        private final List<ColorStyle> colors = new ArrayList<>();
+        private final List<Color> colors = new ArrayList<>();
 
         /**
          * Stack holding always the current RTF group context (colors, bold, italic, ...).
@@ -315,9 +327,14 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         private final double lineHeight;
 
         /**
-         * Insets to honor.
+         * Left margin
          */
-        private final InsetsStyle insetsStyle;
+        private final double marginLeft;
+
+        /**
+         * Right margin.
+         */
+        private final double marginRight;
 
         /**
          * Whether to show line numbers.
@@ -337,7 +354,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         /**
          * Color to draw line numbers with.
          */
-        private final ColorStyle lineNumberColor;
+        private final Color lineNumberColor;
 
         /**
          * The monospaced font family to use.
@@ -364,40 +381,34 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             this.ctx = ctx;
 
             // Fetch some styles from the code paragraph node.
-            lineHeight = codeParagraph.getNode().getStyle().getStyleAttribute(
-                    StyleType.TEXT,
-                    style -> Optional.ofNullable(((TextStyle) style).getLineHeight())
-            ).orElse(codeParagraph.getNode().getStyle().getStyleAttribute(
-                    StyleType.FONT,
-                    style -> Optional.ofNullable(((FontStyle) style).getSize())
-            ).orElseThrow());
-            insetsStyle = codeParagraph.getNode().getStyle().getStyleAttribute(
-                    StyleType.INSETS,
-                    style -> Optional.ofNullable((InsetsStyle) style)
-            ).orElseThrow();
-            showLineNumbers = codeParagraph.getNode().getStyle().getStyleAttribute(
-                    StyleType.TEXT,
-                    style -> Optional.ofNullable(((TextStyle) style).isShowLineNumbers())
-            ).orElse(true);
-            lineNumberFontFamily = codeParagraph.getNode().getStyle().getStyleAttribute(
-                    StyleType.TEXT,
-                    style -> Optional.ofNullable(((TextStyle) style).getLineNumberFontFamily())
-            ).orElse("Consolas");
-            lineNumberFontSize = codeParagraph.getNode().getStyle().getStyleAttribute(
-                    StyleType.TEXT,
-                    style -> Optional.ofNullable(((TextStyle) style).getLineNumberFontSize())
-            ).orElse(12.0);
-            lineNumberColor = codeParagraph.getNode().getStyle().getStyleAttribute(
-                    StyleType.TEXT,
-                    style -> Optional.ofNullable(((TextStyle) style).getLineNumberColor())
-            ).orElse(null);
-            monoSpacedFontFamily = codeParagraph.getNode().getStyle().getStyleAttribute(
-                    StyleType.FONT,
-                    style -> Optional.ofNullable(((FontStyle) style).getMonoSpacedFontFamily())
-            ).orElseThrow();
+            Styles styles = codeParagraph.getNode().getStyles();
+
+            StyleValue marginLeftValue = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
+            StyleValue marginRightValue = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow();
+
+            marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+            marginRight = Unit.convert(marginRightValue.doubleValue(), marginRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+
+            StyleValue lineHeightStyleValue = styles.resolve(StyleType.LINE_HEIGHT).orElseThrow();
+            if (lineHeightStyleValue.unit().isEmpty()) {
+                // Is relative line-height -> Calculate line height from the font size
+                StyleValue fontSizeValue = styles.resolve(StyleType.FONT_SIZE).orElseThrow();
+                lineHeight = Unit.convert(fontSizeValue.doubleValue(), fontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS) * lineHeightStyleValue.doubleValue();
+            } else {
+                lineHeight = Unit.convert(lineHeightStyleValue.doubleValue(), lineHeightStyleValue.unit().orElseThrow(), Unit.POINTS);
+            }
+
+            showLineNumbers = styles.resolve(StyleType.SHOW_LINE_NUMBERS).orElse(new BooleanStyleValue(true)).booleanValue();
+            lineNumberFontFamily = styles.resolve(StyleType.LINE_NUMBER_FONT_FAMILY).orElseThrow().value();
+
+            StyleValue lineNumberFontSizeValue = styles.resolve(StyleType.LINE_NUMBER_FONT_SIZE).orElse(new DoubleStyleValue(10.0, Unit.POINTS));
+            lineNumberFontSize = Unit.convert(lineNumberFontSizeValue.doubleValue(), lineNumberFontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS);
+
+            lineNumberColor = styles.resolve(StyleType.LINE_NUMBER_COLOR).orElse(new ColorStyleValue(new Color(0.4, 0.4, 0.4))).colorValue();
+            monoSpacedFontFamily = styles.resolve(StyleType.FONT_FAMILY).orElseThrow().value();
 
             // Add the default color (index 0).
-            colors.add(new ColorStyle(0.0, 0.0, 0.0, 1.0));
+            colors.add(new Color(0.0, 0.0, 0.0));
 
             // Check if there is enough space for the next line
             double availableHeight = ctx.getAvailableHeight();
@@ -411,7 +422,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             }
 
             // Initialize position context
-            ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + insetsStyle.getLeft());
+            ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + marginLeft);
         }
 
         @Override
@@ -455,7 +466,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
          */
         private void onProcessStringParseColors(String string) {
             if (string.equals(";") && tmpBlue > -1) {
-                colors.add(new ColorStyle(tmpRed / 255.0, tmpGreen / 255.0, tmpBlue / 255.0, 1.0));
+                colors.add(new Color(tmpRed / 255.0, tmpGreen / 255.0, tmpBlue / 255.0));
             }
         }
 
@@ -511,9 +522,12 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
                 variant = FontVariant.ITALIC;
             }
 
-            Map<StyleType, Style> styles = new HashMap<>();
-            styles.put(StyleType.FONT, new FontStyle(monoSpacedFontFamily, variant, null, curCtx.getColor(), null, KerningMode.NATIVE));
-            DocumentNode dummyDocumentNode = new DocumentNode(new TextNode(str, null), codeParagraph.getNode(), new DocumentNodeStyle(codeParagraph.getNode().getStyle(), styles));
+            Styles dummyDocumentNodeStyles = new Styles(codeParagraph.getNode().getStyles());
+            dummyDocumentNodeStyles.overrideStyle(StyleType.FONT_FAMILY, new StringStyleValue(monoSpacedFontFamily));
+            dummyDocumentNodeStyles.overrideStyle(StyleType.FONT_VARIANT, new FontVariantStyleValue(variant));
+            dummyDocumentNodeStyles.overrideStyle(StyleType.COLOR, new ColorStyleValue(curCtx.getColor()));
+
+            DocumentNode dummyDocumentNode = new DocumentNode(new TextNode(str, null), codeParagraph.getNode(), dummyDocumentNodeStyles);
 
             // Measure string
             FontDetailsSupplier.StringMetrics metrics;
@@ -542,7 +556,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             }
 
             // Check if text element has enough space in the current line -> otherwise break line
-            double maxX = ctx.getConfig().getPageInsets().getLeft() + codeParagraph.getDefaultLineWidth() - insetsStyle.getRight();
+            double maxX = ctx.getConfig().getPageInsets().getLeft() + codeParagraph.getDefaultLineWidth() - marginRight;
             if (ctx.getPositionContext().getX() + metrics.getWidth() > maxX) {
                 breakLine(false);
             }
@@ -620,7 +634,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
                 // Adjust position context for the next line
                 ctx.getPositionContext().increaseY(lineHeight);
-                ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + insetsStyle.getLeft());
+                ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + marginLeft);
 
                 // Check if there is enough space for the next line
                 double availableHeight = ctx.getAvailableHeight();
@@ -731,10 +745,13 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             String lineNumberStr = String.valueOf(lineNumber);
 
             // Create dummy document node representing the line number string
-            Map<StyleType, Style> lineNumberStyles = new HashMap<>();
-            lineNumberStyles.put(StyleType.FONT, new FontStyle(lineNumberFontFamily, FontVariant.MONOSPACE, lineNumberFontSize, lineNumberColor, null, null));
-            DocumentNodeStyle lineNumberNodeStyle = new DocumentNodeStyle(paragraph.getNode().getStyle(), lineNumberStyles);
-            DocumentNode lineNumberDocumentNode = new DocumentNode(new TextNode(lineNumberStr, null), paragraph.getNode(), lineNumberNodeStyle);
+            Styles lineNumberNodeStyles = new Styles(paragraph.getNode().getStyles());
+            lineNumberNodeStyles.overrideStyle(StyleType.FONT_FAMILY, new StringStyleValue(lineNumberFontFamily));
+            lineNumberNodeStyles.overrideStyle(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.MONOSPACE));
+            lineNumberNodeStyles.overrideStyle(StyleType.FONT_SIZE, new DoubleStyleValue(lineNumberFontSize, Unit.POINTS));
+            lineNumberNodeStyles.overrideStyle(StyleType.COLOR, new ColorStyleValue(lineNumberColor));
+
+            DocumentNode lineNumberDocumentNode = new DocumentNode(new TextNode(lineNumberStr, null), paragraph.getNode(), lineNumberNodeStyles);
 
             // Measure line number string
             FontDetailsSupplier.StringMetrics lineNumberStrMetrics;
@@ -751,7 +768,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
                     ctx.getCurrentPageNumber(),
                     lineNumberStrMetrics.getBaseline(),
                     new Size(lineNumberStrMetrics.getWidth(), lineNumberStrMetrics.getHeight()),
-                    new Position(ctx.getConfig().getPageInsets().getLeft() - lineNumberStrMetrics.getWidth() - 10.0 + insetsStyle.getLeft(), ctx.getPositionContext().getY())
+                    new Position(ctx.getConfig().getPageInsets().getLeft() - lineNumberStrMetrics.getWidth() - 10.0 + marginLeft, ctx.getPositionContext().getY())
             ));
         }
 

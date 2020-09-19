@@ -5,6 +5,7 @@ module de.be.thaw.core {
     requires de.be.thaw.font;
     requires de.be.thaw.reference;
     requires de.be.thaw.shared;
+    requires de.be.thaw.util;
     requires org.jetbrains.annotations;
 
     exports de.be.thaw.core.document;

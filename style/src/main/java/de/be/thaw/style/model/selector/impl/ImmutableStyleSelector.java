@@ -1,6 +1,6 @@
 package de.be.thaw.style.model.selector.impl;
 
-import de.be.thaw.style.model.selector.StyleSelector;
+import de.be.thaw.style.model.selector.AbstractStyleSelector;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.Optional;
 /**
  * An immutable style selector.
  */
-public class ImmutableStyleSelector implements StyleSelector {
+public final class ImmutableStyleSelector extends AbstractStyleSelector {
 
     /**
      * The target name to select.

@@ -1,5 +1,9 @@
 package de.be.thaw.util.unit;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 /**
  * Enumeration of supported units.
  */
@@ -9,9 +13,21 @@ public enum Unit {
      * Our base unit all other calculation factors should align to.
      */
     MILLIMETER("millimeter", "mm", 1),
+    CENTIMETER("centimeter", "cm", 10),
     INCH("inch", "in", 25.4),
     POINTS("points", "pt", 25.4 / 72),
     PIXEL("pixel", "px", 0.75 * 25.4 / 72);
+
+    /**
+     * Lookup for units by their short name.
+     */
+    private static final Map<String, Unit> SHORT_NAME_LOOKUP = new HashMap<>();
+
+    static {
+        for (Unit unit : Unit.values()) {
+            SHORT_NAME_LOOKUP.put(unit.getShortName().toLowerCase(), unit);
+        }
+    }
 
     /**
      * Name of the unit.
@@ -78,6 +94,16 @@ public enum Unit {
 
         // Calculate target unit value for base value (Millimeters).
         return baseValue / targetUnit.mmConversionFactor;
+    }
+
+    /**
+     * Get a unit for the passed short name.
+     *
+     * @param shortName to get unit for
+     * @return unit or empty Optional
+     */
+    public static Optional<Unit> forShortName(String shortName) {
+        return Optional.ofNullable(SHORT_NAME_LOOKUP.get(shortName.toLowerCase()));
     }
 
 }

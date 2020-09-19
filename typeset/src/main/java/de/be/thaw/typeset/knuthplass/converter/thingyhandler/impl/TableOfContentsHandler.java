@@ -3,24 +3,22 @@ package de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl;
 import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.reference.impl.InternalReference;
-import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.FontStyle;
-import de.be.thaw.style.model.style.impl.InsetsStyle;
+import de.be.thaw.style.model.style.Styles;
+import de.be.thaw.style.model.style.value.DoubleStyleValue;
+import de.be.thaw.style.model.style.value.FontVariantStyleValue;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EmptyBox;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.toc.TableOfContentsItemParagraph;
+import de.be.thaw.util.unit.Unit;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -58,13 +56,15 @@ public class TableOfContentsHandler implements ThingyHandler {
                 double indent = (level - 1) * indentPerLevel;
 
                 // Create dummy document nodes
-                Map<StyleType, Style> numberingStyles = new HashMap<>();
-                numberingStyles.put(StyleType.INSETS, new InsetsStyle(0.0, indent, 0.0, 0.0));
-                numberingStyles.put(StyleType.FONT, new FontStyle(null, FontVariant.BOLD, null, null, null, null));
-                DocumentNode dummyNumberingNode = new DocumentNode(String.format("TOC_%s", numbering), documentNode.getTextNode(), null, new DocumentNodeStyle(documentNode.getStyle(), numberingStyles));
+                Styles numberingStyles = new Styles(documentNode.getStyles());
+                numberingStyles.overrideStyle(StyleType.MARGIN_LEFT, new DoubleStyleValue(indent, Unit.POINTS));
+                numberingStyles.overrideStyle(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.POINTS));
+                numberingStyles.overrideStyle(StyleType.MARGIN_TOP, new DoubleStyleValue(0.0, Unit.POINTS));
+                numberingStyles.overrideStyle(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(0.0, Unit.POINTS));
+                numberingStyles.overrideStyle(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.BOLD));
+                DocumentNode dummyNumberingNode = new DocumentNode(String.format("TOC_%s", numbering), documentNode.getTextNode(), null, numberingStyles);
 
-                Map<StyleType, Style> headlineStyles = new HashMap<>();
-                DocumentNode dummyHeadlineNode = new DocumentNode(String.format("TOC_%s", headline), documentNode.getTextNode(), null, new DocumentNodeStyle(documentNode.getStyle(), headlineStyles));
+                DocumentNode dummyHeadlineNode = new DocumentNode(String.format("TOC_%s", headline), documentNode.getTextNode(), null, documentNode.getStyles());
 
                 ctx.getDocument().getReferenceModel().addReference(new InternalReference(dummyNumberingNode.getId(), n.getId(), "TOC_numbering"));
                 ctx.getDocument().getReferenceModel().addReference(new InternalReference(dummyHeadlineNode.getId(), n.getId(), "TOC_headline"));

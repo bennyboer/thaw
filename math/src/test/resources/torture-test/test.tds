@@ -1,12 +1,9 @@
-{
-    "DOCUMENT": {
-        "font": {
-            "size": 15
-        }
-    },
-    "IMAGE": {
-        "insets": {
-            "bottom": 10
-        }
-    }
+document {
+    font-family: Cambria;
+    inline-code-font-family: Consolas;
+    font-size: 15pt;
+}
+
+image {
+    margin-bottom: 10mm;
 }

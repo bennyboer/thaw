@@ -1,102 +1,60 @@
-{
-	"DOCUMENT": {
-		"size": {
-			"width": 210,
-			"height": 297
-		},
-		"insets": {
-			"top": 20,
-			"bottom": 20,
-			"left": 20,
-			"right": 20
-		},
-		"background": {
-			"color": {
-				"red": 1.0,
-				"green": 1.0,
-				"blue": 1.0,
-				"alpha": 1.0
-			}
-		},
-		"font": {
-			"family": "Cambria",
-			"monoSpacedFontFamily": "Consolas",
-			"size": 11,
-			"color": {
-				"red": 0.1,
-				"green": 0.1,
-				"blue": 0.1
-			},
-			"kerning": "optical"
-		},
-		"text": {
-			"lineHeight": 16
-		},
-		"header-footer": {
-			"footer": {
-				"default": "footer"
-			}
-		}
-	},
-	"TITLE": {
-		"font": {
-			"family": "Segoe UI",
-			"color": {
-				"red": 0.4,
-				"green": 0.5,
-				"blue": 0.6
-			},
-			"size": 40,
-			"kerning": "optical"
-		},
-		"text": {
-			"lineHeight": 40,
-			"alignment": "center"
-		},
-		"insets": {
-			"top": 0,
-			"bottom": 25
-		}
-	},
-	"H1": {
-		"font": {
-			"family": "Segoe UI",
-			"variant": "plain",
-			"size": 16
-		},
-		"text": {
-			"lineHeight": 16
-		},
-		"insets": {
-			"top": 10,
-			"bottom": 10
-		}
-	},
-	"H2": {
-		"font": {
-			"family": "Segoe UI",
-			"variant": "plain",
-			"size": 14
-		},
-		"text": {
-			"lineHeight": 14
-		},
-		"insets": {
-			"top": 10,
-			"bottom": 10
-		}
-	},
-	"IMAGE": {
-		"insets": {
-			"left": 20
-		}
-	},
-	"TOC": {
-		"font": {
-			"family": "Segoe UI"
-		},
-		"text": {
-			"lineHeight": 20
-		}
-	}
+document {
+    width: 210mm;
+    height: 297mm;
+
+    margin-top: 20mm;
+    margin-bottom: 20mm;
+    margin-left: 20mm;
+    margin-right: 20mm;
+
+    background-color: #FFFFFF;
+
+    font-family: Cambria;
+    inline-code-font-family: Consolas;
+    font-size: 11pt;
+    font-kerning: native;
+    color: rgb(0.1, 0.1, 0.1);
+
+    line-height: 1.4;
+}
+
+page {
+    footer: footer;
+}
+
+code {
+    font-family: Consolas;
+}
+
+title {
+    font-family: Segoe UI;
+    color: rgb(0.4, 0.5, 0.6);
+    font-size: 40pt;
+    font-kerning: optical;
+
+    text-align: center;
+
+    margin-bottom: 25mm;
+}
+
+h {
+    font-family: Segoe UI;
+    font-variant: plain;
+}
+
+h1 {
+    font-size: 16pt;
+}
+
+h2 {
+    font-size: 14pt;
+}
+
+image {
+    margin-left: 20mm;
+}
+
+toc {
+    font-family: Segoe UI;
+    line-height: 20pt;
 }

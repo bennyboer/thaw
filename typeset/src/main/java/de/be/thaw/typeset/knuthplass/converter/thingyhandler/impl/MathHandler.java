@@ -13,8 +13,7 @@ import de.be.thaw.math.mathml.typeset.config.MathTypesetConfig;
 import de.be.thaw.math.mathml.typeset.exception.TypesetException;
 import de.be.thaw.math.mathml.typeset.impl.DefaultMathMLTypesetter;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.FontStyle;
-import de.be.thaw.style.model.style.impl.TextStyle;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
@@ -23,10 +22,10 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.math.MathParagraph;
 import de.be.thaw.util.HorizontalAlignment;
+import de.be.thaw.util.unit.Unit;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -62,10 +61,8 @@ public class MathHandler implements ThingyHandler {
         // TODO Check if expression is MathML or TeX -> if TeX convert to MathML
 
         // Prepare some constants
-        final double fontSize = documentNode.getStyle().getStyleAttribute(
-                StyleType.FONT,
-                style -> Optional.ofNullable(((FontStyle) style).getSize())
-        ).orElse(11.0);
+        StyleValue fontSizeValue = documentNode.getStyles().resolve(StyleType.FONT_SIZE).orElseThrow();
+        final double fontSize = Unit.convert(fontSizeValue.doubleValue(), fontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS);
 
         // Parse MathML
         MathMLParser parser = new DefaultMathMLParser();
@@ -120,10 +117,14 @@ public class MathHandler implements ThingyHandler {
             ));
         } else {
             // Math expression is in-line with text -> scale it properly and add it to the text paragraph.
-            double lineHeight = documentNode.getStyle().getStyleAttribute(
-                    StyleType.TEXT,
-                    style -> Optional.ofNullable(((TextStyle) style).getLineHeight())
-            ).orElseThrow();
+            StyleValue lineHeightStyleValue = documentNode.getStyles().resolve(StyleType.LINE_HEIGHT).orElseThrow();
+            double lineHeight;
+            if (lineHeightStyleValue.unit().isEmpty()) {
+                // Is relative line-height -> Calculate line height from the font size
+                lineHeight = fontSize * lineHeightStyleValue.doubleValue();
+            } else {
+                lineHeight = Unit.convert(lineHeightStyleValue.doubleValue(), lineHeightStyleValue.unit().orElseThrow(), Unit.POINTS);
+            }
 
             if (ex.getSize().getHeight() > lineHeight) {
                 double scaleFactor = lineHeight / ex.getSize().getHeight();
