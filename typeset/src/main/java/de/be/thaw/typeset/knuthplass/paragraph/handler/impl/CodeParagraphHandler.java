@@ -69,10 +69,17 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
         Styles styles = paragraph.getNode().getStyles();
 
-        final double marginTop = styles.resolve(StyleType.MARGIN_TOP).orElseThrow().doubleValue();
-        final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow().doubleValue();
+        // Calculate margins
+        StyleValue marginTopValue = styles.resolve(StyleType.MARGIN_TOP).orElseThrow();
+        StyleValue marginBottomValue = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow();
+        final double marginTop = Unit.convert(marginTopValue.doubleValue(), marginTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double marginBottom = Unit.convert(marginBottomValue.doubleValue(), marginBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
 
-        ctx.getPositionContext().increaseY(marginTop);
+        // Calculate paddings (Only affecting the code block, not the caption)
+        StyleValue paddingTopValue = styles.resolve(StyleType.PADDING_TOP).orElseThrow();
+        final double paddingTop = Unit.convert(paddingTopValue.doubleValue(), paddingTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+
+        ctx.getPositionContext().increaseY(marginTop + paddingTop);
 
         // Parse the RTF code
         IRtfSource source = new RtfStreamSource(new ByteArrayInputStream(codeParagraph.getRtfCode().getBytes(StandardCharsets.UTF_8)));
@@ -110,9 +117,11 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
         StyleValue marginLeftValue = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
         StyleValue marginRightValue = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow();
-
         final double marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
         final double marginRight = Unit.convert(marginRightValue.doubleValue(), marginRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+
+        StyleValue paddingBottomValue = styles.resolve(StyleType.PADDING_BOTTOM).orElseThrow();
+        final double paddingBottom = Unit.convert(paddingBottomValue.doubleValue(), paddingBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
 
         // Typeset the caption
         StyleModel styleModel = new DefaultStyleModel();
@@ -131,9 +140,11 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         ), paragraph.getDefaultLineWidth() - marginLeft - marginRight, styleModel);
 
         // Re-layout the elements below the code paragraph
-        double endY = ctx.getPositionContext().getY();
+        double endY = ctx.getPositionContext().getY() + paddingBottom;
+
         double startY = endY;
         double maxY = endY;
+
         double x = ctx.getPositionContext().getX();
         for (Page page : pages) {
             for (Element element : page.getElements()) {
@@ -337,6 +348,16 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         private final double marginRight;
 
         /**
+         * Left padding.
+         */
+        private final double paddingLeft;
+
+        /**
+         * Right padding.
+         */
+        private final double paddingRight;
+
+        /**
          * Whether to show line numbers.
          */
         private final boolean showLineNumbers;
@@ -385,9 +406,13 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
             StyleValue marginLeftValue = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
             StyleValue marginRightValue = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow();
-
             marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
             marginRight = Unit.convert(marginRightValue.doubleValue(), marginRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+
+            StyleValue paddingLeftValue = styles.resolve(StyleType.PADDING_LEFT).orElseThrow();
+            StyleValue paddingRightValue = styles.resolve(StyleType.PADDING_RIGHT).orElseThrow();
+            paddingLeft = Unit.convert(paddingLeftValue.doubleValue(), paddingLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+            paddingRight = Unit.convert(paddingRightValue.doubleValue(), paddingRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
 
             StyleValue lineHeightStyleValue = styles.resolve(StyleType.LINE_HEIGHT).orElseThrow();
             if (lineHeightStyleValue.unit().isEmpty()) {
@@ -422,7 +447,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             }
 
             // Initialize position context
-            ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + marginLeft);
+            ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + marginLeft + paddingLeft);
         }
 
         @Override
@@ -556,7 +581,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             }
 
             // Check if text element has enough space in the current line -> otherwise break line
-            double maxX = ctx.getConfig().getPageInsets().getLeft() + codeParagraph.getDefaultLineWidth() - marginRight;
+            double maxX = ctx.getConfig().getPageInsets().getLeft() + codeParagraph.getDefaultLineWidth() - marginRight - paddingRight;
             if (ctx.getPositionContext().getX() + metrics.getWidth() > maxX) {
                 breakLine(false);
             }
@@ -634,7 +659,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
                 // Adjust position context for the next line
                 ctx.getPositionContext().increaseY(lineHeight);
-                ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + marginLeft);
+                ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + marginLeft + paddingLeft);
 
                 // Check if there is enough space for the next line
                 double availableHeight = ctx.getAvailableHeight();
@@ -768,7 +793,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
                     ctx.getCurrentPageNumber(),
                     lineNumberStrMetrics.getBaseline(),
                     new Size(lineNumberStrMetrics.getWidth(), lineNumberStrMetrics.getHeight()),
-                    new Position(ctx.getConfig().getPageInsets().getLeft() - lineNumberStrMetrics.getWidth() - 10.0 + marginLeft, ctx.getPositionContext().getY())
+                    new Position(ctx.getConfig().getPageInsets().getLeft() - lineNumberStrMetrics.getWidth() - 10.0 + marginLeft + paddingLeft, ctx.getPositionContext().getY())
             ));
         }
 

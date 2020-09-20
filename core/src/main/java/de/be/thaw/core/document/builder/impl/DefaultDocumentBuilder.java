@@ -134,7 +134,7 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
             }
 
             StyleValue headerStyle = block.getStyles().get(StyleType.HEADER);
-            if (headerStyle != null) {
+            if (headerStyle != null && headerStyle.value() != null) {
                 HeaderFooterEntry entry = new HeaderFooterEntry();
                 entry.isHeader = true;
                 entry.folder = headerStyle.value();
@@ -143,7 +143,7 @@ public class DefaultDocumentBuilder implements DocumentBuilder<DocumentBuildSour
             }
 
             StyleValue footerStyle = block.getStyles().get(StyleType.FOOTER);
-            if (footerStyle != null) {
+            if (footerStyle != null && footerStyle.value() != null) {
                 HeaderFooterEntry entry = new HeaderFooterEntry();
                 entry.isHeader = false;
                 entry.folder = footerStyle.value();

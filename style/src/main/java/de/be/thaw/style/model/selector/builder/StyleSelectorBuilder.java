@@ -41,6 +41,10 @@ public class StyleSelectorBuilder {
     }
 
     public StyleSelectorBuilder setTargetName(@Nullable String targetName) {
+        if (targetName != null) {
+            targetName = targetName.toLowerCase();
+        }
+
         this.targetName = targetName;
         return this;
     }
@@ -51,6 +55,10 @@ public class StyleSelectorBuilder {
     }
 
     public StyleSelectorBuilder setClassName(@Nullable String className) {
+        if (className != null) {
+            className = className.toLowerCase();
+        }
+
         this.className = className;
         return this;
     }
@@ -61,6 +69,10 @@ public class StyleSelectorBuilder {
     }
 
     public StyleSelectorBuilder setPseudoClassName(@Nullable String pseudoClassName) {
+        if (pseudoClassName != null) {
+            pseudoClassName = pseudoClassName.toLowerCase();
+        }
+
         this.pseudoClassName = pseudoClassName;
         return this;
     }

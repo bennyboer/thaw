@@ -12,6 +12,7 @@ import de.be.thaw.style.parser.exception.StyleModelParseException;
 import de.be.thaw.style.parser.lexer.StyleFormatLexerFactory;
 import de.be.thaw.style.parser.lexer.exception.StyleFormatLexerException;
 import de.be.thaw.style.parser.lexer.token.StyleFormatToken;
+import de.be.thaw.style.parser.lexer.token.StyleFormatTokenType;
 import de.be.thaw.style.parser.value.exception.StyleValueParseException;
 
 import java.io.Reader;
@@ -53,16 +54,17 @@ public class DefaultStyleFormatParser implements StyleFormatParser {
      * @throws StyleModelParseException in case the style blocks could not be converted to a style model
      */
     private StyleModel convertStyleBlocksToStyleModel(Map<List<StyleSelector>, Map<String, String>> styleBlocks) throws StyleModelParseException {
-        List<StyleBlock> blocks = new ArrayList<>();
+        DefaultStyleModel model = new DefaultStyleModel();
+
         for (Map.Entry<List<StyleSelector>, Map<String, String>> entry : styleBlocks.entrySet()) {
             Map<StyleType, StyleValue> propertyMap = parseProperties(entry.getValue());
 
             for (StyleSelector selector : entry.getKey()) {
-                blocks.add(new StyleBlock(selector, propertyMap));
+                model.addBlock(new StyleBlock(selector, propertyMap));
             }
         }
 
-        return new DefaultStyleModel(blocks);
+        return model;
     }
 
     /**
@@ -175,7 +177,9 @@ public class DefaultStyleFormatParser implements StyleFormatParser {
                         currentSelectorPseudoClass = null;
                         currentSelectorPseudoClassSettings = null;
 
-                        currentlyInBlock = true;
+                        if (token.getType() == StyleFormatTokenType.BLOCK_OPEN) {
+                            currentlyInBlock = true;
+                        }
                     }
                 }
                 case PROPERTY -> propertyKey = token.getValue().trim().toLowerCase();

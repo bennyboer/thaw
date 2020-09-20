@@ -16,6 +16,7 @@ import de.be.thaw.reference.ReferenceModel;
 import de.be.thaw.reference.citation.CitationManager;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.selector.StyleSelector;
 import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.parser.exception.StyleModelParseException;
@@ -198,8 +199,10 @@ public class DocumentBuildContext {
         // Find child node that may be a thingy node -> in that case we can apply special styles from the style model
         Optional<ThingyNode> optionalThingyNode = getFirstThingyNodeInBox(node);
         String blockName = null;
+        String className = null;
         if (optionalThingyNode.isPresent()) {
             blockName = optionalThingyNode.get().getName();
+            className = optionalThingyNode.get().getOptions().get("class");
 
             if (isHeadlineThingyName(blockName)) {
                 ThingyNode thingyNode = optionalThingyNode.get();
@@ -228,22 +231,31 @@ public class DocumentBuildContext {
         }
 
         // Get styles for the paragraph from the style model.
-        Styles styles;
-        if (blockName == null || blockName.equalsIgnoreCase("paragraph")) {
-            styles = getStyleModel().select(new StyleSelectorBuilder().setTargetName("paragraph").build());
-        } else if (isHeadlineThingyName(blockName)) {
-            styles = getStyleModel().select(
-                    new StyleSelectorBuilder().setTargetName(blockName.toLowerCase()).build(),
-                    new StyleSelectorBuilder().setTargetName("h").build(),
-                    new StyleSelectorBuilder().setTargetName("paragraph").build()
-            );
-        } else {
-            styles = getStyleModel().select(
-                    new StyleSelectorBuilder().setTargetName(blockName.toLowerCase()).build(),
-                    new StyleSelectorBuilder().setTargetName("paragraph").build()
-            );
+        List<StyleSelector> selectors = new ArrayList<>();
+        if (blockName != null && !blockName.equalsIgnoreCase("paragraph")) {
+            selectors.add(new StyleSelectorBuilder()
+                    .setTargetName(blockName)
+                    .setClassName(className)
+                    .build());
+
+            if (isHeadlineThingyName(blockName)) {
+                selectors.add(new StyleSelectorBuilder()
+                        .setTargetName("h")
+                        .setClassName(className)
+                        .build());
+            }
         }
 
+        selectors.add(new StyleSelectorBuilder()
+                .setTargetName("paragraph")
+                .setClassName(className)
+                .build());
+        selectors.add(new StyleSelectorBuilder()
+                .setTargetName("page")
+                .setClassName(className)
+                .build());
+
+        Styles styles = getStyleModel().select(selectors.toArray(StyleSelector[]::new));
         DocumentNode documentNode = new DocumentNode(node, parent, styles);
 
         if (node.hasChildren()) {

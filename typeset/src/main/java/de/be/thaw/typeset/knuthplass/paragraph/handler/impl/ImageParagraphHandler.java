@@ -47,24 +47,39 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
 
         Styles styles = paragraph.getNode().getStyles();
 
+        // Calculate margins
         StyleValue marginTopValue = styles.resolve(StyleType.MARGIN_TOP).orElseThrow();
         StyleValue marginBottomValue = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow();
         StyleValue marginLeftValue = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
         StyleValue marginRightValue = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow();
-
         final double marginTop = Unit.convert(marginTopValue.doubleValue(), marginTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
         final double marginBottom = Unit.convert(marginBottomValue.doubleValue(), marginBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
         final double marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
         final double marginRight = Unit.convert(marginRightValue.doubleValue(), marginRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
 
-        ctx.getPositionContext().increaseY(marginTop);
+        // Calculate paddings (Only affecting the image, not the caption)
+        StyleValue paddingTopValue = styles.resolve(StyleType.PADDING_TOP).orElseThrow();
+        StyleValue paddingBottomValue = styles.resolve(StyleType.PADDING_BOTTOM).orElseThrow();
+        StyleValue paddingLeftValue = styles.resolve(StyleType.PADDING_LEFT).orElseThrow();
+        StyleValue paddingRightValue = styles.resolve(StyleType.PADDING_RIGHT).orElseThrow();
+        final double paddingTop = Unit.convert(paddingTopValue.doubleValue(), paddingTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double paddingBottom = Unit.convert(paddingBottomValue.doubleValue(), paddingBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double paddingLeft = Unit.convert(paddingLeftValue.doubleValue(), paddingLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double paddingRight = Unit.convert(paddingRightValue.doubleValue(), paddingRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
 
-        double width = imageParagraph.getDefaultLineWidth() - (marginLeft + marginRight);
+        ctx.getPositionContext().increaseY(marginTop + paddingTop);
+
+        double width = imageParagraph.getDefaultLineWidth()
+                - (marginLeft + marginRight)
+                - (paddingLeft + paddingRight);
 
         double ratio = imageParagraph.getSrc().getSize().getWidth() / imageParagraph.getSrc().getSize().getHeight();
         double height = width / ratio;
 
-        double maxWidth = ctx.getConfig().getPageSize().getWidth() - (ctx.getConfig().getPageInsets().getLeft() + ctx.getConfig().getPageInsets().getRight()) - (marginLeft + marginRight);
+        double maxWidth = ctx.getConfig().getPageSize().getWidth()
+                - (ctx.getConfig().getPageInsets().getLeft() + ctx.getConfig().getPageInsets().getRight())
+                - (marginLeft + marginRight)
+                - (paddingLeft + paddingRight);
         double x = ctx.getConfig().getPageInsets().getLeft();
         if (imageParagraph.getAlignment() == HorizontalAlignment.CENTER) {
             x += (maxWidth - width) / 2;
@@ -72,7 +87,7 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
             x += maxWidth - width;
         }
 
-        x += marginLeft;
+        x += marginLeft + paddingLeft;
 
         boolean isFloating = imageParagraph.isFloating() && imageParagraph.getAlignment() != HorizontalAlignment.CENTER;
 
@@ -93,10 +108,10 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
         );
         ctx.pushPageElement(imageElement);
 
-        double endY = ctx.getPositionContext().getY() + height + marginBottom;
+        double endY = ctx.getPositionContext().getY() + height + marginBottom + paddingBottom;
         if (isFloating) {
             ctx.getFloatConfig().setFloatUntilY(endY);
-            ctx.getFloatConfig().setFloatWidth(width + marginLeft + marginRight);
+            ctx.getFloatConfig().setFloatWidth(width + marginLeft + marginRight + paddingLeft + paddingRight);
             ctx.getFloatConfig().setFloatIndent(imageParagraph.getAlignment() == HorizontalAlignment.LEFT ? ctx.getFloatConfig().getFloatWidth() : 0);
         } else {
             ctx.getPositionContext().setY(endY);
@@ -105,23 +120,24 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
         // Deal with the image paragraphs caption (if any).
         if (imageParagraph.getCaption().isPresent()) {
             String caption = imageParagraph.getCaption().orElseThrow();
-            addCaption(caption, imageParagraph, imageElement, marginBottom, ctx);
+            addCaption(caption, imageParagraph, imageElement, marginBottom, paddingBottom, ctx);
         }
     }
 
     /**
      * Add the passed caption string under the image.
      *
-     * @param caption      to add
-     * @param paragraph    the image paragraph
-     * @param imageElement the already typeset image element
-     * @param marginBottom the bottom margin of the image
-     * @param ctx          the typesetting context
+     * @param caption       to add
+     * @param paragraph     the image paragraph
+     * @param imageElement  the already typeset image element
+     * @param marginBottom  the bottom margin of the image
+     * @param paddingBottom the bottom padding of the image
+     * @param ctx           the typesetting context
      * @throws TypeSettingException in case the caption could not be added properly
      */
-    private void addCaption(String caption, ImageParagraph paragraph, ImageElement imageElement, double marginBottom, TypeSettingContext ctx) throws TypeSettingException {
+    private void addCaption(String caption, ImageParagraph paragraph, ImageElement imageElement, double marginBottom, double paddingBottom, TypeSettingContext ctx) throws TypeSettingException {
         boolean isFloating = paragraph.isFloating() && paragraph.getAlignment() != HorizontalAlignment.CENTER;
-        double endY = imageElement.getPosition().getY() + imageElement.getSize().getHeight() + marginBottom;
+        double endY = imageElement.getPosition().getY() + imageElement.getSize().getHeight() + paddingBottom;
         double x = imageElement.getPosition().getX();
 
         // Typeset the caption

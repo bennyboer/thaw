@@ -90,8 +90,12 @@ public class DefaultStyleModel implements StyleModel {
                         Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(25.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(20.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(20.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_TOP, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.BACKGROUND_COLOR, new ColorStyleValue(new Color(1.0, 1.0, 1.0))), // White background color
-                        Map.entry(StyleType.FIRST_LINE_INDENT, new IntStyleValue(1, Unit.CENTIMETER)),
+                        Map.entry(StyleType.FIRST_LINE_INDENT, new DoubleStyleValue(0.6, Unit.CENTIMETER)),
                         Map.entry(StyleType.TEXT_ALIGN, new HorizontalAlignmentStyleValue(HorizontalAlignment.LEFT)),
                         Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.2)),
                         Map.entry(StyleType.TEXT_JUSTIFY, new BooleanStyleValue(true)),
@@ -157,11 +161,12 @@ public class DefaultStyleModel implements StyleModel {
                         .build(),
                 Map.ofEntries(
                         Map.entry(StyleType.FONT_FAMILY, new StringStyleValue(monospaceFamilies.isEmpty() ? "" : monospaceFamilies.get(0).getName())),
-                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.2)),
+                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.3)),
                         Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0)),
                         Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0)),
                         Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(6, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(6, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(3, Unit.MILLIMETER)),
                         Map.entry(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.MONOSPACE)),
                         Map.entry(StyleType.FONT_SIZE, new IntStyleValue(9, Unit.POINTS)),
                         Map.entry(StyleType.FONT_KERNING, new KerningModeStyleValue(KerningMode.NATIVE)),
@@ -169,6 +174,20 @@ public class DefaultStyleModel implements StyleModel {
                         Map.entry(StyleType.LINE_NUMBER_FONT_FAMILY, new StringStyleValue(monospaceFamilies.isEmpty() ? "" : monospaceFamilies.get(0).getName())),
                         Map.entry(StyleType.LINE_NUMBER_FONT_SIZE, new IntStyleValue(8, Unit.POINTS)),
                         Map.entry(StyleType.LINE_NUMBER_COLOR, new ColorStyleValue(new Color(0.7, 0.7, 0.7)))
+                )
+        ));
+
+        // Image style block
+        model.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("image")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(2, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(2, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(3, Unit.MILLIMETER))
                 )
         ));
 

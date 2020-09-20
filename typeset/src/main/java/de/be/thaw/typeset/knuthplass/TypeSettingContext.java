@@ -12,7 +12,6 @@ import de.be.thaw.style.model.impl.DefaultStyleModel;
 import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.value.DoubleStyleValue;
-import de.be.thaw.style.model.style.value.StringStyleValue;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.parser.exception.ParseException;
 import de.be.thaw.typeset.exception.TypeSettingException;
@@ -484,16 +483,6 @@ public class TypeSettingContext {
                         Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(0.0, Unit.MILLIMETER))
                 )
         ));
-        styleModel.addBlock(new StyleBlock(
-                new StyleSelectorBuilder()
-                        .setTargetName("document")
-                        .setPseudoClassName("first-page")
-                        .build(),
-                Map.ofEntries(
-                        Map.entry(StyleType.HEADER, new StringStyleValue(null)),
-                        Map.entry(StyleType.FOOTER, new StringStyleValue(null))
-                )
-        ));
 
         if (customStyleModel != null) {
             styleModel = customStyleModel.merge(styleModel);
@@ -522,6 +511,7 @@ public class TypeSettingContext {
                 .setPageSize(new Size(width, Double.MAX_VALUE))
                 .setPageInsets(new Insets(0))
                 .setPageNumberOffset(getCurrentPageNumber() - 1)
+                .setAllowHeadersAndFooters(false)
                 .build());
     }
 

@@ -85,15 +85,25 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
 
         final Color lineNumberColor = styles.resolve(StyleType.LINE_NUMBER_COLOR).orElseThrow().colorValue();
 
+        // Calculate margins
         StyleValue marginTopValue = styles.resolve(StyleType.MARGIN_TOP).orElseThrow();
         StyleValue marginBottomValue = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow();
         StyleValue marginLeftValue = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
         StyleValue marginRightValue = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow();
-
         final double marginTop = Unit.convert(marginTopValue.doubleValue(), marginTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
         final double marginBottom = Unit.convert(marginBottomValue.doubleValue(), marginBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
         final double marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
         final double marginRight = Unit.convert(marginRightValue.doubleValue(), marginRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+
+        // Calculate paddings
+        StyleValue paddingTopValue = styles.resolve(StyleType.PADDING_TOP).orElseThrow();
+        StyleValue paddingBottomValue = styles.resolve(StyleType.PADDING_BOTTOM).orElseThrow();
+        StyleValue paddingLeftValue = styles.resolve(StyleType.PADDING_LEFT).orElseThrow();
+        StyleValue paddingRightValue = styles.resolve(StyleType.PADDING_RIGHT).orElseThrow();
+        final double paddingTop = Unit.convert(paddingTopValue.doubleValue(), paddingTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double paddingBottom = Unit.convert(paddingBottomValue.doubleValue(), paddingBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double paddingLeft = Unit.convert(paddingLeftValue.doubleValue(), paddingLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double paddingRight = Unit.convert(paddingRightValue.doubleValue(), paddingRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
 
         // Calculate some metrics
         double baseline;
@@ -104,8 +114,8 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         }
 
         // Set up the initial position of the paragraph
-        ctx.getPositionContext().increaseY(marginTop);
-        ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + marginLeft);
+        ctx.getPositionContext().increaseY(marginTop + paddingTop);
+        ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + marginLeft + paddingLeft);
 
         // Check if we have a floating element nearby
         if (ctx.getFloatConfig().getFloatUntilY() > ctx.getPositionContext().getY()) {
@@ -132,8 +142,8 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         }
 
         // Reduce line width supplier line width by the paragraphs left and right indents
-        if (marginLeft != 0 || marginRight != 0) {
-            final double reduceBy = marginLeft + marginRight;
+        if (marginLeft != 0 || marginRight != 0 || paddingLeft != 0 || paddingRight != 0) {
+            final double reduceBy = marginLeft + marginRight + paddingLeft + paddingRight;
             IntToDoubleFunction oldLineWidthSupplier = textParagraph.getLineWidthSupplier();
             textParagraph.setLineWidthSupplier(lineNumber -> {
                 if (oldLineWidthSupplier != null) {
@@ -155,7 +165,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         List<List<Item>> lines = splitParagraphIntoLines(textParagraph, result);
 
         // Lay out the found lines
-        double indent = marginLeft; // Indent of the paragraph (if any), set for example for enumerations.
+        double indent = marginLeft + paddingLeft; // Indent of the paragraph (if any), set for example for enumerations.
         for (int i = 0; i < lines.size(); i++) {
             List<Item> line = lines.get(i);
 
@@ -318,7 +328,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             }
         }
 
-        ctx.getPositionContext().increaseY(marginBottom);
+        ctx.getPositionContext().increaseY(marginBottom + paddingBottom);
     }
 
     /**

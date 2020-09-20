@@ -18,6 +18,7 @@ import de.be.thaw.info.model.language.Language;
 import de.be.thaw.math.util.MathFont;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
@@ -70,24 +71,39 @@ public class PdfExporter implements Exporter {
         try (PDDocument doc = new PDDocument()) {
             ExportContext ctx = new ExportContext(doc, document);
 
-            StyleValue widthValue = document.getRoot().getStyles().resolve(StyleType.WIDTH).orElseThrow();
-            StyleValue heightValue = document.getRoot().getStyles().resolve(StyleType.HEIGHT).orElseThrow();
+            Styles styles = document.getRoot().getStyles();
+
+            StyleValue widthValue = styles.resolve(StyleType.WIDTH).orElseThrow();
+            StyleValue heightValue = styles.resolve(StyleType.HEIGHT).orElseThrow();
 
             ctx.setPageSize(new Size(
                     Unit.convert(widthValue.doubleValue(), widthValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS),
                     Unit.convert(heightValue.doubleValue(), heightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS)
             ));
 
-            StyleValue marginLeftValue = document.getRoot().getStyles().resolve(StyleType.MARGIN_LEFT).orElseThrow();
-            StyleValue marginRightValue = document.getRoot().getStyles().resolve(StyleType.MARGIN_RIGHT).orElseThrow();
-            StyleValue marginTopValue = document.getRoot().getStyles().resolve(StyleType.MARGIN_TOP).orElseThrow();
-            StyleValue marginBottomValue = document.getRoot().getStyles().resolve(StyleType.MARGIN_BOTTOM).orElseThrow();
+            StyleValue marginTopValue = styles.resolve(StyleType.MARGIN_TOP).orElseThrow();
+            StyleValue marginBottomValue = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow();
+            StyleValue marginLeftValue = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
+            StyleValue marginRightValue = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow();
+            final double marginTop = Unit.convert(marginTopValue.doubleValue(), marginTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+            final double marginBottom = Unit.convert(marginBottomValue.doubleValue(), marginBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+            final double marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+            final double marginRight = Unit.convert(marginRightValue.doubleValue(), marginRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+
+            StyleValue paddingTopValue = styles.resolve(StyleType.PADDING_TOP).orElseThrow();
+            StyleValue paddingBottomValue = styles.resolve(StyleType.PADDING_BOTTOM).orElseThrow();
+            StyleValue paddingLeftValue = styles.resolve(StyleType.PADDING_LEFT).orElseThrow();
+            StyleValue paddingRightValue = styles.resolve(StyleType.PADDING_RIGHT).orElseThrow();
+            final double paddingTop = Unit.convert(paddingTopValue.doubleValue(), paddingTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+            final double paddingBottom = Unit.convert(paddingBottomValue.doubleValue(), paddingBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+            final double paddingLeft = Unit.convert(paddingLeftValue.doubleValue(), paddingLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+            final double paddingRight = Unit.convert(paddingRightValue.doubleValue(), paddingRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
 
             ctx.setPageInsets(new Insets(
-                    Unit.convert(marginTopValue.doubleValue(), marginTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS),
-                    Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS),
-                    Unit.convert(marginBottomValue.doubleValue(), marginBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS),
-                    Unit.convert(marginRightValue.doubleValue(), marginRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS)
+                    marginTop + paddingTop,
+                    marginLeft + paddingLeft,
+                    marginBottom + paddingBottom,
+                    marginRight + paddingRight
             ));
 
             ThawFont mathFont;
