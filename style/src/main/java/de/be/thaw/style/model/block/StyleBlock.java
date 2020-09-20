@@ -5,6 +5,7 @@ import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.value.StyleValue;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,6 +74,24 @@ public class StyleBlock {
         }
 
         return new StyleBlock(getSelector(), mergedStyles);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(getSelector().toString());
+        sb.append(' ');
+        sb.append('{');
+        sb.append('\n');
+
+        getStyles().entrySet().stream()
+                .sorted(Comparator.comparing(o -> o.getKey().getKey()))
+                .forEach(entry -> sb.append(String.format("\t%s: %s;\n", entry.getKey().getKey(), entry.getValue().value())));
+
+        sb.append('}');
+
+        return sb.toString();
     }
 
 }

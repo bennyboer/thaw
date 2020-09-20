@@ -11,12 +11,7 @@ import java.util.Optional;
 /**
  * Abstract representation of a style value.
  */
-public class AbstractStyleValue implements StyleValue {
-
-    @Override
-    public String value() {
-        throw new UnsupportedOperationException("Could not express style value as string");
-    }
+public abstract class AbstractStyleValue implements StyleValue {
 
     @Override
     public boolean booleanValue() {

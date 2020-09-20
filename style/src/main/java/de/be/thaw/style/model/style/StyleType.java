@@ -42,13 +42,13 @@ public enum StyleType {
     TEXT_ALIGN("text-align", new HorizontalAlignmentValueParser()),
     TEXT_JUSTIFY("text-justify", new BooleanValueParser()),
 
-    //    MARGIN("margin"),
+    MARGIN("margin", new StringValueParser()), // TODO Define the margin property
     MARGIN_LEFT("margin-left", new DoubleValueParser()),
     MARGIN_RIGHT("margin-right", new DoubleValueParser()),
     MARGIN_TOP("margin-top", new DoubleValueParser()),
     MARGIN_BOTTOM("margin-bottom", new DoubleValueParser()),
 
-    //    PADDING("padding"),
+    PADDING("padding", new StringValueParser()), // TODO Define the padding property
     PADDING_LEFT("padding-left", new DoubleValueParser()),
     PADDING_RIGHT("padding-right", new DoubleValueParser()),
     PADDING_TOP("padding-top", new DoubleValueParser()),
@@ -57,20 +57,22 @@ public enum StyleType {
     HEADER("header", new StringValueParser()),
     FOOTER("footer", new StringValueParser()),
 
-//    NUMBERING("numbering"),
-//    COUNTER_STYLE("counter-style"),
-//    LIST_STYLE_TYPE("list-style-type"),
-//    FILL("fill"),
+    // TODO Define and implement the following four properties with a proper parser
+    NUMBERING("numbering", new StringValueParser()),
+    COUNTER_STYLE("counter-style", new StringValueParser()),
+    LIST_STYLE_TYPE("list-style-type", new StringValueParser()),
+    FILL("fill", new StringValueParser()),
 
-//    BORDER("border"),
-//    BORDER_TOP("border-top"),
-//    BORDER_BOTTOM("border-bottom"),
-//    BORDER_LEFT("border-left"),
-//    BORDER_RIGHT("border-right"),
-//    BORDER_COLOR("border-color"),
-//    BORDER_WIDTH("border-width"),
-//    BORDER_STYLE("border-style"),
-//    BORDER_RADIUS("border-radius"),
+    // TODO Define and implement the following border-related properties (including proper parsers)
+    BORDER("border", new StringValueParser()),
+    BORDER_TOP("border-top", new StringValueParser()),
+    BORDER_BOTTOM("border-bottom", new StringValueParser()),
+    BORDER_LEFT("border-left", new StringValueParser()),
+    BORDER_RIGHT("border-right", new StringValueParser()),
+    BORDER_COLOR("border-color", new StringValueParser()),
+    BORDER_WIDTH("border-width", new StringValueParser()),
+    BORDER_STYLE("border-style", new StringValueParser()),
+    BORDER_RADIUS("border-radius", new StringValueParser()),
 
     INTERNAL_LINK_COLOR("internal-link-color", new ColorValueParser()),
     EXTERNAL_LINK_COLOR("external-link-color", new ColorValueParser());
@@ -78,7 +80,13 @@ public enum StyleType {
     /**
      * Lookup of style types by their key.
      */
-    private static Map<String, StyleType> LOOKUP;
+    private static final Map<String, StyleType> PROPERTY_KEY_LOOKUP = new HashMap<>();
+
+    static {
+        for (StyleType type : values()) {
+            PROPERTY_KEY_LOOKUP.put(type.getKey(), type);
+        }
+    }
 
     /**
      * Key of the style.
@@ -110,15 +118,7 @@ public enum StyleType {
      * @return style type (or null)
      */
     public static StyleType forKey(String key) {
-        if (LOOKUP == null) {
-            LOOKUP = new HashMap<>();
-
-            for (StyleType type : values()) {
-                LOOKUP.put(type.getKey(), type);
-            }
-        }
-
-        return LOOKUP.get(key);
+        return PROPERTY_KEY_LOOKUP.get(key);
     }
 
 }
