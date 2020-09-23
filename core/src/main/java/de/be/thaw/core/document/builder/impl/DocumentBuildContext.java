@@ -211,9 +211,15 @@ public class DocumentBuildContext {
                 if (isNumbered) {
                     int level = Integer.parseInt(String.valueOf(blockName.charAt(1)));
 
-                    // Check if counter size is great enough
-                    while (getHeadlineCounter().size() < level) {
-                        getHeadlineCounter().add(0);
+                    // Adjust the counter array size to fit the current level
+                    if (getHeadlineCounter().size() < level) {
+                        while (getHeadlineCounter().size() < level) {
+                            getHeadlineCounter().add(0);
+                        }
+                    } else if (getHeadlineCounter().size() > level) {
+                        while (getHeadlineCounter().size() > level) {
+                            getHeadlineCounter().remove(getHeadlineCounter().size() - 1);
+                        }
                     }
 
                     // Increase counter for the level

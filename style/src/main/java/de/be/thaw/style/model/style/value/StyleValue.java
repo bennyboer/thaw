@@ -2,6 +2,7 @@ package de.be.thaw.style.model.style.value;
 
 import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.font.util.KerningMode;
+import de.be.thaw.style.model.style.util.FillStyle;
 import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.color.Color;
 import de.be.thaw.util.unit.Unit;
@@ -78,5 +79,12 @@ public interface StyleValue {
      * @return kerning mode
      */
     KerningMode kerningMode();
+
+    /**
+     * Get the fill style representation from this style value.
+     *
+     * @return fill style
+     */
+    FillStyle fillStyle();
 
 }

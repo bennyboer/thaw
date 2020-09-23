@@ -16,6 +16,7 @@ module de.be.thaw.typeset {
     exports de.be.thaw.typeset.knuthplass.paragraph.impl;
     exports de.be.thaw.typeset.knuthplass.exception;
     exports de.be.thaw.typeset.page.impl;
+    exports de.be.thaw.typeset.page.util;
 
     requires de.be.thaw.core;
     requires de.be.thaw.text;

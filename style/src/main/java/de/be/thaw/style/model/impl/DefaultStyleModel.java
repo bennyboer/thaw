@@ -10,9 +10,11 @@ import de.be.thaw.style.model.selector.StyleSelector;
 import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;
+import de.be.thaw.style.model.style.util.FillStyle;
 import de.be.thaw.style.model.style.value.BooleanStyleValue;
 import de.be.thaw.style.model.style.value.ColorStyleValue;
 import de.be.thaw.style.model.style.value.DoubleStyleValue;
+import de.be.thaw.style.model.style.value.FillStyleValue;
 import de.be.thaw.style.model.style.value.FontVariantStyleValue;
 import de.be.thaw.style.model.style.value.HorizontalAlignmentStyleValue;
 import de.be.thaw.style.model.style.value.IntStyleValue;
@@ -191,6 +193,50 @@ public class DefaultStyleModel implements StyleModel {
                 )
         ));
 
+        // Table of contents style block
+        model.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("toc")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(2, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(2, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(3, Unit.MILLIMETER)),
+                        Map.entry(StyleType.FIRST_LINE_INDENT, new DoubleStyleValue(0.0, Unit.MILLIMETER))
+                )
+        ));
+
+        // Table of contents entry style block
+        model.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("toc-entry")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.TEXT_JUSTIFY, new BooleanStyleValue(false)),
+                        Map.entry(StyleType.FILL, new FillStyleValue(FillStyle.DOTTED)),
+                        Map.entry(StyleType.FILL_SIZE, new DoubleStyleValue(0.25, Unit.MILLIMETER))
+                )
+        ));
+
+        // Add indent per level (6 levels are predefined, H1 to H6)
+        for (int i = 1; i <= 6; i++) {
+            model.addBlock(new StyleBlock(
+                    new StyleSelectorBuilder()
+                            .setTargetName(String.format("toc-entry:level(%d)", i))
+                            .build(),
+                    Map.ofEntries(
+                            Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue((double) 5 * (i - 1), Unit.MILLIMETER))
+                    )
+            ));
+        }
+
         return model;
     }
 
@@ -238,23 +284,38 @@ public class DefaultStyleModel implements StyleModel {
 
         // Add style blocks for selectors in descending priority (latter added are less important)
         for (StyleSelector selector : selectors) {
-            // Add pseudo-class specific selector (if pseudo class name is specified)
-            if (selector.targetName().isPresent() && selector.className().isPresent() && selector.pseudoClassName().isPresent()) {
-                getBlock(selector).ifPresent(styleBlocks::add);
+            boolean hasClassName = selector.className().isPresent();
+            boolean hasPseudoClassName = selector.pseudoClassName().isPresent();
+
+            if (hasClassName && hasPseudoClassName) {
+                getBlock(new StyleSelectorBuilder()
+                        .setTargetName(selector.targetName().orElseThrow())
+                        .setClassName(selector.className().orElseThrow())
+                        .setPseudoClassName(selector.pseudoClassName().orElseThrow())
+                        .setPseudoClassSettings(selector.pseudoClassSettings().orElse(null))
+                        .build()).ifPresent(styleBlocks::add);
             }
 
-            // Add style block with only the target name and class name
-            if (selector.targetName().isPresent() && selector.className().isPresent()) {
+            if (hasClassName) {
                 getBlock(new StyleSelectorBuilder()
                         .setTargetName(selector.targetName().orElseThrow())
                         .setClassName(selector.className().orElseThrow())
                         .build()).ifPresent(styleBlocks::add);
             }
 
-            // Add style block with only the target name
-            selector.targetName().flatMap(targetName -> getBlock(new StyleSelectorBuilder()
-                    .setTargetName(targetName)
-                    .build())).ifPresent(styleBlocks::add);
+            if (hasPseudoClassName) {
+                getBlock(new StyleSelectorBuilder()
+                        .setTargetName(selector.targetName().orElseThrow())
+                        .setPseudoClassName(selector.pseudoClassName().orElseThrow())
+                        .setPseudoClassSettings(selector.pseudoClassSettings().orElse(null))
+                        .build()).ifPresent(styleBlocks::add);
+            }
+
+            if (selector.targetName().isPresent()) {
+                getBlock(new StyleSelectorBuilder()
+                        .setTargetName(selector.targetName().orElseThrow())
+                        .build()).ifPresent(styleBlocks::add);
+            }
         }
 
         // Add document styles as the last block anyway (contains defaults for everything)

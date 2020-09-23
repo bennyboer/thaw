@@ -1,6 +1,7 @@
 module de.be.thaw.style {
     exports de.be.thaw.style.model;
     exports de.be.thaw.style.model.style;
+    exports de.be.thaw.style.model.style.util;
     exports de.be.thaw.style.model.block;
     exports de.be.thaw.style.parser;
     exports de.be.thaw.style.parser.impl;

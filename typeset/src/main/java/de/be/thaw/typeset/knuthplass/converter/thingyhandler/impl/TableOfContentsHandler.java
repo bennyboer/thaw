@@ -3,14 +3,15 @@ package de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl;
 import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.reference.impl.InternalReference;
+import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.model.style.value.DoubleStyleValue;
-import de.be.thaw.style.model.style.value.FontVariantStyleValue;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
+import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EmptyBox;
@@ -18,6 +19,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.impl.toc.TableOfContentsItemParag
 import de.be.thaw.util.unit.Unit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -51,26 +53,43 @@ public class TableOfContentsHandler implements ThingyHandler {
                 String headline = headlineThingyNode.getOptions().get("_headline");
                 int level = Integer.parseInt(String.valueOf(headlineThingyNode.getName().charAt(1)));
 
+                // Fetch styles for that particular level (if any)
+                Styles tocEntryLevelStyles = ctx.getDocument()
+                        .getStyleModel()
+                        .select(new StyleSelectorBuilder()
+                                        .setTargetName("toc-entry")
+                                        .setPseudoClassName("level")
+                                        .setPseudoClassSettings(Collections.singletonList(String.format("%d", level)))
+                                        .build(),
+                                new StyleSelectorBuilder()
+                                        .setTargetName("toc")
+                                        .build());
+
+                StyleValue marginLeftValue = tocEntryLevelStyles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
+                final double marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+
+                // Calculate numbering string metrics
+                FontDetailsSupplier.StringMetrics numberingMetrics;
+                try {
+                    numberingMetrics = ctx.getConfig().getFontDetailsSupplier().measureString(documentNode, -1, String.format("%s ", numbering));
+                } catch (Exception e) {
+                    throw new DocumentConversionException(e);
+                }
+
                 double lineWidth = ctx.getLineWidth();
-                double indentPerLevel = lineWidth / 20; // TODO Set in style
-                double indent = (level - 1) * indentPerLevel;
 
                 // Create dummy document nodes
-                Styles numberingStyles = new Styles(documentNode.getStyles());
-                numberingStyles.overrideStyle(StyleType.MARGIN_LEFT, new DoubleStyleValue(indent, Unit.POINTS));
-                numberingStyles.overrideStyle(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.POINTS));
-                numberingStyles.overrideStyle(StyleType.MARGIN_TOP, new DoubleStyleValue(0.0, Unit.POINTS));
-                numberingStyles.overrideStyle(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(0.0, Unit.POINTS));
-                numberingStyles.overrideStyle(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.BOLD));
+                Styles numberingStyles = new Styles(tocEntryLevelStyles);
+                numberingStyles.overrideStyle(StyleType.MARGIN_LEFT, new DoubleStyleValue(marginLeft + numberingMetrics.getWidth(), Unit.POINTS));
                 DocumentNode dummyNumberingNode = new DocumentNode(String.format("TOC_%s", numbering), documentNode.getTextNode(), null, numberingStyles);
 
-                DocumentNode dummyHeadlineNode = new DocumentNode(String.format("TOC_%s", headline), documentNode.getTextNode(), null, documentNode.getStyles());
+                DocumentNode dummyHeadlineNode = new DocumentNode(String.format("TOC_%s", headline), documentNode.getTextNode(), null, numberingStyles);
 
                 ctx.getDocument().getReferenceModel().addReference(new InternalReference(dummyNumberingNode.getId(), n.getId(), "TOC_numbering"));
                 ctx.getDocument().getReferenceModel().addReference(new InternalReference(dummyHeadlineNode.getId(), n.getId(), "TOC_headline"));
 
                 TableOfContentsItemParagraph paragraph = new TableOfContentsItemParagraph(lineWidth - maxPageNumberWidth, dummyNumberingNode, maxPageNumberWidth);
-                paragraph.addItem(new EmptyBox(0));
+                paragraph.addItem(new EmptyBox(-numberingMetrics.getWidth())); // Numbering is not indented, but the headline text is!
                 ctx.setCurrentParagraph(paragraph);
 
                 // Add numbering and headline text

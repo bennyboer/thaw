@@ -20,7 +20,7 @@ public class DoubleValueParser implements StyleValueParser {
         String unitShortName = null;
         for (int i = 0; i < src.length(); i++) {
             char c = src.charAt(i);
-            if (!Character.isDigit(c) && c != '.') {
+            if (!Character.isDigit(c) && c != '.' && c != '-') {
                 value = src.substring(0, i);
                 unitShortName = src.substring(i);
                 break;
