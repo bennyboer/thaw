@@ -8,6 +8,7 @@ import de.be.thaw.style.parser.value.impl.FillValueParser;
 import de.be.thaw.style.parser.value.impl.FontKerningValueParser;
 import de.be.thaw.style.parser.value.impl.FontVariantValueParser;
 import de.be.thaw.style.parser.value.impl.HorizontalAlignmentValueParser;
+import de.be.thaw.style.parser.value.impl.InsetsValueParser;
 import de.be.thaw.style.parser.value.impl.StringValueParser;
 import de.be.thaw.util.unit.Unit;
 
@@ -44,17 +45,17 @@ public enum StyleType {
     TEXT_ALIGN("text-align", new HorizontalAlignmentValueParser()),
     TEXT_JUSTIFY("text-justify", new BooleanValueParser()),
 
-    MARGIN("margin", new StringValueParser()), // TODO Define the margin property
     MARGIN_LEFT("margin-left", new DoubleValueParser(Unit.MILLIMETER)),
     MARGIN_RIGHT("margin-right", new DoubleValueParser(Unit.MILLIMETER)),
     MARGIN_TOP("margin-top", new DoubleValueParser(Unit.MILLIMETER)),
     MARGIN_BOTTOM("margin-bottom", new DoubleValueParser(Unit.MILLIMETER)),
+    MARGIN("margin", new InsetsValueParser(MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM, MARGIN_LEFT)),
 
-    PADDING("padding", new StringValueParser()), // TODO Define the padding property
     PADDING_LEFT("padding-left", new DoubleValueParser(Unit.MILLIMETER)),
     PADDING_RIGHT("padding-right", new DoubleValueParser(Unit.MILLIMETER)),
     PADDING_TOP("padding-top", new DoubleValueParser(Unit.MILLIMETER)),
     PADDING_BOTTOM("padding-bottom", new DoubleValueParser(Unit.MILLIMETER)),
+    PADDING("padding", new InsetsValueParser(PADDING_TOP, PADDING_RIGHT, PADDING_BOTTOM, PADDING_LEFT)),
 
     HEADER("header", new StringValueParser()),
     FOOTER("footer", new StringValueParser()),

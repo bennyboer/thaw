@@ -7,6 +7,7 @@ import de.be.thaw.style.model.selector.StyleSelector;
 import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.value.StyleValue;
+import de.be.thaw.style.model.style.value.StyleValueCollection;
 import de.be.thaw.style.parser.StyleFormatParser;
 import de.be.thaw.style.parser.exception.StyleModelParseException;
 import de.be.thaw.style.parser.lexer.StyleFormatLexerFactory;
@@ -96,22 +97,20 @@ public class DefaultStyleFormatParser implements StyleFormatParser {
                 throw new StyleModelParseException(e);
             }
 
-            result.put(type, styleValue);
+            if (styleValue instanceof StyleValueCollection) {
+                // This is a special case where a single property wants to set multiple style properties at once.
+                // For example the margin or padding property would return this.
+                for (Map.Entry<StyleType, StyleValue> collectionEntry : ((StyleValueCollection) styleValue).getStyles().entrySet()) {
+                    if (!result.containsKey(collectionEntry.getKey())) {
+                        result.put(collectionEntry.getKey(), collectionEntry.getValue());
+                    }
+                }
+            } else {
+                result.put(type, styleValue);
+            }
         }
 
         return result;
-    }
-
-    /**
-     * Parse a value from the passed string.
-     *
-     * @param styleType the type of the value to parse
-     * @param valueStr  to parse
-     * @return the parsed value
-     * @throws StyleModelParseException in case the passed value string could not be parsed properly
-     */
-    private StyleValue parseValue(StyleType styleType, String valueStr) throws StyleModelParseException {
-        return null; // TODO
     }
 
     /**
