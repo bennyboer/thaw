@@ -475,7 +475,7 @@ public class TypeSettingContext {
         styleModel.addBlock(new StyleBlock(
                 new StyleSelectorBuilder().setTargetName("document").build(),
                 Map.ofEntries(
-                        Map.entry(StyleType.WIDTH, new DoubleStyleValue(Unit.convert(width, Unit.POINTS, Unit.MILLIMETER))),
+                        Map.entry(StyleType.WIDTH, new DoubleStyleValue(width, Unit.POINTS)),
                         Map.entry(StyleType.HEIGHT, new DoubleStyleValue(Double.MAX_VALUE, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),

@@ -72,20 +72,20 @@ public class PdfExporter implements Exporter {
 
             Styles styles = document.getRoot().getStyles();
 
-            final double width = styles.resolve(StyleType.WIDTH).orElseThrow().doubleValue(Unit.MILLIMETER, Unit.POINTS);
-            final double height = styles.resolve(StyleType.HEIGHT).orElseThrow().doubleValue(Unit.MILLIMETER, Unit.POINTS);
+            final double width = styles.resolve(StyleType.WIDTH).orElseThrow().doubleValue(Unit.POINTS);
+            final double height = styles.resolve(StyleType.HEIGHT).orElseThrow().doubleValue(Unit.POINTS);
 
             ctx.setPageSize(new Size(width, height));
 
-            final double marginTop = styles.resolve(StyleType.MARGIN_TOP).orElseThrow().doubleValue(Unit.MILLIMETER, Unit.POINTS);
-            final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow().doubleValue(Unit.MILLIMETER, Unit.POINTS);
-            final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow().doubleValue(Unit.MILLIMETER, Unit.POINTS);
-            final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow().doubleValue(Unit.MILLIMETER, Unit.POINTS);
+            final double marginTop = styles.resolve(StyleType.MARGIN_TOP).orElseThrow().doubleValue(Unit.POINTS);
+            final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow().doubleValue(Unit.POINTS);
+            final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow().doubleValue(Unit.POINTS);
+            final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow().doubleValue(Unit.POINTS);
 
-            final double paddingTop = styles.resolve(StyleType.PADDING_TOP).orElseThrow().doubleValue(Unit.MILLIMETER, Unit.POINTS);
-            final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM).orElseThrow().doubleValue(Unit.MILLIMETER, Unit.POINTS);
-            final double paddingLeft = styles.resolve(StyleType.PADDING_LEFT).orElseThrow().doubleValue(Unit.MILLIMETER, Unit.POINTS);
-            final double paddingRight = styles.resolve(StyleType.PADDING_RIGHT).orElseThrow().doubleValue(Unit.MILLIMETER, Unit.POINTS);
+            final double paddingTop = styles.resolve(StyleType.PADDING_TOP).orElseThrow().doubleValue(Unit.POINTS);
+            final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM).orElseThrow().doubleValue(Unit.POINTS);
+            final double paddingLeft = styles.resolve(StyleType.PADDING_LEFT).orElseThrow().doubleValue(Unit.POINTS);
+            final double paddingRight = styles.resolve(StyleType.PADDING_RIGHT).orElseThrow().doubleValue(Unit.POINTS);
 
             ctx.setPageInsets(new Insets(
                     marginTop + paddingTop,

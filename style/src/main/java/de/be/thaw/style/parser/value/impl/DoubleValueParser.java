@@ -11,6 +11,15 @@ import de.be.thaw.util.unit.Unit;
  */
 public class DoubleValueParser implements StyleValueParser {
 
+    /**
+     * Default unit of the value (if there is none specified).
+     */
+    private final Unit defaultUnit;
+
+    public DoubleValueParser(Unit defaultUnit) {
+        this.defaultUnit = defaultUnit;
+    }
+
     @Override
     public StyleValue parse(String src) throws StyleValueParseException {
         src = src.trim();
@@ -29,11 +38,10 @@ public class DoubleValueParser implements StyleValueParser {
 
         try {
             String finalUnitShortName = unitShortName;
-            return new DoubleStyleValue(Double.parseDouble(value), unitShortName != null ? Unit.forShortName(unitShortName)
-                    .orElseThrow(() -> new StyleValueParseException(String.format(
-                            "Could not determine the unit for '%s'",
-                            finalUnitShortName
-                    ))) : null);
+            return new DoubleStyleValue(Double.parseDouble(value), unitShortName != null ? Unit.forShortName(unitShortName).orElseThrow(() -> new StyleValueParseException(String.format(
+                    "Could not determine the unit for '%s'",
+                    finalUnitShortName
+            ))) : defaultUnit);
         } catch (NumberFormatException e) {
             throw new StyleValueParseException(e);
         }

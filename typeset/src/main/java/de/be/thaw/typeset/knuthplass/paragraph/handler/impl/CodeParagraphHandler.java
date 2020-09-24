@@ -36,6 +36,7 @@ import de.be.thaw.typeset.page.impl.TextElement;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
 import de.be.thaw.util.color.Color;
+import de.be.thaw.util.unit.BaseUnit;
 import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
 
@@ -72,15 +73,15 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         // Calculate margins
         final double marginTop = styles.resolve(StyleType.MARGIN_TOP)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         // Calculate paddings (Only affecting the code block, not the caption)
         final double paddingTop = styles.resolve(StyleType.PADDING_TOP)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         ctx.getPositionContext().increaseY(marginTop + paddingTop);
 
@@ -120,14 +121,14 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
         final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         // Typeset the caption
         StyleModel styleModel = new DefaultStyleModel();
@@ -412,26 +413,26 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
             marginLeft = styles.resolve(StyleType.MARGIN_LEFT)
                     .orElseThrow()
-                    .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                    .doubleValue(Unit.POINTS);
             marginRight = styles.resolve(StyleType.MARGIN_RIGHT)
                     .orElseThrow()
-                    .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                    .doubleValue(Unit.POINTS);
 
             paddingLeft = styles.resolve(StyleType.PADDING_LEFT)
                     .orElseThrow()
-                    .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                    .doubleValue(Unit.POINTS);
             paddingRight = styles.resolve(StyleType.PADDING_RIGHT)
                     .orElseThrow()
-                    .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                    .doubleValue(Unit.POINTS);
 
             StyleValue lineHeightStyleValue = styles.resolve(StyleType.LINE_HEIGHT).orElseThrow();
-            if (lineHeightStyleValue.unit().isEmpty()) {
+            if (lineHeightStyleValue.unit().getBaseUnit() == BaseUnit.UNITARY) {
                 // Is relative line-height -> Calculate line height from the font size
                 lineHeight = styles.resolve(StyleType.FONT_SIZE)
                         .orElseThrow()
-                        .doubleValue(Unit.POINTS, Unit.POINTS) * lineHeightStyleValue.doubleValue(null, null);
+                        .doubleValue(Unit.POINTS) * lineHeightStyleValue.doubleValue(Unit.UNITARY);
             } else {
-                lineHeight = lineHeightStyleValue.doubleValue(null, Unit.POINTS);
+                lineHeight = lineHeightStyleValue.doubleValue(Unit.POINTS);
             }
 
             showLineNumbers = styles.resolve(StyleType.SHOW_LINE_NUMBERS).orElse(new BooleanStyleValue(true)).booleanValue();
@@ -439,7 +440,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
             lineNumberFontSize = styles.resolve(StyleType.LINE_NUMBER_FONT_SIZE)
                     .orElse(new DoubleStyleValue(10.0, Unit.POINTS))
-                    .doubleValue(Unit.POINTS, Unit.POINTS);
+                    .doubleValue(Unit.POINTS);
 
             lineNumberColor = styles.resolve(StyleType.LINE_NUMBER_COLOR).orElse(new ColorStyleValue(new Color(0.4, 0.4, 0.4))).colorValue();
             monoSpacedFontFamily = styles.resolve(StyleType.FONT_FAMILY).orElseThrow().value();

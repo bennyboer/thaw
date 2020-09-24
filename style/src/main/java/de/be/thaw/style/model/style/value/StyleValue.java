@@ -8,8 +8,6 @@ import de.be.thaw.util.color.Color;
 import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-
 /**
  * Representation of a style value.
  */
@@ -33,28 +31,26 @@ public interface StyleValue {
      * Get an integer representation of a value.
      * The value is given in the unit supplied by calling unit() on this object.
      *
-     * @param defaultUnit to use when there is no unit specified
-     * @param targetUnit  of the return value
+     * @param targetUnit of the return value
      * @return integer representation
      */
-    int intValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit);
+    int intValue(@Nullable Unit targetUnit);
 
     /**
      * Get a double representation of a value.
      * The value is given in the unit supplied by calling unit() on this object.
      *
-     * @param defaultUnit to use when there is no unit specified
-     * @param targetUnit  of the return value
+     * @param targetUnit of the return value
      * @return double representation
      */
-    double doubleValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit);
+    double doubleValue(@Nullable Unit targetUnit);
 
     /**
-     * Get the unit of the value (if the value type supports this).
+     * Get the unit of the value.
      *
      * @return unit
      */
-    Optional<Unit> unit();
+    Unit unit();
 
     /**
      * Get a color representation of a value.

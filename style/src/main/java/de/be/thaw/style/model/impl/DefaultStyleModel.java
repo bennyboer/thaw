@@ -99,7 +99,7 @@ public class DefaultStyleModel implements StyleModel {
                         Map.entry(StyleType.BACKGROUND_COLOR, new ColorStyleValue(new Color(1.0, 1.0, 1.0))), // White background color
                         Map.entry(StyleType.FIRST_LINE_INDENT, new DoubleStyleValue(0.6, Unit.CENTIMETER)),
                         Map.entry(StyleType.TEXT_ALIGN, new HorizontalAlignmentStyleValue(HorizontalAlignment.LEFT)),
-                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.2)),
+                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.2, Unit.UNITARY)),
                         Map.entry(StyleType.TEXT_JUSTIFY, new BooleanStyleValue(true)),
                         Map.entry(StyleType.SHOW_LINE_NUMBERS, new BooleanStyleValue(false)),
                         Map.entry(StyleType.LINE_NUMBER_FONT_FAMILY, new StringStyleValue(monospaceFamilies.isEmpty() ? "" : monospaceFamilies.get(0).getName())),
@@ -135,9 +135,9 @@ public class DefaultStyleModel implements StyleModel {
                         .build(),
                 Map.ofEntries(
                         Map.entry(StyleType.FIRST_LINE_INDENT, new IntStyleValue(0, Unit.CENTIMETER)),
-                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.4)),
-                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0)),
-                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.4, Unit.UNITARY)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(15, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(3, Unit.MILLIMETER)),
                         Map.entry(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.BOLD))
@@ -163,9 +163,9 @@ public class DefaultStyleModel implements StyleModel {
                         .build(),
                 Map.ofEntries(
                         Map.entry(StyleType.FONT_FAMILY, new StringStyleValue(monospaceFamilies.isEmpty() ? "" : monospaceFamilies.get(0).getName())),
-                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.3)),
-                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0)),
-                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.3, Unit.UNITARY)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(6, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(6, Unit.MILLIMETER)),
                         Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(3, Unit.MILLIMETER)),
@@ -185,8 +185,8 @@ public class DefaultStyleModel implements StyleModel {
                         .setTargetName("image")
                         .build(),
                 Map.ofEntries(
-                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0)),
-                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(2, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(2, Unit.MILLIMETER)),
                         Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(3, Unit.MILLIMETER))
@@ -199,8 +199,8 @@ public class DefaultStyleModel implements StyleModel {
                         .setTargetName("toc")
                         .build(),
                 Map.ofEntries(
-                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0)),
-                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(2, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(2, Unit.MILLIMETER)),
                         Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(3, Unit.MILLIMETER)),
@@ -214,8 +214,8 @@ public class DefaultStyleModel implements StyleModel {
                         .setTargetName("toc-entry")
                         .build(),
                 Map.ofEntries(
-                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0)),
-                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(0.0, Unit.MILLIMETER)),

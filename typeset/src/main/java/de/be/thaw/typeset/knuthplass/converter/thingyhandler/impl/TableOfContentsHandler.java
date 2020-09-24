@@ -65,7 +65,7 @@ public class TableOfContentsHandler implements ThingyHandler {
 
                 final double marginLeft = tocEntryLevelStyles.resolve(StyleType.MARGIN_LEFT)
                         .orElseThrow()
-                        .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                        .doubleValue(Unit.POINTS);
 
                 // Calculate numbering string metrics
                 FontDetailsSupplier.StringMetrics numberingMetrics;

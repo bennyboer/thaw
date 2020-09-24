@@ -37,6 +37,7 @@ import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
 import de.be.thaw.util.color.Color;
+import de.be.thaw.util.unit.BaseUnit;
 import de.be.thaw.util.unit.Unit;
 
 import java.util.ArrayList;
@@ -67,13 +68,13 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
 
         double lineHeight;
         StyleValue lineHeightStyleValue = styles.resolve(StyleType.LINE_HEIGHT).orElseThrow();
-        if (lineHeightStyleValue.unit().isEmpty()) {
+        if (lineHeightStyleValue.unit().getBaseUnit() == BaseUnit.UNITARY) {
             // Is relative line-height -> Calculate line height from the font size
             lineHeight = styles.resolve(StyleType.FONT_SIZE)
                     .orElseThrow()
-                    .doubleValue(Unit.POINTS, Unit.POINTS) * lineHeightStyleValue.doubleValue(null, null);
+                    .doubleValue(Unit.POINTS) * lineHeightStyleValue.doubleValue(Unit.UNITARY);
         } else {
-            lineHeight = lineHeightStyleValue.doubleValue(null, Unit.POINTS);
+            lineHeight = lineHeightStyleValue.doubleValue(Unit.POINTS);
         }
 
         final HorizontalAlignment alignment = styles.resolve(StyleType.TEXT_ALIGN).orElse(new HorizontalAlignmentStyleValue(HorizontalAlignment.LEFT)).horizontalAlignment();
@@ -83,37 +84,37 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
 
         final double lineNumberFontSize = styles.resolve(StyleType.LINE_NUMBER_FONT_SIZE)
                 .orElseThrow()
-                .doubleValue(Unit.POINTS, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         final Color lineNumberColor = styles.resolve(StyleType.LINE_NUMBER_COLOR).orElseThrow().colorValue();
 
         // Calculate margins
         final double marginTop = styles.resolve(StyleType.MARGIN_TOP)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         // Calculate paddings
         final double paddingTop = styles.resolve(StyleType.PADDING_TOP)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double paddingLeft = styles.resolve(StyleType.PADDING_LEFT)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double paddingRight = styles.resolve(StyleType.PADDING_RIGHT)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         // Calculate some metrics
         double baseline;
@@ -131,10 +132,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         if (ctx.getFloatConfig().getFloatUntilY() > ctx.getPositionContext().getY()) {
             // Calculate count of lines that are affected by the floating paragraph
             double diff = ctx.getFloatConfig().getFloatUntilY() - ctx.getPositionContext().getY();
-            int lineCount = (int) Math.ceil(diff / lineHeight);
-
-            // Add float indent (if any)
-            ctx.getPositionContext().increaseX(ctx.getFloatConfig().getFloatIndent());
+            int lineCount = (int) Math.round(Math.min(diff, ctx.getAvailableHeight()) / lineHeight);
 
             // Set a line width supplier that adjusts the line width for the affected lines
             IntToDoubleFunction oldLineWidthSupplier = textParagraph.getLineWidthSupplier();
@@ -201,10 +199,15 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                 ctx.pushPage();
             }
 
+            boolean isFloating = ctx.getFloatConfig().getFloatUntilY() > ctx.getPositionContext().getY();
+            if (isFloating) {
+                ctx.getPositionContext().increaseX(ctx.getFloatConfig().getFloatIndent());
+            }
+
             fixItemWidthForLine(line, ctx);
 
             // Calculating some metrics describing the line in more detail
-            double lineWidth = result.getContext().getLineWidth(i + 1);
+            double lineWidth = textParagraph.getLineWidth(i + 1);
             LineMetrics lineMetrics = calculateLineMetrics(line);
 
             // Last item is glue with width 0 -> indicates explicit line break
@@ -331,11 +334,6 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
 
             ctx.getPositionContext().increaseY(lineHeight);
             ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + indent);
-
-            boolean isFloating = ctx.getFloatConfig().getFloatUntilY() > ctx.getPositionContext().getY();
-            if (isFloating) {
-                ctx.getPositionContext().increaseX(ctx.getFloatConfig().getFloatIndent());
-            }
         }
 
         ctx.getPositionContext().increaseY(marginBottom + paddingBottom);

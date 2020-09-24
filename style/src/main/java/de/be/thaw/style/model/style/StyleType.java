@@ -9,6 +9,7 @@ import de.be.thaw.style.parser.value.impl.FontKerningValueParser;
 import de.be.thaw.style.parser.value.impl.FontVariantValueParser;
 import de.be.thaw.style.parser.value.impl.HorizontalAlignmentValueParser;
 import de.be.thaw.style.parser.value.impl.StringValueParser;
+import de.be.thaw.util.unit.Unit;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,47 +20,47 @@ import java.util.Map;
 public enum StyleType {
 
     FONT_FAMILY("font-family", new StringValueParser()),
-    FONT_SIZE("font-size", new DoubleValueParser()),
+    FONT_SIZE("font-size", new DoubleValueParser(Unit.POINTS)),
     FONT_VARIANT("font-variant", new FontVariantValueParser()),
     FONT_KERNING("font-kerning", new FontKerningValueParser()),
     INLINE_CODE_FONT_FAMILY("inline-code-font-family", new StringValueParser()),
 
-    WIDTH("width", new DoubleValueParser()),
-    HEIGHT("height", new DoubleValueParser()),
+    WIDTH("width", new DoubleValueParser(Unit.MILLIMETER)),
+    HEIGHT("height", new DoubleValueParser(Unit.MILLIMETER)),
 
     COLOR("color", new ColorValueParser()),
 
     BACKGROUND("background", new ColorValueParser()),
     BACKGROUND_COLOR("background-color", new ColorValueParser()),
 
-    LINE_HEIGHT("line-height", new DoubleValueParser()),
-    FIRST_LINE_INDENT("first-line-indent", new DoubleValueParser()),
+    LINE_HEIGHT("line-height", new DoubleValueParser(Unit.UNITARY)),
+    FIRST_LINE_INDENT("first-line-indent", new DoubleValueParser(Unit.MILLIMETER)),
 
     SHOW_LINE_NUMBERS("show-line-numbers", new BooleanValueParser()),
     LINE_NUMBER_FONT_FAMILY("line-number-font-family", new StringValueParser()),
-    LINE_NUMBER_FONT_SIZE("line-number-font-size", new DoubleValueParser()),
+    LINE_NUMBER_FONT_SIZE("line-number-font-size", new DoubleValueParser(Unit.POINTS)),
     LINE_NUMBER_COLOR("line-number-color", new ColorValueParser()),
 
     TEXT_ALIGN("text-align", new HorizontalAlignmentValueParser()),
     TEXT_JUSTIFY("text-justify", new BooleanValueParser()),
 
     MARGIN("margin", new StringValueParser()), // TODO Define the margin property
-    MARGIN_LEFT("margin-left", new DoubleValueParser()),
-    MARGIN_RIGHT("margin-right", new DoubleValueParser()),
-    MARGIN_TOP("margin-top", new DoubleValueParser()),
-    MARGIN_BOTTOM("margin-bottom", new DoubleValueParser()),
+    MARGIN_LEFT("margin-left", new DoubleValueParser(Unit.MILLIMETER)),
+    MARGIN_RIGHT("margin-right", new DoubleValueParser(Unit.MILLIMETER)),
+    MARGIN_TOP("margin-top", new DoubleValueParser(Unit.MILLIMETER)),
+    MARGIN_BOTTOM("margin-bottom", new DoubleValueParser(Unit.MILLIMETER)),
 
     PADDING("padding", new StringValueParser()), // TODO Define the padding property
-    PADDING_LEFT("padding-left", new DoubleValueParser()),
-    PADDING_RIGHT("padding-right", new DoubleValueParser()),
-    PADDING_TOP("padding-top", new DoubleValueParser()),
-    PADDING_BOTTOM("padding-bottom", new DoubleValueParser()),
+    PADDING_LEFT("padding-left", new DoubleValueParser(Unit.MILLIMETER)),
+    PADDING_RIGHT("padding-right", new DoubleValueParser(Unit.MILLIMETER)),
+    PADDING_TOP("padding-top", new DoubleValueParser(Unit.MILLIMETER)),
+    PADDING_BOTTOM("padding-bottom", new DoubleValueParser(Unit.MILLIMETER)),
 
     HEADER("header", new StringValueParser()),
     FOOTER("footer", new StringValueParser()),
 
     FILL("fill", new FillValueParser()),
-    FILL_SIZE("fill-size", new DoubleValueParser()),
+    FILL_SIZE("fill-size", new DoubleValueParser(Unit.MILLIMETER)),
 
     // TODO Define and implement the following four properties with a proper parser
     NUMBERING("numbering", new StringValueParser()),

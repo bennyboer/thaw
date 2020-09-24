@@ -4,11 +4,8 @@ import de.be.thaw.typeset.knuthplass.item.Item;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * Context used to carry information during executing the Knuth-Plass line breaking algorithm.
@@ -24,12 +21,6 @@ public class LineBreakingContext {
      * The paragraph to find line breaks in.
      */
     private final TextParagraph paragraph;
-
-    /**
-     * A mapping of line numbers to special line widths that are not the default
-     * line width.
-     */
-    private final Map<Integer, Double> specialLineWidths = new HashMap<>();
 
     /**
      * Cumulative metrics used by the algorithm.
@@ -113,19 +104,7 @@ public class LineBreakingContext {
      * @return required line width
      */
     public double getLineWidth(int lineNumber) {
-        return Objects.requireNonNullElse(specialLineWidths.get(lineNumber), paragraph.getLineWidth(lineNumber));
-    }
-
-    /**
-     * Set a special line width for the given line number.
-     *
-     * @param lineNumber to set special width for
-     * @param width      to set
-     */
-    public void setSpecialLineWidth(int lineNumber, double width) {
-        if (width != paragraph.getLineWidth(lineNumber)) {
-            specialLineWidths.put(lineNumber, width);
-        }
+        return paragraph.getLineWidth(lineNumber);
     }
 
     /**

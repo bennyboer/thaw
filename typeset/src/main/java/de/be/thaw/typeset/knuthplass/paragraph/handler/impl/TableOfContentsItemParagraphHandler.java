@@ -46,7 +46,7 @@ public class TableOfContentsItemParagraphHandler extends TextParagraphHandler {
         FillStyle fillStyle = styles.resolve(StyleType.FILL).orElseThrow().fillStyle();
         final double fillSize = styles.resolve(StyleType.FILL_SIZE)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         double pageNumberMaxX = ctx.getConfig().getPageSize().getWidth() - ctx.getConfig().getPageInsets().getRight();
 

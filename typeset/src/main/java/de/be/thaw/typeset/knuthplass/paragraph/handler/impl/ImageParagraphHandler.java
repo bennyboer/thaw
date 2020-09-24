@@ -49,30 +49,30 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
         // Calculate margins
         final double marginTop = styles.resolve(StyleType.MARGIN_TOP)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         // Calculate paddings (Only affecting the image, not the caption)
         final double paddingTop = styles.resolve(StyleType.PADDING_TOP)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double paddingLeft = styles.resolve(StyleType.PADDING_LEFT)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
         final double paddingRight = styles.resolve(StyleType.PADDING_RIGHT)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         ctx.getPositionContext().increaseY(marginTop + paddingTop);
 

@@ -22,6 +22,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.math.MathParagraph;
 import de.be.thaw.util.HorizontalAlignment;
+import de.be.thaw.util.unit.BaseUnit;
 import de.be.thaw.util.unit.Unit;
 
 import java.io.ByteArrayInputStream;
@@ -63,7 +64,7 @@ public class MathHandler implements ThingyHandler {
         // Prepare some constants
         final double fontSize = documentNode.getStyles().resolve(StyleType.FONT_SIZE)
                 .orElseThrow()
-                .doubleValue(Unit.POINTS, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         // Parse MathML
         MathMLParser parser = new DefaultMathMLParser();
@@ -120,11 +121,11 @@ public class MathHandler implements ThingyHandler {
             // Math expression is in-line with text -> scale it properly and add it to the text paragraph.
             StyleValue lineHeightStyleValue = documentNode.getStyles().resolve(StyleType.LINE_HEIGHT).orElseThrow();
             double lineHeight;
-            if (lineHeightStyleValue.unit().isEmpty()) {
+            if (lineHeightStyleValue.unit().getBaseUnit() == BaseUnit.UNITARY) {
                 // Is relative line-height -> Calculate line height from the font size
-                lineHeight = fontSize * lineHeightStyleValue.doubleValue(null, null);
+                lineHeight = fontSize * lineHeightStyleValue.doubleValue(Unit.UNITARY);
             } else {
-                lineHeight = lineHeightStyleValue.doubleValue(null, Unit.POINTS);
+                lineHeight = lineHeightStyleValue.doubleValue(Unit.POINTS);
             }
 
             if (ex.getSize().getHeight() > lineHeight) {

@@ -3,8 +3,6 @@ package de.be.thaw.style.model.style.value;
 import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-
 /**
  * Value of type double.
  */
@@ -18,14 +16,9 @@ public class DoubleStyleValue extends AbstractStyleValue {
     /**
      * Unit of the value.
      */
-    @Nullable
     private final Unit unit;
 
-    public DoubleStyleValue(double value) {
-        this(value, null);
-    }
-
-    public DoubleStyleValue(double value, @Nullable Unit unit) {
+    public DoubleStyleValue(double value, Unit unit) {
         this.value = value;
         this.unit = unit;
     }
@@ -36,17 +29,17 @@ public class DoubleStyleValue extends AbstractStyleValue {
     }
 
     @Override
-    public int intValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
-        return (int) doubleValue(defaultUnit, targetUnit);
+    public int intValue(@Nullable Unit targetUnit) {
+        return (int) doubleValue(targetUnit);
     }
 
     @Override
-    public double doubleValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
-        if (targetUnit == null || (unit().isEmpty() && defaultUnit == null)) {
+    public double doubleValue(@Nullable Unit targetUnit) {
+        if (targetUnit == null) {
             return value; // Having not enough information to do a conversion
         }
 
-        return Unit.convert(value, unit().orElse(defaultUnit), targetUnit);
+        return Unit.convert(value, unit(), targetUnit);
     }
 
     @Override
@@ -55,8 +48,8 @@ public class DoubleStyleValue extends AbstractStyleValue {
     }
 
     @Override
-    public Optional<Unit> unit() {
-        return Optional.ofNullable(unit);
+    public Unit unit() {
+        return unit;
     }
 
 }

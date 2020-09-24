@@ -8,8 +8,6 @@ import de.be.thaw.util.color.Color;
 import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-
 /**
  * Abstract representation of a style value.
  */
@@ -21,18 +19,18 @@ public abstract class AbstractStyleValue implements StyleValue {
     }
 
     @Override
-    public int intValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
+    public int intValue(@Nullable Unit targetUnit) {
         throw new UnsupportedOperationException("Could not express style value as integer");
     }
 
     @Override
-    public double doubleValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
+    public double doubleValue(@Nullable Unit targetUnit) {
         throw new UnsupportedOperationException("Could not express style value as double");
     }
 
     @Override
-    public Optional<Unit> unit() {
-        return Optional.empty();
+    public Unit unit() {
+        throw new UnsupportedOperationException("The style value does not have a unit");
     }
 
     @Override

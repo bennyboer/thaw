@@ -333,7 +333,7 @@ public class ExportContext {
     public double getFontSizeForNode(DocumentNode node) {
         return node.getStyles().resolve(StyleType.FONT_SIZE)
                 .orElseThrow()
-                .doubleValue(Unit.POINTS, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
     }
 
     /**

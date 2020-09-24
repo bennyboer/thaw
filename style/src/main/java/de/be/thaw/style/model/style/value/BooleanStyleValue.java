@@ -28,12 +28,12 @@ public class BooleanStyleValue extends AbstractStyleValue {
     }
 
     @Override
-    public int intValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
+    public int intValue(@Nullable Unit targetUnit) {
         return value ? 1 : 0;
     }
 
     @Override
-    public double doubleValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
+    public double doubleValue(@Nullable Unit targetUnit) {
         return value ? 1.0 : 0.0;
     }
 

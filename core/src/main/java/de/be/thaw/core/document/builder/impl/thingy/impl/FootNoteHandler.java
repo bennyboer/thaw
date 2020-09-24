@@ -78,7 +78,7 @@ public class FootNoteHandler implements ThingyHandler {
         final double fontSize = documentNode.getStyles()
                 .resolve(StyleType.FONT_SIZE)
                 .orElseThrow()
-                .doubleValue(Unit.POINTS, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         Styles footNoteNumberStyles = new Styles(firstBoxNode.getStyles());
         footNoteNumberStyles.overrideStyle(StyleType.FONT_SIZE, new DoubleStyleValue(Math.max(8.0, fontSize * 0.6), Unit.POINTS));

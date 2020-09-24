@@ -333,7 +333,7 @@ public class ConversionContext {
     public void appendEmptyBoxToParagraph(DocumentNode node, TextParagraph paragraph) {
         final double firstLineIndent = node.getStyles().resolve(StyleType.FIRST_LINE_INDENT)
                 .orElseThrow()
-                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+                .doubleValue(Unit.POINTS);
 
         paragraph.addItem(new EmptyBox(firstLineIndent));
     }
