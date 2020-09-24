@@ -68,47 +68,71 @@ public class StyleFormatParserTest {
                 "\tcolor: rgba(0.200000, 0.200000, 0.200000, 1.000000);\n" +
                 "\tfont-family: url(my-cool-font.ttf);\n" +
                 "\tfont-kerning: native;\n" +
-                "\tfont-size: 12.0;\n" +
+                "\tfont-size: 12.000000pt;\n" +
                 "\tfont-variant: plain;\n" +
-                "\theight: 297.0;\n" +
+                "\theight: 297.000000mm;\n" +
                 "\tinline-code-font-family: 'Consolas';\n" +
-                "\tline-height: 1.0;\n" +
-                "\tmargin: 0;\n" +
-                "\tpadding: 0;\n" +
+                "\tline-height: 1.000000;\n" +
+                "\tmargin-bottom: 0.000000mm;\n" +
+                "\tmargin-left: 0.000000mm;\n" +
+                "\tmargin-right: 0.000000mm;\n" +
+                "\tmargin-top: 0.000000mm;\n" +
+                "\tpadding-bottom: 0.000000mm;\n" +
+                "\tpadding-left: 0.000000mm;\n" +
+                "\tpadding-right: 0.000000mm;\n" +
+                "\tpadding-top: 0.000000mm;\n" +
                 "\ttext-align: center;\n" +
                 "\ttext-justify: true;\n" +
-                "\twidth: 210.0;\n" +
+                "\twidth: 210.000000mm;\n" +
                 "}\n" +
                 "enumeration {\n" +
-                "\tmargin-left: 10.0;\n" +
+                "\tmargin-left: 10.000000mm;\n" +
                 "}\n" +
                 "enumeration:level(2) {\n" +
                 "\tcolor: rgba(1.000000, 0.000000, 0.000000, 1.000000);\n" +
                 "\tlist-style-type: circle;\n" +
-                "\tmargin: 10mm;\n" +
+                "\tmargin-bottom: 10.000000mm;\n" +
+                "\tmargin-left: 10.000000mm;\n" +
+                "\tmargin-right: 10.000000mm;\n" +
+                "\tmargin-top: 10.000000mm;\n" +
                 "}\n" +
                 "h {\n" +
                 "\tcounter-style: decimal;\n" +
                 "\tnumbering: \"%parent-heading%.%level-counter%\";\n" +
                 "}\n" +
                 "h.appendix {\n" +
-                "\tcounter-style: lower-latin;\n" +
+                "\tcounter-style: lower_latin;\n" +
                 "\tnumbering: \"%parent-heading%.%level-counter%\";\n" +
                 "}\n" +
                 "h1 {\n" +
                 "\tfont-family: Calibri;\n" +
                 "}\n" +
                 "h1.appendix {\n" +
-                "\tcounter-style: upper-latin;\n" +
+                "\tcounter-style: upper_latin;\n" +
                 "\tnumbering: \"%level-counter%\";\n" +
+                "}\n" +
+                "h2 {\n" +
+                "\tfont-family: Calibri;\n" +
+                "}\n" +
+                "h3 {\n" +
+                "\tfont-family: Calibri;\n" +
+                "}\n" +
+                "h4 {\n" +
+                "\tfont-family: Calibri;\n" +
+                "}\n" +
+                "h5 {\n" +
+                "\tfont-family: Calibri;\n" +
+                "}\n" +
+                "h6 {\n" +
+                "\tfont-family: Calibri;\n" +
                 "}\n" +
                 "image {\n" +
                 "\tborder: 1px solid #000000;\n" +
-                "\tmargin-bottom: 5.0;\n" +
-                "\tmargin-top: 5.0;\n" +
+                "\tmargin-bottom: 5.000000mm;\n" +
+                "\tmargin-top: 5.000000mm;\n" +
                 "}\n" +
                 "image.special-class {\n" +
-                "\tmargin-left: 5.0;\n" +
+                "\tmargin-left: 5.000000mm;\n" +
                 "}\n" +
                 "page {\n" +
                 "\tfooter: \"my-footer-folder\";\n" +
@@ -121,11 +145,14 @@ public class StyleFormatParserTest {
                 "style.highlighted {\n" +
                 "\tcolor: rgba(1.000000, 0.000000, 0.000000, 1.000000);\n" +
                 "\tfont-variant: bold;\n" +
-                "\tmargin: 100mm;\n" +
+                "\tmargin-bottom: 100.000000mm;\n" +
+                "\tmargin-left: 100.000000mm;\n" +
+                "\tmargin-right: 100.000000mm;\n" +
+                "\tmargin-top: 100.000000mm;\n" +
                 "}\n" +
                 "toc {\n" +
-                "\tfill: dots;\n" +
-                "\tmargin-left: 5.0;\n" +
+                "\tfill: dotted;\n" +
+                "\tmargin-left: 5.000000mm;\n" +
                 "}\n" +
                 "toc:level(2) {\n" +
                 "\tfont-variant: italic;\n" +

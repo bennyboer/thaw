@@ -25,7 +25,7 @@ public class DoubleStyleValue extends AbstractStyleValue {
 
     @Override
     public String value() {
-        return String.valueOf(value);
+        return String.format("%f%s", value, unit.getShortName());
     }
 
     @Override

@@ -78,7 +78,7 @@ enumeration:level(2) { // Style per level of indentation
 
 toc { // Table of contents specific settings
   margin-left: 5mm; // Indent per level
-  fill: dots; // Fill the toc-entry space between heading title and page number with dots, other options could be 'solid' (A solid line) or 'empty' // Not filling anything
+  fill: dotted; // Fill the toc-entry space between heading title and page number with dots, other options could be 'solid' (A solid line) or 'empty' // Not filling anything
 }
 
 toc:level(2) {

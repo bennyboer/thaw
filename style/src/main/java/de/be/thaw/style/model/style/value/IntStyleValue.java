@@ -25,7 +25,7 @@ public class IntStyleValue extends AbstractStyleValue {
 
     @Override
     public String value() {
-        return String.valueOf(value);
+        return String.format("%d%s", value, unit.getShortName());
     }
 
     @Override
