@@ -14,10 +14,16 @@ public class TableOfContentsItemParagraph extends TextParagraph {
      */
     private final double pageNumberWidth;
 
-    public TableOfContentsItemParagraph(double lineWidth, DocumentNode node, double pageNumberWidth) {
+    /**
+     * The numbering string to display.
+     */
+    private final String numberingString;
+
+    public TableOfContentsItemParagraph(double lineWidth, DocumentNode node, double pageNumberWidth, String numberingString) {
         super(lineWidth, node);
 
         this.pageNumberWidth = pageNumberWidth;
+        this.numberingString = numberingString;
     }
 
     @Override
@@ -25,8 +31,22 @@ public class TableOfContentsItemParagraph extends TextParagraph {
         return ParagraphType.TOC_ITEM;
     }
 
+    /**
+     * Get the maximum page number width.
+     *
+     * @return page number width
+     */
     public double getPageNumberWidth() {
         return pageNumberWidth;
+    }
+
+    /**
+     * Get the numbering string to display.
+     *
+     * @return numbering string
+     */
+    public String getNumberingString() {
+        return numberingString;
     }
 
 }

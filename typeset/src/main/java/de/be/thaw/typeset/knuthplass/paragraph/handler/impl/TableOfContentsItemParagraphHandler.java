@@ -11,6 +11,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.toc.TableOfContentsItemParagraph;
 import de.be.thaw.typeset.knuthplass.util.LazySize;
+import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.impl.LineElement;
 import de.be.thaw.typeset.page.impl.PageNumberPlaceholderElement;
 import de.be.thaw.typeset.page.impl.TextElement;
@@ -18,6 +19,8 @@ import de.be.thaw.typeset.page.util.LineStyle;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
 import de.be.thaw.util.unit.Unit;
+
+import java.util.List;
 
 /**
  * Handler dealing with typesetting a table of contents item paragraph.
@@ -31,6 +34,9 @@ public class TableOfContentsItemParagraphHandler extends TextParagraphHandler {
 
     @Override
     public void handle(Paragraph paragraph, TypeSettingContext ctx) throws TypeSettingException {
+        int oldPageElementsSize = ctx.getCurrentPageElements().size();
+
+        // Typeset headline as usual
         super.handle(paragraph, ctx);
 
         TableOfContentsItemParagraph p = (TableOfContentsItemParagraph) paragraph;
@@ -38,33 +44,48 @@ public class TableOfContentsItemParagraphHandler extends TextParagraphHandler {
         // Fetch some styles
         Styles styles = paragraph.getNode().getStyles();
 
-        StyleValue lineHeightStyleValue = styles.resolve(StyleType.LINE_HEIGHT).orElseThrow();
-        double lineHeight;
-        if (lineHeightStyleValue.unit().isEmpty()) {
-            // Is relative line-height -> Calculate line height from the font size
-            StyleValue fontSizeValue = paragraph.getNode().getStyles().resolve(StyleType.FONT_SIZE).orElseThrow();
-            lineHeight = Unit.convert(fontSizeValue.doubleValue(), fontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS) * lineHeightStyleValue.doubleValue();
-        } else {
-            lineHeight = Unit.convert(lineHeightStyleValue.doubleValue(), lineHeightStyleValue.unit().orElseThrow(), Unit.POINTS);
-        }
-
         FillStyle fillStyle = styles.resolve(StyleType.FILL).orElseThrow().fillStyle();
         StyleValue fillSizeValue = styles.resolve(StyleType.FILL_SIZE).orElseThrow();
         final double fillSize = Unit.convert(fillSizeValue.doubleValue(), fillSizeValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
 
         double pageNumberMaxX = ctx.getConfig().getPageSize().getWidth() - ctx.getConfig().getPageInsets().getRight();
 
-        FontDetailsSupplier.StringMetrics metrics;
+        FontDetailsSupplier.StringMetrics maxPageNumberMetrics;
+        FontDetailsSupplier.StringMetrics numberingMetrics;
+        double spaceWidth;
         try {
-            metrics = ctx.getConfig().getFontDetailsSupplier().measureString(paragraph.getNode(), -1, "99999");
+            maxPageNumberMetrics = ctx.getConfig().getFontDetailsSupplier().measureString(paragraph.getNode(), -1, "99999");
+            numberingMetrics = ctx.getConfig().getFontDetailsSupplier().measureString(paragraph.getNode(), -1, p.getNumberingString());
+            spaceWidth = ctx.getConfig().getFontDetailsSupplier().getSpaceWidth(paragraph.getNode());
         } catch (Exception e) {
             throw new TypeSettingException(e);
         }
 
+        boolean isNumberingOnLastPage = ctx.getCurrentPageElements().size() <= oldPageElementsSize;
+        List<Element> numberingPageElements;
+        if (isNumberingOnLastPage) {
+            numberingPageElements = ctx.getPages().get(ctx.getPages().size() - 1).getElements();
+        } else {
+            numberingPageElements = ctx.getCurrentPageElements();
+        }
+
+        TextElement firstHeadlineTextElement = (TextElement) numberingPageElements.get(oldPageElementsSize);
         TextElement lastTextElement = (TextElement) ctx.getCurrentPageElements().get(ctx.getCurrentPageElements().size() - 1);
 
+        // Add the numbering string text element before the headline text that has already been typeset
+        numberingPageElements.add(new TextElement(
+                p.getNumberingString(),
+                numberingMetrics,
+                p.getNode(),
+                ctx.getCurrentPageNumber(),
+                lastTextElement.getBaseline(),
+                new Size(numberingMetrics.getWidth(), lastTextElement.getSize().getHeight()),
+                new Position(firstHeadlineTextElement.getPosition().getX() - numberingMetrics.getWidth() - spaceWidth, firstHeadlineTextElement.getPosition().getY())
+        ));
+
+        // Add the placeholder element for the page number
         PageNumberPlaceholderElement placeholderElement = new PageNumberPlaceholderElement(
-                metrics,
+                maxPageNumberMetrics,
                 paragraph.getNode(),
                 ctx.getCurrentPageNumber(),
                 lastTextElement.getBaseline(),

@@ -14,7 +14,6 @@ import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
-import de.be.thaw.typeset.knuthplass.item.impl.box.EmptyBox;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.toc.TableOfContentsItemParagraph;
 import de.be.thaw.util.unit.Unit;
 
@@ -88,12 +87,15 @@ public class TableOfContentsHandler implements ThingyHandler {
                 ctx.getDocument().getReferenceModel().addReference(new InternalReference(dummyNumberingNode.getId(), n.getId(), "TOC_numbering"));
                 ctx.getDocument().getReferenceModel().addReference(new InternalReference(dummyHeadlineNode.getId(), n.getId(), "TOC_headline"));
 
-                TableOfContentsItemParagraph paragraph = new TableOfContentsItemParagraph(lineWidth - maxPageNumberWidth, dummyNumberingNode, maxPageNumberWidth);
-                paragraph.addItem(new EmptyBox(-numberingMetrics.getWidth())); // Numbering is not indented, but the headline text is!
+                TableOfContentsItemParagraph paragraph = new TableOfContentsItemParagraph(
+                        lineWidth - maxPageNumberWidth,
+                        dummyNumberingNode,
+                        maxPageNumberWidth,
+                        numbering
+                );
                 ctx.setCurrentParagraph(paragraph);
 
-                // Add numbering and headline text
-                ctx.appendTextToParagraph(paragraph, numbering, dummyNumberingNode);
+                // Add headline text -> numbering will be added later
                 ctx.appendTextToParagraph(paragraph, headline, dummyHeadlineNode);
                 ctx.finalizeParagraph();
             }
