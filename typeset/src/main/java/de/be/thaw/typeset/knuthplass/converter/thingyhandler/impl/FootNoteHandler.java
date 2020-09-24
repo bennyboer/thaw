@@ -2,9 +2,7 @@ package de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl;
 
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.Styles;
-import de.be.thaw.style.model.style.value.DoubleStyleValue;
+import de.be.thaw.font.util.SuperScriptUtil;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
@@ -13,7 +11,6 @@ import de.be.thaw.typeset.knuthplass.item.Item;
 import de.be.thaw.typeset.knuthplass.item.impl.Glue;
 import de.be.thaw.typeset.knuthplass.item.impl.box.FootNoteBox;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
-import de.be.thaw.util.unit.Unit;
 
 import java.util.Set;
 
@@ -47,14 +44,7 @@ public class FootNoteHandler implements ThingyHandler {
             paragraph.items().remove(paragraph.items().size() - 1);
         }
 
-        final double fontSize = documentNode.getStyles().resolve(StyleType.FONT_SIZE)
-                .orElseThrow()
-                .doubleValue(Unit.POINTS);
-
-        Styles footNoteStyles = new Styles(documentNode.getStyles());
-        footNoteStyles.overrideStyle(StyleType.FONT_SIZE, new DoubleStyleValue(Math.max(8.0, fontSize * 0.6), Unit.POINTS));
-
-        DocumentNode footNoteDocumentNode = new DocumentNode("FOOTNOTE_NODE_" + counter, node, null, footNoteStyles);
+        DocumentNode footNoteDocumentNode = new DocumentNode("FOOTNOTE_NODE_" + counter, node, null, documentNode.getStyles());
 
         // Remap foot note document note to the new foot note dummy node
         DocumentNode footNoteContentNode = ctx.getDocument().getFootNotes().get(documentNode.getId());
@@ -62,7 +52,7 @@ public class FootNoteHandler implements ThingyHandler {
         ctx.getDocument().getFootNotes().put(footNoteDocumentNode.getId(), footNoteContentNode);
 
         // Append foot note number to current paragraph
-        String value = String.valueOf(counter);
+        String value = SuperScriptUtil.getSuperScriptCharsForNumber(counter);
         FontDetailsSupplier.StringMetrics metrics;
         try {
             metrics = ctx.getConfig().getFontDetailsSupplier().measureString(footNoteDocumentNode, -1, value);

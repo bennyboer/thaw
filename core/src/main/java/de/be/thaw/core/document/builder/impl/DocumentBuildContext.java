@@ -196,6 +196,17 @@ public class DocumentBuildContext {
      * @param parent the parent document node
      */
     public void processBoxNode(BoxNode node, DocumentNode parent) throws DocumentBuildException {
+        processBoxNode(node, parent, null);
+    }
+
+    /**
+     * Process a box node that represents a paragraph.
+     *
+     * @param node   to process
+     * @param parent the parent document node
+     * @param styles the styles to use
+     */
+    public void processBoxNode(BoxNode node, DocumentNode parent, @Nullable Styles styles) throws DocumentBuildException {
         // Find child node that may be a thingy node -> in that case we can apply special styles from the style model
         Optional<ThingyNode> optionalThingyNode = getFirstThingyNodeInBox(node);
         String blockName = null;
@@ -236,32 +247,35 @@ public class DocumentBuildContext {
             }
         }
 
-        // Get styles for the paragraph from the style model.
-        List<StyleSelector> selectors = new ArrayList<>();
-        if (blockName != null && !blockName.equalsIgnoreCase("paragraph")) {
+        if (styles == null) {
+            // Get styles for the paragraph from the style model.
+            List<StyleSelector> selectors = new ArrayList<>();
+            if (blockName != null && !blockName.equalsIgnoreCase("paragraph")) {
+                selectors.add(new StyleSelectorBuilder()
+                        .setTargetName(blockName)
+                        .setClassName(className)
+                        .build());
+
+                if (isHeadlineThingyName(blockName)) {
+                    selectors.add(new StyleSelectorBuilder()
+                            .setTargetName("h")
+                            .setClassName(className)
+                            .build());
+                }
+            }
+
             selectors.add(new StyleSelectorBuilder()
-                    .setTargetName(blockName)
+                    .setTargetName("paragraph")
+                    .setClassName(className)
+                    .build());
+            selectors.add(new StyleSelectorBuilder()
+                    .setTargetName("page")
                     .setClassName(className)
                     .build());
 
-            if (isHeadlineThingyName(blockName)) {
-                selectors.add(new StyleSelectorBuilder()
-                        .setTargetName("h")
-                        .setClassName(className)
-                        .build());
-            }
+            styles = getStyleModel().select(selectors.toArray(StyleSelector[]::new));
         }
 
-        selectors.add(new StyleSelectorBuilder()
-                .setTargetName("paragraph")
-                .setClassName(className)
-                .build());
-        selectors.add(new StyleSelectorBuilder()
-                .setTargetName("page")
-                .setClassName(className)
-                .build());
-
-        Styles styles = getStyleModel().select(selectors.toArray(StyleSelector[]::new));
         DocumentNode documentNode = new DocumentNode(node, parent, styles);
 
         if (node.hasChildren()) {

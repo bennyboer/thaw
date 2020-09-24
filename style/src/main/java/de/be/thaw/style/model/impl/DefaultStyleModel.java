@@ -237,6 +237,21 @@ public class DefaultStyleModel implements StyleModel {
             ));
         }
 
+        // Foot note style block
+        model.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("footnote")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.FIRST_LINE_INDENT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.FONT_SIZE, new DoubleStyleValue(10.0, Unit.POINTS)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(2.0, Unit.MILLIMETER))
+                )
+        ));
+
         return model;
     }
 

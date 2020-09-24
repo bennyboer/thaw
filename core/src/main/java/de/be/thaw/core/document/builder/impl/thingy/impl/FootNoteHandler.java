@@ -4,11 +4,9 @@ import de.be.thaw.core.document.builder.impl.DocumentBuildContext;
 import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.thingy.ThingyHandler;
 import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.font.util.SuperScriptUtil;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
-import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.Styles;
-import de.be.thaw.style.model.style.value.DoubleStyleValue;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
@@ -16,7 +14,6 @@ import de.be.thaw.text.model.tree.impl.BoxNode;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.text.parser.exception.ParseException;
-import de.be.thaw.util.unit.Unit;
 
 import java.io.StringReader;
 import java.util.Set;
@@ -62,31 +59,26 @@ public class FootNoteHandler implements ThingyHandler {
         DocumentNode footNoteRoot = new DocumentNode(
                 textModel.getRoot(),
                 null,
-                ctx.getStyleModel().select(new StyleSelectorBuilder().build())
+                ctx.getStyleModel().select(new StyleSelectorBuilder()
+                        .setTargetName("footnote")
+                        .setClassName(thingyNode.getOptions().get("class"))
+                        .build())
         );
 
         // Create nodes from the foot note description text
         for (Node node : textModel.getRoot().children()) {
             if (node.getType() == NodeType.BOX) {
-                ctx.processBoxNode((BoxNode) node, footNoteRoot);
+                ctx.processBoxNode((BoxNode) node, footNoteRoot, footNoteRoot.getStyles());
             }
         }
 
         // Create dummy node to represent the foot note number
         DocumentNode firstBoxNode = footNoteRoot.getChildren().get(0);
 
-        final double fontSize = documentNode.getStyles()
-                .resolve(StyleType.FONT_SIZE)
-                .orElseThrow()
-                .doubleValue(Unit.POINTS);
-
-        Styles footNoteNumberStyles = new Styles(firstBoxNode.getStyles());
-        footNoteNumberStyles.overrideStyle(StyleType.FONT_SIZE, new DoubleStyleValue(Math.max(8.0, fontSize * 0.6), Unit.POINTS));
-
         DocumentNode fakeNumberingNode = new DocumentNode(
-                new TextNode(String.format("%d ", ctx.getFootNotes().size() + 1), null),
+                new TextNode(String.format("%s ", SuperScriptUtil.getSuperScriptCharsForNumber(ctx.getFootNotes().size() + 1)), null),
                 null,
-                footNoteNumberStyles
+                footNoteRoot.getStyles()
         );
         firstBoxNode.getChildren().add(0, fakeNumberingNode); // Add new foot note number node
 

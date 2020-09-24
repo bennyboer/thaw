@@ -380,7 +380,19 @@ public class TypeSettingContext {
      */
     public void pushFootNote(DocumentNode node) throws TypeSettingException {
         List<List<Paragraph>> paragraphLists = footNoteParagraphs.get(node.getId());
-        List<Page> pages = typesettingFunction.apply(paragraphLists, new TypeSettingContext(config, document, paragraphLists, null, null, null, null, null));
+        List<Page> pages = typesettingFunction.apply(paragraphLists, new TypeSettingContext(
+                KnuthPlassTypeSettingConfig.newBuilder(config)
+                        .setPageNumberOffset(getCurrentPageNumber() - 1)
+                        .setAllowHeadersAndFooters(false)
+                        .build(),
+                document,
+                paragraphLists,
+                null,
+                null,
+                null,
+                null,
+                null
+        ));
         Page page = pages.get(0);
 
         page.getElements().sort(Comparator.comparingDouble(e -> e.getPosition().getY() + e.getSize().getHeight()));
