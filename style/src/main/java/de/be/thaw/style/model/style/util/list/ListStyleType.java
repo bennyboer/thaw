@@ -11,7 +11,7 @@ public enum ListStyleType {
     BULLET(n -> "\u2022"),
     MINUS(n -> "-"),
     SQUARE(n -> "\u25AA"),
-    CIRCLE(n -> "\u26AC"),
+    CIRCLE(n -> "\u25CB"),
 
     DECIMAL(String::valueOf),
     LOWER_LATIN(new CharSequenceGenerator("abcdefghijklmnopqrstuvwxyz".toCharArray())),

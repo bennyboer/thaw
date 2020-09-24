@@ -9,6 +9,7 @@ import de.be.thaw.style.parser.value.impl.FontKerningValueParser;
 import de.be.thaw.style.parser.value.impl.FontVariantValueParser;
 import de.be.thaw.style.parser.value.impl.HorizontalAlignmentValueParser;
 import de.be.thaw.style.parser.value.impl.InsetsValueParser;
+import de.be.thaw.style.parser.value.impl.ListStyleTypeValueParser;
 import de.be.thaw.style.parser.value.impl.StringValueParser;
 import de.be.thaw.util.unit.Unit;
 
@@ -63,10 +64,11 @@ public enum StyleType {
     FILL("fill", new FillValueParser()),
     FILL_SIZE("fill-size", new DoubleValueParser(Unit.MILLIMETER)),
 
-    // TODO Define and implement the following four properties with a proper parser
+    LIST_STYLE_TYPE("list-style-type", new ListStyleTypeValueParser()),
+    COUNTER_STYLE("counter-style", new ListStyleTypeValueParser()),
+
+    // TODO Define and implement the following properties with a proper parser
     NUMBERING("numbering", new StringValueParser()),
-    COUNTER_STYLE("counter-style", new StringValueParser()),
-    LIST_STYLE_TYPE("list-style-type", new StringValueParser()),
 
     // TODO Define and implement the following border-related properties (including proper parsers)
     BORDER("border", new StringValueParser()),

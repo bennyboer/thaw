@@ -8,7 +8,7 @@ import de.be.thaw.font.util.FontVariant;
 public class FontVariantStyleValue extends AbstractStyleValue {
 
     /**
-     * The varian value.
+     * The variant value.
      */
     private final FontVariant variant;
 

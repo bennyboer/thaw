@@ -4,6 +4,11 @@ import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.DocumentConverter;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
+import de.be.thaw.style.model.block.StyleBlock;
+import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
+import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.util.list.ListStyleType;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.EnumerationItemNode;
@@ -31,6 +36,7 @@ import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -155,11 +161,54 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         EnumerationItemNode node = (EnumerationItemNode) documentNode.getTextNode();
 
         assert node.getParent() != null;
-        int level = ((EnumerationNode) node.getParent()).getLevel();
+
+        EnumerationNode parentNode = (EnumerationNode) node.getParent();
+
+        int level = parentNode.getLevel();
+
+        // Check if is ordered or unordered
+        boolean isOrdered = false;
+        Node paragraphNode = parentNode;
+        while (paragraphNode.getType() != NodeType.BOX) {
+            paragraphNode = paragraphNode.getParent();
+        }
+        Node firstParagraphNode = paragraphNode.children().get(0);
+        if (firstParagraphNode instanceof ThingyNode) {
+            isOrdered = ((ThingyNode) firstParagraphNode).getOptions()
+                    .getOrDefault("type", "unordered")
+                    .equalsIgnoreCase("ordered");
+        }
+
+        // If it is unordered find the correct sequence (index starting from 1) for the item
+        int sequence = 1;
+        if (isOrdered) {
+            List<Node> parentChildren = parentNode.children();
+            for (int i = 0; i < parentChildren.size(); i++) {
+                Node child = parentChildren.get(i);
+
+                if (child instanceof EnumerationItemNode) {
+                    if (child == node) {
+                        break;
+                    }
+
+                    sequence++;
+                }
+            }
+        }
 
         double indent = level * config.getIndentWidth();
 
-        String symbol = "\u2022 "; // TODO Get list item symbol from the node style (when the style model has been implemented)
+        Map<StyleType, StyleValue> styles = ctx.getDocument().getStyleModel().getBlock(new StyleSelectorBuilder()
+                .setTargetName("enumeration")
+                .setClassName(isOrdered ? "ordered" : null)
+                .setPseudoClassName("level")
+                .setPseudoClassSettings(Collections.singletonList(String.valueOf(level)))
+                .build()).map(StyleBlock::getStyles)
+                .orElse(new HashMap<>());
+
+        ListStyleType listStyleType = styles.get(StyleType.LIST_STYLE_TYPE).listStyleType();
+
+        String symbol = String.format("%s%s ", listStyleType.getSymbolGenerator().generate(sequence), isOrdered ? "." : "");
 
         FontDetailsSupplier.StringMetrics metrics;
         try {

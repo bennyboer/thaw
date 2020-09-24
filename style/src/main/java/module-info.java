@@ -13,6 +13,7 @@ module de.be.thaw.style {
     exports de.be.thaw.style.model.selector;
     exports de.be.thaw.style.model.selector.builder;
     exports de.be.thaw.style.model.style.value;
+    exports de.be.thaw.style.model.style.util.list;
     requires com.fasterxml.jackson.databind;
     requires org.jetbrains.annotations;
     requires de.be.thaw.font;

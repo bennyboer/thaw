@@ -3,6 +3,7 @@ package de.be.thaw.style.model.style.value;
 import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.style.model.style.util.FillStyle;
+import de.be.thaw.style.model.style.util.list.ListStyleType;
 import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.color.Color;
 import de.be.thaw.util.unit.Unit;
@@ -56,6 +57,11 @@ public abstract class AbstractStyleValue implements StyleValue {
     @Override
     public FillStyle fillStyle() {
         throw new UnsupportedOperationException("Could not express style value as fill style");
+    }
+
+    @Override
+    public ListStyleType listStyleType() {
+        throw new UnsupportedOperationException("Could not express style value as list style type");
     }
 
 }

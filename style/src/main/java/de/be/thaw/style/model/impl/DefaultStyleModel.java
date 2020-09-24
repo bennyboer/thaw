@@ -11,6 +11,7 @@ import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.model.style.util.FillStyle;
+import de.be.thaw.style.model.style.util.list.ListStyleType;
 import de.be.thaw.style.model.style.value.BooleanStyleValue;
 import de.be.thaw.style.model.style.value.ColorStyleValue;
 import de.be.thaw.style.model.style.value.DoubleStyleValue;
@@ -19,6 +20,7 @@ import de.be.thaw.style.model.style.value.FontVariantStyleValue;
 import de.be.thaw.style.model.style.value.HorizontalAlignmentStyleValue;
 import de.be.thaw.style.model.style.value.IntStyleValue;
 import de.be.thaw.style.model.style.value.KerningModeStyleValue;
+import de.be.thaw.style.model.style.value.ListStyleTypeStyleValue;
 import de.be.thaw.style.model.style.value.StringStyleValue;
 import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.color.Color;
@@ -267,6 +269,54 @@ public class DefaultStyleModel implements StyleModel {
                         Map.entry(StyleType.FOOT_NOTE_LINE_SIZE, new DoubleStyleValue(0.25, Unit.MILLIMETER))
                 )
         ));
+
+        // Add enumeration style blocks per level for unordered enumerations
+        for (int i = 1; i <= 9; i++) {
+            int rest = i % 4;
+
+            ListStyleType listStyleType = ListStyleType.MINUS;
+            if (rest == 1) {
+                listStyleType = ListStyleType.BULLET;
+            } else if (rest == 2) {
+                listStyleType = ListStyleType.SQUARE;
+            } else if (rest == 3) {
+                listStyleType = ListStyleType.CIRCLE;
+            }
+
+            model.addBlock(new StyleBlock(
+                    new StyleSelectorBuilder()
+                            .setTargetName(String.format("enumeration:level(%d)", i))
+                            .build(),
+                    Map.ofEntries(
+                            Map.entry(StyleType.LIST_STYLE_TYPE, new ListStyleTypeStyleValue(listStyleType))
+                    )
+            ));
+        }
+
+        // Add enumeration style blocks per level for ordered enumerations
+        for (int i = 1; i <= 9; i++) {
+            int rest = i % 5;
+
+            ListStyleType listStyleType = ListStyleType.UPPER_ROMAN;
+            if (rest == 1) {
+                listStyleType = ListStyleType.DECIMAL;
+            } else if (rest == 2) {
+                listStyleType = ListStyleType.LOWER_LATIN;
+            } else if (rest == 3) {
+                listStyleType = ListStyleType.LOWER_ROMAN;
+            } else if (rest == 4) {
+                listStyleType = ListStyleType.UPPER_LATIN;
+            }
+
+            model.addBlock(new StyleBlock(
+                    new StyleSelectorBuilder()
+                            .setTargetName(String.format("enumeration.ordered:level(%d)", i))
+                            .build(),
+                    Map.ofEntries(
+                            Map.entry(StyleType.LIST_STYLE_TYPE, new ListStyleTypeStyleValue(listStyleType))
+                    )
+            ));
+        }
 
         return model;
     }
