@@ -252,6 +252,22 @@ public class DefaultStyleModel implements StyleModel {
                 )
         ));
 
+        // Add general foot notes paragraph style block
+        model.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("footnotes")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(5.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_TOP, new DoubleStyleValue(3.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.FOOT_NOTE_LINE_COLOR, new ColorStyleValue(new Color(0.0, 0.0, 0.0))),
+                        Map.entry(StyleType.FOOT_NOTE_LINE_SIZE, new DoubleStyleValue(0.25, Unit.MILLIMETER))
+                )
+        ));
+
         return model;
     }
 

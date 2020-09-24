@@ -80,7 +80,11 @@ public enum StyleType {
     BORDER_RADIUS("border-radius", new StringValueParser()),
 
     INTERNAL_LINK_COLOR("internal-link-color", new ColorValueParser()),
-    EXTERNAL_LINK_COLOR("external-link-color", new ColorValueParser());
+    EXTERNAL_LINK_COLOR("external-link-color", new ColorValueParser()),
+
+    FOOT_NOTE_LINE_LENGTH("foot-note-line-length", new DoubleValueParser(Unit.MILLIMETER)),
+    FOOT_NOTE_LINE_SIZE("foot-note-line-size", new DoubleValueParser(Unit.MILLIMETER)),
+    FOOT_NOTE_LINE_COLOR("foot-note-line-color", new ColorValueParser());
 
     /**
      * Lookup of style types by their key.
