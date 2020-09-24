@@ -8,7 +8,6 @@ import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.model.style.value.DoubleStyleValue;
-import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
@@ -64,8 +63,9 @@ public class TableOfContentsHandler implements ThingyHandler {
                                         .setTargetName("toc")
                                         .build());
 
-                StyleValue marginLeftValue = tocEntryLevelStyles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
-                final double marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+                final double marginLeft = tocEntryLevelStyles.resolve(StyleType.MARGIN_LEFT)
+                        .orElseThrow()
+                        .doubleValue(Unit.MILLIMETER, Unit.POINTS);
 
                 // Calculate numbering string metrics
                 FontDetailsSupplier.StringMetrics numberingMetrics;

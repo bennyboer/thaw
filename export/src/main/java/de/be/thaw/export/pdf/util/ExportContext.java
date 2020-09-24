@@ -15,7 +15,6 @@ import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.value.FontVariantStyleValue;
 import de.be.thaw.style.model.style.value.KerningModeStyleValue;
-import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.typeset.page.Page;
@@ -332,8 +331,9 @@ public class ExportContext {
      * @return font size
      */
     public double getFontSizeForNode(DocumentNode node) {
-        StyleValue fontSizeValue = node.getStyles().resolve(StyleType.FONT_SIZE).orElseThrow();
-        return Unit.convert(fontSizeValue.doubleValue(), fontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS);
+        return node.getStyles().resolve(StyleType.FONT_SIZE)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS, Unit.POINTS);
     }
 
     /**

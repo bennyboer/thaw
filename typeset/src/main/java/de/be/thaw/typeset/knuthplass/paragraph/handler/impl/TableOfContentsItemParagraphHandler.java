@@ -3,7 +3,6 @@ package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.model.style.util.FillStyle;
-import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
@@ -45,8 +44,9 @@ public class TableOfContentsItemParagraphHandler extends TextParagraphHandler {
         Styles styles = paragraph.getNode().getStyles();
 
         FillStyle fillStyle = styles.resolve(StyleType.FILL).orElseThrow().fillStyle();
-        StyleValue fillSizeValue = styles.resolve(StyleType.FILL_SIZE).orElseThrow();
-        final double fillSize = Unit.convert(fillSizeValue.doubleValue(), fillSizeValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double fillSize = styles.resolve(StyleType.FILL_SIZE)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
 
         double pageNumberMaxX = ctx.getConfig().getPageSize().getWidth() - ctx.getConfig().getPageInsets().getRight();
 

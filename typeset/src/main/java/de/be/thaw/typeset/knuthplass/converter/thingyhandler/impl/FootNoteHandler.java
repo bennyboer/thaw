@@ -5,7 +5,6 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.model.style.value.DoubleStyleValue;
-import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
@@ -48,8 +47,9 @@ public class FootNoteHandler implements ThingyHandler {
             paragraph.items().remove(paragraph.items().size() - 1);
         }
 
-        StyleValue fontSizeValue = documentNode.getStyles().resolve(StyleType.FONT_SIZE).orElseThrow();
-        double fontSize = Unit.convert(fontSizeValue.doubleValue(), fontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS);
+        final double fontSize = documentNode.getStyles().resolve(StyleType.FONT_SIZE)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS, Unit.POINTS);
 
         Styles footNoteStyles = new Styles(documentNode.getStyles());
         footNoteStyles.overrideStyle(StyleType.FONT_SIZE, new DoubleStyleValue(Math.max(8.0, fontSize * 0.6), Unit.POINTS));

@@ -61,8 +61,9 @@ public class MathHandler implements ThingyHandler {
         // TODO Check if expression is MathML or TeX -> if TeX convert to MathML
 
         // Prepare some constants
-        StyleValue fontSizeValue = documentNode.getStyles().resolve(StyleType.FONT_SIZE).orElseThrow();
-        final double fontSize = Unit.convert(fontSizeValue.doubleValue(), fontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS);
+        final double fontSize = documentNode.getStyles().resolve(StyleType.FONT_SIZE)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS, Unit.POINTS);
 
         // Parse MathML
         MathMLParser parser = new DefaultMathMLParser();
@@ -121,9 +122,9 @@ public class MathHandler implements ThingyHandler {
             double lineHeight;
             if (lineHeightStyleValue.unit().isEmpty()) {
                 // Is relative line-height -> Calculate line height from the font size
-                lineHeight = fontSize * lineHeightStyleValue.doubleValue();
+                lineHeight = fontSize * lineHeightStyleValue.doubleValue(null, null);
             } else {
-                lineHeight = Unit.convert(lineHeightStyleValue.doubleValue(), lineHeightStyleValue.unit().orElseThrow(), Unit.POINTS);
+                lineHeight = lineHeightStyleValue.doubleValue(null, Unit.POINTS);
             }
 
             if (ex.getSize().getHeight() > lineHeight) {

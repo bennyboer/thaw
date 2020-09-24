@@ -36,18 +36,22 @@ public class IntStyleValue extends AbstractStyleValue {
     }
 
     @Override
-    public int intValue() {
-        return value;
+    public int intValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
+        return (int) doubleValue(defaultUnit, targetUnit);
+    }
+
+    @Override
+    public double doubleValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
+        if (targetUnit == null || (unit().isEmpty() && defaultUnit == null)) {
+            return value; // Having not enough information to do a conversion
+        }
+
+        return Unit.convert(value, unit().orElse(defaultUnit), targetUnit);
     }
 
     @Override
     public boolean booleanValue() {
         return value != 0;
-    }
-
-    @Override
-    public double doubleValue() {
-        return value;
     }
 
     @Override

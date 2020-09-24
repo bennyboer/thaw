@@ -4,7 +4,6 @@ import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWord;
@@ -332,8 +331,9 @@ public class ConversionContext {
      * @param paragraph to append empty box to
      */
     public void appendEmptyBoxToParagraph(DocumentNode node, TextParagraph paragraph) {
-        StyleValue firstLineIndentStyleValue = node.getStyles().resolve(StyleType.FIRST_LINE_INDENT).orElseThrow();
-        double firstLineIndent = Unit.convert(firstLineIndentStyleValue.doubleValue(), firstLineIndentStyleValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double firstLineIndent = node.getStyles().resolve(StyleType.FIRST_LINE_INDENT)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
 
         paragraph.addItem(new EmptyBox(firstLineIndent));
     }

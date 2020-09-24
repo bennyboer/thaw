@@ -69,10 +69,11 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         StyleValue lineHeightStyleValue = styles.resolve(StyleType.LINE_HEIGHT).orElseThrow();
         if (lineHeightStyleValue.unit().isEmpty()) {
             // Is relative line-height -> Calculate line height from the font size
-            StyleValue fontSizeValue = styles.resolve(StyleType.FONT_SIZE).orElseThrow();
-            lineHeight = Unit.convert(fontSizeValue.doubleValue(), fontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS) * lineHeightStyleValue.doubleValue();
+            lineHeight = styles.resolve(StyleType.FONT_SIZE)
+                    .orElseThrow()
+                    .doubleValue(Unit.POINTS, Unit.POINTS) * lineHeightStyleValue.doubleValue(null, null);
         } else {
-            lineHeight = Unit.convert(lineHeightStyleValue.doubleValue(), lineHeightStyleValue.unit().get(), Unit.POINTS);
+            lineHeight = lineHeightStyleValue.doubleValue(null, Unit.POINTS);
         }
 
         final HorizontalAlignment alignment = styles.resolve(StyleType.TEXT_ALIGN).orElse(new HorizontalAlignmentStyleValue(HorizontalAlignment.LEFT)).horizontalAlignment();
@@ -80,30 +81,39 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         final boolean showLineNumbers = styles.resolve(StyleType.SHOW_LINE_NUMBERS).orElse(new BooleanStyleValue(false)).booleanValue();
         final String lineNumberFontFamily = styles.resolve(StyleType.SHOW_LINE_NUMBERS).orElseThrow().value();
 
-        StyleValue lineNumberFontSizeValue = styles.resolve(StyleType.LINE_NUMBER_FONT_SIZE).orElseThrow();
-        final double lineNumberFontSize = Unit.convert(lineNumberFontSizeValue.doubleValue(), lineNumberFontSizeValue.unit().orElse(Unit.POINTS), Unit.POINTS);
+        final double lineNumberFontSize = styles.resolve(StyleType.LINE_NUMBER_FONT_SIZE)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS, Unit.POINTS);
 
         final Color lineNumberColor = styles.resolve(StyleType.LINE_NUMBER_COLOR).orElseThrow().colorValue();
 
         // Calculate margins
-        StyleValue marginTopValue = styles.resolve(StyleType.MARGIN_TOP).orElseThrow();
-        StyleValue marginBottomValue = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow();
-        StyleValue marginLeftValue = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
-        StyleValue marginRightValue = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow();
-        final double marginTop = Unit.convert(marginTopValue.doubleValue(), marginTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double marginBottom = Unit.convert(marginBottomValue.doubleValue(), marginBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double marginRight = Unit.convert(marginRightValue.doubleValue(), marginRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double marginTop = styles.resolve(StyleType.MARGIN_TOP)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
 
         // Calculate paddings
-        StyleValue paddingTopValue = styles.resolve(StyleType.PADDING_TOP).orElseThrow();
-        StyleValue paddingBottomValue = styles.resolve(StyleType.PADDING_BOTTOM).orElseThrow();
-        StyleValue paddingLeftValue = styles.resolve(StyleType.PADDING_LEFT).orElseThrow();
-        StyleValue paddingRightValue = styles.resolve(StyleType.PADDING_RIGHT).orElseThrow();
-        final double paddingTop = Unit.convert(paddingTopValue.doubleValue(), paddingTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double paddingBottom = Unit.convert(paddingBottomValue.doubleValue(), paddingBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double paddingLeft = Unit.convert(paddingLeftValue.doubleValue(), paddingLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double paddingRight = Unit.convert(paddingRightValue.doubleValue(), paddingRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double paddingTop = styles.resolve(StyleType.PADDING_TOP)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double paddingLeft = styles.resolve(StyleType.PADDING_LEFT)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double paddingRight = styles.resolve(StyleType.PADDING_RIGHT)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
 
         // Calculate some metrics
         double baseline;

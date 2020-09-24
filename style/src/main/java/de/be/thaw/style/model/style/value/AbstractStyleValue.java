@@ -6,6 +6,7 @@ import de.be.thaw.style.model.style.util.FillStyle;
 import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.color.Color;
 import de.be.thaw.util.unit.Unit;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -20,12 +21,12 @@ public abstract class AbstractStyleValue implements StyleValue {
     }
 
     @Override
-    public int intValue() {
+    public int intValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
         throw new UnsupportedOperationException("Could not express style value as integer");
     }
 
     @Override
-    public double doubleValue() {
+    public double doubleValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
         throw new UnsupportedOperationException("Could not express style value as double");
     }
 

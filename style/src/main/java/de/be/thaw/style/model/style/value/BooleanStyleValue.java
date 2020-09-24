@@ -1,5 +1,8 @@
 package de.be.thaw.style.model.style.value;
 
+import de.be.thaw.util.unit.Unit;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Style value of a boolean
  */
@@ -25,12 +28,12 @@ public class BooleanStyleValue extends AbstractStyleValue {
     }
 
     @Override
-    public int intValue() {
+    public int intValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
         return value ? 1 : 0;
     }
 
     @Override
-    public double doubleValue() {
+    public double doubleValue(@Nullable Unit defaultUnit, @Nullable Unit targetUnit) {
         return value ? 1.0 : 0.0;
     }
 

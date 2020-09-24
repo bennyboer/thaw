@@ -7,7 +7,6 @@ import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.model.style.value.DoubleStyleValue;
-import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
@@ -48,24 +47,32 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
         Styles styles = paragraph.getNode().getStyles();
 
         // Calculate margins
-        StyleValue marginTopValue = styles.resolve(StyleType.MARGIN_TOP).orElseThrow();
-        StyleValue marginBottomValue = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow();
-        StyleValue marginLeftValue = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow();
-        StyleValue marginRightValue = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow();
-        final double marginTop = Unit.convert(marginTopValue.doubleValue(), marginTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double marginBottom = Unit.convert(marginBottomValue.doubleValue(), marginBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double marginLeft = Unit.convert(marginLeftValue.doubleValue(), marginLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double marginRight = Unit.convert(marginRightValue.doubleValue(), marginRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double marginTop = styles.resolve(StyleType.MARGIN_TOP)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
 
         // Calculate paddings (Only affecting the image, not the caption)
-        StyleValue paddingTopValue = styles.resolve(StyleType.PADDING_TOP).orElseThrow();
-        StyleValue paddingBottomValue = styles.resolve(StyleType.PADDING_BOTTOM).orElseThrow();
-        StyleValue paddingLeftValue = styles.resolve(StyleType.PADDING_LEFT).orElseThrow();
-        StyleValue paddingRightValue = styles.resolve(StyleType.PADDING_RIGHT).orElseThrow();
-        final double paddingTop = Unit.convert(paddingTopValue.doubleValue(), paddingTopValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double paddingBottom = Unit.convert(paddingBottomValue.doubleValue(), paddingBottomValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double paddingLeft = Unit.convert(paddingLeftValue.doubleValue(), paddingLeftValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
-        final double paddingRight = Unit.convert(paddingRightValue.doubleValue(), paddingRightValue.unit().orElse(Unit.MILLIMETER), Unit.POINTS);
+        final double paddingTop = styles.resolve(StyleType.PADDING_TOP)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double paddingLeft = styles.resolve(StyleType.PADDING_LEFT)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
+        final double paddingRight = styles.resolve(StyleType.PADDING_RIGHT)
+                .orElseThrow()
+                .doubleValue(Unit.MILLIMETER, Unit.POINTS);
 
         ctx.getPositionContext().increaseY(marginTop + paddingTop);
 
