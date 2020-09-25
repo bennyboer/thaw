@@ -179,7 +179,7 @@ public class RectangleElementExporter implements ElementExporter {
 
         // Border radius curve to the top on the right
         if (rect.getBorderRadius().getRight() > 0) {
-            out.curveTo((float) xEnd, (float) yStart, (float) xEnd, (float) yStart, (float) xEnd, (float) (yStart + rect.getBorderRadius().getRight()));
+            out.curveTo1((float) xEnd, (float) yStart, (float) xEnd, (float) (yStart + rect.getBorderRadius().getRight()));
         }
 
         // Right line (without border radius curves)
@@ -187,7 +187,7 @@ public class RectangleElementExporter implements ElementExporter {
 
         // Border radius curve to the bottom on the right
         if (rect.getBorderRadius().getBottom() > 0) {
-            out.curveTo((float) xEnd, (float) yEnd, (float) xEnd, (float) yEnd, (float) (xEnd - rect.getBorderRadius().getBottom()), (float) yEnd);
+            out.curveTo2((float) xEnd, (float) yEnd, (float) (xEnd - rect.getBorderRadius().getBottom()), (float) yEnd);
         }
 
         // Bottom line (without border radius curves)
@@ -195,7 +195,7 @@ public class RectangleElementExporter implements ElementExporter {
 
         // Border radius curve to the bottom on the left
         if (rect.getBorderRadius().getLeft() > 0) {
-            out.curveTo((float) xStart, (float) yEnd, (float) xStart, (float) yEnd, (float) xStart, (float) (yEnd - rect.getBorderRadius().getLeft()));
+            out.curveTo1((float) xStart, (float) yEnd, (float) xStart, (float) (yEnd - rect.getBorderRadius().getLeft()));
         }
 
         // Left line (without border radius curves)
@@ -203,7 +203,7 @@ public class RectangleElementExporter implements ElementExporter {
 
         // Border radius curve to the top on the left
         if (rect.getBorderRadius().getTop() > 0) {
-            out.curveTo((float) xStart, (float) yStart, (float) xStart, (float) yStart, (float) (xStart + rect.getBorderRadius().getTop()), (float) yStart);
+            out.curveTo1((float) xStart, (float) yStart, (float) (xStart + rect.getBorderRadius().getTop()), (float) yStart);
         }
     }
 

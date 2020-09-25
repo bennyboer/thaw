@@ -1,7 +1,11 @@
 package de.be.thaw.style.model.style;
 
+import de.be.thaw.style.model.style.value.StyleValue;
+import de.be.thaw.style.model.style.value.StyleValueCollection;
 import de.be.thaw.style.parser.value.StyleValueParser;
+import de.be.thaw.style.parser.value.exception.StyleValueParseException;
 import de.be.thaw.style.parser.value.impl.BooleanValueParser;
+import de.be.thaw.style.parser.value.impl.BorderSideValueParser;
 import de.be.thaw.style.parser.value.impl.ColorValueParser;
 import de.be.thaw.style.parser.value.impl.DoubleValueParser;
 import de.be.thaw.style.parser.value.impl.FillValueParser;
@@ -32,8 +36,15 @@ public enum StyleType {
 
     COLOR("color", new ColorValueParser()),
 
-    BACKGROUND("background", new ColorValueParser()),
     BACKGROUND_COLOR("background-color", new ColorValueParser()),
+    BACKGROUND("background", new StyleValueParser() {
+        private final ColorValueParser colorValueParser = new ColorValueParser();
+
+        @Override
+        public StyleValue parse(String src) throws StyleValueParseException {
+            return new StyleValueCollection(Map.of(StyleType.BACKGROUND_COLOR, colorValueParser.parse(src)));
+        }
+    }),
 
     LINE_HEIGHT("line-height", new DoubleValueParser(Unit.UNITARY)),
     FIRST_LINE_INDENT("first-line-indent", new DoubleValueParser(Unit.MILLIMETER)),
@@ -67,19 +78,81 @@ public enum StyleType {
     LIST_STYLE_TYPE("list-style-type", new ListStyleTypeValueParser()),
     COUNTER_STYLE("counter-style", new ListStyleTypeValueParser()),
 
-    // TODO Define and implement the following properties with a proper parser
-    NUMBERING("numbering", new StringValueParser()),
+    NUMBERING("numbering", new StringValueParser()), // TODO Implement
 
-    // TODO Define and implement the following border-related properties (including proper parsers)
-    BORDER("border", new StringValueParser()),
-    BORDER_TOP("border-top", new StringValueParser()),
-    BORDER_BOTTOM("border-bottom", new StringValueParser()),
-    BORDER_LEFT("border-left", new StringValueParser()),
-    BORDER_RIGHT("border-right", new StringValueParser()),
-    BORDER_COLOR("border-color", new StringValueParser()),
-    BORDER_WIDTH("border-width", new StringValueParser()),
-    BORDER_STYLE("border-style", new StringValueParser()),
-    BORDER_RADIUS("border-radius", new StringValueParser()),
+    BORDER_TOP_STYLE("border-top-style", new FillValueParser()),
+    BORDER_TOP_WIDTH("border-top-width", new StringValueParser()),
+    BORDER_TOP_COLOR("border-top-color", new ColorValueParser()),
+    BORDER_TOP("border-top", new BorderSideValueParser(
+            new StyleType[]{BORDER_TOP_WIDTH},
+            new StyleType[]{BORDER_TOP_STYLE},
+            new StyleType[]{BORDER_TOP_COLOR}
+    )),
+    BORDER_BOTTOM_STYLE("border-bottom-style", new FillValueParser()),
+    BORDER_BOTTOM_WIDTH("border-bottom-width", new StringValueParser()),
+    BORDER_BOTTOM_COLOR("border-bottom-color", new ColorValueParser()),
+    BORDER_BOTTOM("border-bottom", new BorderSideValueParser(
+            new StyleType[]{BORDER_BOTTOM_WIDTH},
+            new StyleType[]{BORDER_BOTTOM_STYLE},
+            new StyleType[]{BORDER_BOTTOM_COLOR}
+    )),
+    BORDER_LEFT_STYLE("border-left-style", new FillValueParser()),
+    BORDER_LEFT_WIDTH("border-left-width", new StringValueParser()),
+    BORDER_LEFT_COLOR("border-left-color", new ColorValueParser()),
+    BORDER_LEFT("border-left", new BorderSideValueParser(
+            new StyleType[]{BORDER_LEFT_WIDTH},
+            new StyleType[]{BORDER_LEFT_STYLE},
+            new StyleType[]{BORDER_LEFT_COLOR}
+    )),
+    BORDER_RIGHT_STYLE("border-right-style", new FillValueParser()),
+    BORDER_RIGHT_WIDTH("border-right-width", new StringValueParser()),
+    BORDER_RIGHT_COLOR("border-right-color", new ColorValueParser()),
+    BORDER_RIGHT("border-right", new BorderSideValueParser(
+            new StyleType[]{BORDER_RIGHT_WIDTH},
+            new StyleType[]{BORDER_RIGHT_STYLE},
+            new StyleType[]{BORDER_RIGHT_COLOR}
+    )),
+    BORDER("border", new BorderSideValueParser(
+            new StyleType[]{BORDER_TOP_WIDTH, BORDER_RIGHT_WIDTH, BORDER_BOTTOM_WIDTH, BORDER_LEFT_WIDTH},
+            new StyleType[]{BORDER_TOP_STYLE, BORDER_RIGHT_STYLE, BORDER_BOTTOM_STYLE, BORDER_LEFT_STYLE},
+            new StyleType[]{BORDER_TOP_COLOR, BORDER_RIGHT_COLOR, BORDER_BOTTOM_COLOR, BORDER_LEFT_COLOR}
+    )),
+    BORDER_COLOR("border-color", new StyleValueParser() {
+        private final ColorValueParser colorValueParser = new ColorValueParser();
+
+        @Override
+        public StyleValue parse(String src) throws StyleValueParseException {
+            StyleValue color = colorValueParser.parse(src);
+
+            return new StyleValueCollection(Map.ofEntries(
+                    Map.entry(StyleType.BORDER_TOP_COLOR, color),
+                    Map.entry(StyleType.BORDER_RIGHT_COLOR, color),
+                    Map.entry(StyleType.BORDER_BOTTOM_COLOR, color),
+                    Map.entry(StyleType.BORDER_LEFT_COLOR, color)
+            ));
+        }
+    }),
+    BORDER_WIDTH("border-width", new InsetsValueParser(BORDER_TOP_WIDTH, BORDER_RIGHT_WIDTH, BORDER_BOTTOM_WIDTH, BORDER_LEFT_WIDTH)),
+    BORDER_STYLE("border-style", new StyleValueParser() {
+        private final FillValueParser fillValueParser = new FillValueParser();
+
+        @Override
+        public StyleValue parse(String src) throws StyleValueParseException {
+            StyleValue fillStyle = fillValueParser.parse(src);
+
+            return new StyleValueCollection(Map.ofEntries(
+                    Map.entry(StyleType.BORDER_TOP_STYLE, fillStyle),
+                    Map.entry(StyleType.BORDER_RIGHT_STYLE, fillStyle),
+                    Map.entry(StyleType.BORDER_BOTTOM_STYLE, fillStyle),
+                    Map.entry(StyleType.BORDER_LEFT_STYLE, fillStyle)
+            ));
+        }
+    }),
+    BORDER_RADIUS_TOP("border-radius-top", new DoubleValueParser(Unit.MILLIMETER)),
+    BORDER_RADIUS_RIGHT("border-radius-right", new DoubleValueParser(Unit.MILLIMETER)),
+    BORDER_RADIUS_BOTTOM("border-radius-bottom", new DoubleValueParser(Unit.MILLIMETER)),
+    BORDER_RADIUS_LEFT("border-radius-left", new DoubleValueParser(Unit.MILLIMETER)),
+    BORDER_RADIUS("border-radius", new InsetsValueParser(BORDER_RADIUS_TOP, BORDER_RADIUS_RIGHT, BORDER_RADIUS_BOTTOM, BORDER_RADIUS_LEFT)),
 
     INTERNAL_LINK_COLOR("internal-link-color", new ColorValueParser()),
     EXTERNAL_LINK_COLOR("external-link-color", new ColorValueParser()),
