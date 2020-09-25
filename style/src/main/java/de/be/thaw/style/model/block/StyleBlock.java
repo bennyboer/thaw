@@ -1,8 +1,11 @@
 package de.be.thaw.style.model.block;
 
-import de.be.thaw.style.model.style.Style;
+import de.be.thaw.style.model.selector.StyleSelector;
 import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.value.StyleValue;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,25 +15,36 @@ import java.util.Map;
 public class StyleBlock {
 
     /**
-     * Name of the block.
+     * Selector of the block.
+     * It defines to what to apply the styles defined in the block.
      */
-    private final String name;
+    private final StyleSelector selector;
 
     /**
      * Styles in the block.
      */
-    private final Map<StyleType, Style> styles;
+    private final Map<StyleType, StyleValue> styles;
 
-    public StyleBlock(String name, Map<StyleType, Style> styles) {
-        this.name = name;
+    public StyleBlock(StyleSelector selector, Map<StyleType, StyleValue> styles) {
+        this.selector = selector;
         this.styles = styles;
     }
 
-    public String getName() {
-        return name;
+    /**
+     * Get the selector of the block.
+     *
+     * @return selector
+     */
+    public StyleSelector getSelector() {
+        return selector;
     }
 
-    public Map<StyleType, Style> getStyles() {
+    /**
+     * Get the styles in the block.
+     *
+     * @return styles
+     */
+    public Map<StyleType, StyleValue> getStyles() {
         return styles;
     }
 
@@ -40,24 +54,44 @@ public class StyleBlock {
      * @param other style block to merge
      * @return the merged style block
      */
-    public StyleBlock merge(StyleBlock other) {
+    public StyleBlock merge(@Nullable StyleBlock other) {
         if (other == null) {
             return this;
         }
 
-        Map<StyleType, Style> mergedStyles = new HashMap<>();
-        for (Map.Entry<StyleType, Style> styleEntry : getStyles().entrySet()) {
-            mergedStyles.put(styleEntry.getKey(), styleEntry.getValue().merge(other.getStyles().get(styleEntry.getKey())));
+        Map<StyleType, StyleValue> mergedStyles = new HashMap<>();
+
+        // Copy styles in this block in the new map
+        for (Map.Entry<StyleType, StyleValue> styleEntry : getStyles().entrySet()) {
+            mergedStyles.put(styleEntry.getKey(), styleEntry.getValue());
         }
 
         // Merge remaining styles from the other block (if any)
-        for (Map.Entry<StyleType, Style> styleEntry : other.getStyles().entrySet()) {
+        for (Map.Entry<StyleType, StyleValue> styleEntry : other.getStyles().entrySet()) {
             if (!mergedStyles.containsKey(styleEntry.getKey())) {
                 mergedStyles.put(styleEntry.getKey(), styleEntry.getValue());
             }
         }
 
-        return new StyleBlock(getName(), mergedStyles);
+        return new StyleBlock(getSelector(), mergedStyles);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(getSelector().toString());
+        sb.append(' ');
+        sb.append('{');
+        sb.append('\n');
+
+        getStyles().entrySet().stream()
+                .sorted(Comparator.comparing(o -> o.getKey().getKey()))
+                .forEach(entry -> sb.append(String.format("\t%s: %s;\n", entry.getKey().getKey(), entry.getValue().value())));
+
+        sb.append('}');
+
+        return sb.toString();
     }
 
 }

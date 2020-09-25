@@ -1,14 +1,16 @@
 package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
 
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.font.util.FontVariant;
-import de.be.thaw.style.model.style.Style;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.ColorStyle;
-import de.be.thaw.style.model.style.impl.FontStyle;
-import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.impl.TextStyle;
+import de.be.thaw.style.model.style.Styles;
+import de.be.thaw.style.model.style.value.BooleanStyleValue;
+import de.be.thaw.style.model.style.value.ColorStyleValue;
+import de.be.thaw.style.model.style.value.DoubleStyleValue;
+import de.be.thaw.style.model.style.value.FontVariantStyleValue;
+import de.be.thaw.style.model.style.value.HorizontalAlignmentStyleValue;
+import de.be.thaw.style.model.style.value.StringStyleValue;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.KnuthPlassAlgorithm;
@@ -30,16 +32,19 @@ import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.impl.MathExpressionElement;
+import de.be.thaw.typeset.page.impl.RectangleElement;
 import de.be.thaw.typeset.page.impl.TextElement;
+import de.be.thaw.typeset.page.util.LineStyle;
+import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
+import de.be.thaw.util.color.Color;
+import de.be.thaw.util.unit.BaseUnit;
+import de.be.thaw.util.unit.Unit;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.function.IntToDoubleFunction;
 
 /**
@@ -62,35 +67,57 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         TextParagraph textParagraph = (TextParagraph) paragraph;
 
         // Fetch some paragraph styles
-        final double lineHeight = getLineHeightForNode(paragraph.getNode());
-        final InsetsStyle insetsStyle = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.INSETS,
-                style -> Optional.ofNullable((InsetsStyle) style)
-        ).orElseThrow();
-        final HorizontalAlignment alignment = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getAlignment())
-        ).orElse(HorizontalAlignment.LEFT);
-        final boolean justify = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getJustify())
-        ).orElse(true);
-        final boolean showLineNumbers = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).isShowLineNumbers())
-        ).orElse(false);
-        final String lineNumberFontFamily = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getLineNumberFontFamily())
-        ).orElse("Cambria");
-        final Double lineNumberFontSize = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getLineNumberFontSize())
-        ).orElse(7.0);
-        final ColorStyle lineNumberColor = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getLineNumberColor())
-        ).orElse(null);
+        Styles styles = paragraph.getNode().getStyles();
+
+        double lineHeight;
+        StyleValue lineHeightStyleValue = styles.resolve(StyleType.LINE_HEIGHT).orElseThrow();
+        if (lineHeightStyleValue.unit().getBaseUnit() == BaseUnit.UNITARY) {
+            // Is relative line-height -> Calculate line height from the font size
+            lineHeight = styles.resolve(StyleType.FONT_SIZE)
+                    .orElseThrow()
+                    .doubleValue(Unit.POINTS) * lineHeightStyleValue.doubleValue(Unit.UNITARY);
+        } else {
+            lineHeight = lineHeightStyleValue.doubleValue(Unit.POINTS);
+        }
+
+        final HorizontalAlignment alignment = styles.resolve(StyleType.TEXT_ALIGN).orElse(new HorizontalAlignmentStyleValue(HorizontalAlignment.LEFT)).horizontalAlignment();
+        final boolean justify = styles.resolve(StyleType.TEXT_JUSTIFY).orElse(new BooleanStyleValue(true)).booleanValue();
+        final boolean showLineNumbers = styles.resolve(StyleType.SHOW_LINE_NUMBERS).orElse(new BooleanStyleValue(false)).booleanValue();
+        final String lineNumberFontFamily = styles.resolve(StyleType.SHOW_LINE_NUMBERS).orElseThrow().value();
+
+        final double lineNumberFontSize = styles.resolve(StyleType.LINE_NUMBER_FONT_SIZE)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+
+        final Color lineNumberColor = styles.resolve(StyleType.LINE_NUMBER_COLOR).orElseThrow().colorValue();
+
+        // Calculate margins
+        final double marginTop = styles.resolve(StyleType.MARGIN_TOP)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+
+        // Calculate paddings
+        final double paddingTop = styles.resolve(StyleType.PADDING_TOP)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double paddingLeft = styles.resolve(StyleType.PADDING_LEFT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double paddingRight = styles.resolve(StyleType.PADDING_RIGHT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
 
         // Calculate some metrics
         double baseline;
@@ -100,18 +127,19 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             throw new TypeSettingException(e);
         }
 
+        // Save the start y position of the background for later use
+        double backgroundStartY = ctx.getPositionContext().getY() + marginTop;
+        int firstElementIndex = ctx.getCurrentPageElements().size(); // First element index of the text paragraph
+
         // Set up the initial position of the paragraph
-        ctx.getPositionContext().increaseY(insetsStyle.getTop());
-        ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + insetsStyle.getLeft());
+        ctx.getPositionContext().increaseY(marginTop + paddingTop);
+        ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + marginLeft + paddingLeft);
 
         // Check if we have a floating element nearby
         if (ctx.getFloatConfig().getFloatUntilY() > ctx.getPositionContext().getY()) {
             // Calculate count of lines that are affected by the floating paragraph
             double diff = ctx.getFloatConfig().getFloatUntilY() - ctx.getPositionContext().getY();
-            int lineCount = (int) Math.ceil(diff / lineHeight);
-
-            // Add float indent (if any)
-            ctx.getPositionContext().increaseX(ctx.getFloatConfig().getFloatIndent());
+            int lineCount = (int) Math.round(Math.min(diff, ctx.getAvailableHeight()) / lineHeight);
 
             // Set a line width supplier that adjusts the line width for the affected lines
             IntToDoubleFunction oldLineWidthSupplier = textParagraph.getLineWidthSupplier();
@@ -129,8 +157,8 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         }
 
         // Reduce line width supplier line width by the paragraphs left and right indents
-        if (insetsStyle.getLeft() != 0 || insetsStyle.getRight() != 0) {
-            final double reduceBy = insetsStyle.getLeft() + insetsStyle.getRight();
+        if (marginLeft != 0 || marginRight != 0 || paddingLeft != 0 || paddingRight != 0) {
+            final double reduceBy = marginLeft + marginRight + paddingLeft + paddingRight;
             IntToDoubleFunction oldLineWidthSupplier = textParagraph.getLineWidthSupplier();
             textParagraph.setLineWidthSupplier(lineNumber -> {
                 if (oldLineWidthSupplier != null) {
@@ -152,7 +180,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         List<List<Item>> lines = splitParagraphIntoLines(textParagraph, result);
 
         // Lay out the found lines
-        double indent = insetsStyle.getLeft(); // Indent of the paragraph (if any), set for example for enumerations.
+        double indent = marginLeft + paddingLeft; // Indent of the paragraph (if any), set for example for enumerations.
         for (int i = 0; i < lines.size(); i++) {
             List<Item> line = lines.get(i);
 
@@ -165,7 +193,12 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                     if (ctx.getAvailableHeight() < lineHeight) {
                         // Create new page first as foot note and foot note reference do not fit on the same page anymore
                         List<Element> footNoteElements = ctx.popFootNote(); // Pop the last foot note again from the current page
+
+                        pushRectangleElementIfNecessary(ctx, backgroundStartY, firstElementIndex, textParagraph); // Push background rectangle element if necessary
                         ctx.pushPage(); // Push the next page
+                        backgroundStartY = ctx.getPositionContext().getY();
+                        firstElementIndex = ctx.getCurrentPageElements().size();
+
                         ctx.pushFootNote(footNoteElements);
                     }
                 }
@@ -175,13 +208,21 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             double availableHeight = ctx.getAvailableHeight();
             if (availableHeight < lineHeight) {
                 // Not enough space for this line left on the current page -> Create next page
+                pushRectangleElementIfNecessary(ctx, backgroundStartY, firstElementIndex, textParagraph); // Push background rectangle element if necessary
                 ctx.pushPage();
+                backgroundStartY = ctx.getPositionContext().getY();
+                firstElementIndex = ctx.getCurrentPageElements().size();
+            }
+
+            boolean isFloating = ctx.getFloatConfig().getFloatUntilY() > ctx.getPositionContext().getY();
+            if (isFloating) {
+                ctx.getPositionContext().increaseX(ctx.getFloatConfig().getFloatIndent());
             }
 
             fixItemWidthForLine(line, ctx);
 
             // Calculating some metrics describing the line in more detail
-            double lineWidth = result.getContext().getLineWidth(i + 1);
+            double lineWidth = textParagraph.getLineWidth(i + 1);
             LineMetrics lineMetrics = calculateLineMetrics(line);
 
             // Last item is glue with width 0 -> indicates explicit line break
@@ -220,10 +261,13 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                 String lineNumberStr = String.valueOf(currentLineNumber);
 
                 // Create dummy document node representing the line number string
-                Map<StyleType, Style> lineNumberStyles = new HashMap<>();
-                lineNumberStyles.put(StyleType.FONT, new FontStyle(lineNumberFontFamily, FontVariant.MONOSPACE, lineNumberFontSize, lineNumberColor, null, null));
-                DocumentNodeStyle lineNumberNodeStyle = new DocumentNodeStyle(paragraph.getNode().getStyle(), lineNumberStyles);
-                DocumentNode lineNumberDocumentNode = new DocumentNode(new TextNode(lineNumberStr, null), paragraph.getNode(), lineNumberNodeStyle);
+                Styles lineNumberDocumentNodeStyles = new Styles(paragraph.getNode().getStyles());
+                lineNumberDocumentNodeStyles.overrideStyle(StyleType.FONT_FAMILY, new StringStyleValue(lineNumberFontFamily));
+                lineNumberDocumentNodeStyles.overrideStyle(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.MONOSPACE));
+                lineNumberDocumentNodeStyles.overrideStyle(StyleType.FONT_SIZE, new DoubleStyleValue(lineNumberFontSize, Unit.POINTS));
+                lineNumberDocumentNodeStyles.overrideStyle(StyleType.COLOR, new ColorStyleValue(lineNumberColor));
+
+                DocumentNode lineNumberDocumentNode = new DocumentNode(new TextNode(lineNumberStr, null), paragraph.getNode(), lineNumberDocumentNodeStyles);
 
                 // Measure line number string
                 FontDetailsSupplier.StringMetrics lineNumberStrMetrics;
@@ -305,14 +349,92 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
 
             ctx.getPositionContext().increaseY(lineHeight);
             ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + indent);
-
-            boolean isFloating = ctx.getFloatConfig().getFloatUntilY() > ctx.getPositionContext().getY();
-            if (isFloating) {
-                ctx.getPositionContext().increaseX(ctx.getFloatConfig().getFloatIndent());
-            }
         }
 
-        ctx.getPositionContext().increaseY(insetsStyle.getBottom());
+        pushRectangleElementIfNecessary(ctx, backgroundStartY, firstElementIndex, textParagraph);
+        ctx.getPositionContext().increaseY(marginBottom + paddingBottom);
+    }
+
+    /**
+     * Push a rectangle element for the background if necessary.
+     */
+    private void pushRectangleElementIfNecessary(TypeSettingContext ctx, double startY, int startElementIndex, TextParagraph paragraph) {
+        // Fetch background and border styles
+        Styles styles = paragraph.getNode().getStyles();
+
+        final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+
+        Color backgroundColor = styles.resolve(StyleType.BACKGROUND_COLOR).map(StyleValue::colorValue).orElse(new Color(1.0, 1.0, 1.0, 0.0));
+        Insets borderWidths = new Insets(
+                styles.resolve(StyleType.BORDER_TOP_WIDTH).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_RIGHT_WIDTH).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_BOTTOM_WIDTH).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_LEFT_WIDTH).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0)
+        );
+        Insets borderRadius = new Insets(
+                styles.resolve(StyleType.BORDER_RADIUS_TOP).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_RADIUS_RIGHT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_RADIUS_BOTTOM).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_RADIUS_LEFT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0)
+        );
+        Color[] borderColors = new Color[]{
+                new Color(0.0, 0.0, 0.0),
+                new Color(0.0, 0.0, 0.0),
+                new Color(0.0, 0.0, 0.0),
+                new Color(0.0, 0.0, 0.0)
+        };
+        styles.resolve(StyleType.BORDER_TOP_COLOR).ifPresent(v -> borderColors[0] = v.colorValue());
+        styles.resolve(StyleType.BORDER_RIGHT_COLOR).ifPresent(v -> borderColors[1] = v.colorValue());
+        styles.resolve(StyleType.BORDER_BOTTOM_COLOR).ifPresent(v -> borderColors[2] = v.colorValue());
+        styles.resolve(StyleType.BORDER_LEFT_COLOR).ifPresent(v -> borderColors[3] = v.colorValue());
+        LineStyle[] borderStyles = new LineStyle[]{
+                LineStyle.SOLID,
+                LineStyle.SOLID,
+                LineStyle.SOLID,
+                LineStyle.SOLID
+        };
+        styles.resolve(StyleType.BORDER_TOP_STYLE).ifPresent(v -> borderStyles[0] = LineStyle.valueOf(v.fillStyle().name()));
+        styles.resolve(StyleType.BORDER_RIGHT_STYLE).ifPresent(v -> borderStyles[1] = LineStyle.valueOf(v.fillStyle().name()));
+        styles.resolve(StyleType.BORDER_BOTTOM_STYLE).ifPresent(v -> borderStyles[2] = LineStyle.valueOf(v.fillStyle().name()));
+        styles.resolve(StyleType.BORDER_LEFT_STYLE).ifPresent(v -> borderStyles[3] = LineStyle.valueOf(v.fillStyle().name()));
+
+        Size size = new Size(
+                ctx.getConfig().getPageSize().getWidth() - ctx.getConfig().getPageInsets().getLeft() - ctx.getConfig().getPageInsets().getRight() - marginLeft - marginRight,
+                ctx.getPositionContext().getY() - startY + paddingBottom
+        );
+        Position position = new Position(
+                ctx.getConfig().getPageInsets().getLeft() + marginLeft,
+                startY
+        );
+
+        RectangleElement rect = new RectangleElement(ctx.getCurrentPageNumber(), size, position);
+
+        // Check if we have enough settings to push a rectangle
+        boolean pushRectangle = false;
+        if (backgroundColor.getAlpha() > 0.0) {
+            pushRectangle = true;
+            rect.setFillColor(backgroundColor);
+        }
+        if (borderWidths.getTop() > 0 || borderWidths.getRight() > 0 || borderWidths.getBottom() > 0 || borderWidths.getLeft() > 0) {
+            pushRectangle = true;
+            rect.setBorderWidths(borderWidths);
+        }
+
+        if (pushRectangle) {
+            rect.setStrokeColors(borderColors);
+            rect.setBorderStyles(borderStyles);
+            rect.setBorderRadius(borderRadius);
+
+            ctx.getCurrentPageElements().add(startElementIndex, rect);
+        }
     }
 
     /**
@@ -400,22 +522,6 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         }
 
         throw new TypeSettingException();
-    }
-
-    /**
-     * Get the font size for the passed node.
-     *
-     * @param node to get font size for
-     * @return font size
-     */
-    private double getLineHeightForNode(DocumentNode node) {
-        return node.getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getLineHeight())
-        ).orElse(node.getStyle().getStyleAttribute(
-                StyleType.FONT,
-                style -> Optional.ofNullable(((FontStyle) style).getSize())
-        ).orElseThrow());
     }
 
     /**

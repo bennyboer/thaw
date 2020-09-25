@@ -65,7 +65,7 @@ public class ReferenceListHandler implements ThingyHandler {
             boolean isFirst = true;
             for (Node node : textModel.getRoot().children()) {
                 if (node.getType() == NodeType.BOX) {
-                    ctx.processBoxNode((BoxNode) node, root, root.getStyle());
+                    ctx.processBoxNode((BoxNode) node, root);
                     if (isFirst) {
                         isFirst = false;
 

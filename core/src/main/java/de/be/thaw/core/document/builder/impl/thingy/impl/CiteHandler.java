@@ -5,7 +5,6 @@ import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.exception.MissingReferenceTargetException;
 import de.be.thaw.core.document.builder.impl.thingy.ThingyHandler;
 import de.be.thaw.core.document.node.DocumentNode;
-import de.be.thaw.core.document.node.style.DocumentNodeStyle;
 import de.be.thaw.reference.citation.Citation;
 import de.be.thaw.reference.citation.SourceCitation;
 import de.be.thaw.reference.citation.exception.CouldNotLoadBibliographyException;
@@ -14,7 +13,6 @@ import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.text.model.tree.impl.ThingyNode;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -110,7 +108,7 @@ public class CiteHandler implements ThingyHandler {
         DocumentNode inTextCitationNode = new DocumentNode(
                 new TextNode(inTextCitation, null),
                 documentNode.getParent(),
-                new DocumentNodeStyle(documentNode.getStyle(), new HashMap<>())
+                documentNode.getStyles()
         );
 
         ctx.getPotentialReferences().add(new DocumentBuildContext.PotentialInternalReference(

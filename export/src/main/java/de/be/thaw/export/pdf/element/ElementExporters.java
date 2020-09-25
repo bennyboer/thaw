@@ -1,7 +1,9 @@
 package de.be.thaw.export.pdf.element;
 
 import de.be.thaw.export.pdf.element.impl.ImageElementExporter;
+import de.be.thaw.export.pdf.element.impl.LineElementExporter;
 import de.be.thaw.export.pdf.element.impl.MathElementExporter;
+import de.be.thaw.export.pdf.element.impl.RectangleElementExporter;
 import de.be.thaw.export.pdf.element.impl.TextElementExporter;
 import de.be.thaw.typeset.page.ElementType;
 
@@ -23,6 +25,8 @@ public class ElementExporters {
         initExporter(new TextElementExporter());
         initExporter(new ImageElementExporter());
         initExporter(new MathElementExporter());
+        initExporter(new LineElementExporter());
+        initExporter(new RectangleElementExporter());
 
         // ADDITIONAL SUPPORTED EXPORTERS ARE TO BE DEFINED HERE!
     }

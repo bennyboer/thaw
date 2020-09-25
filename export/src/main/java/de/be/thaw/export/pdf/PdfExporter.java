@@ -18,8 +18,7 @@ import de.be.thaw.info.model.language.Language;
 import de.be.thaw.math.util.MathFont;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.impl.SizeStyle;
+import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.typeset.TypeSetter;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.KnuthPlassTypeSetter;
@@ -33,6 +32,7 @@ import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Size;
+import de.be.thaw.util.unit.Unit;
 import org.apache.fontbox.ttf.TTFParser;
 import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -51,7 +51,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -66,44 +65,33 @@ public class PdfExporter implements Exporter {
      */
     private static final Logger LOGGER = Logger.getLogger(PdfExporter.class.getSimpleName());
 
-    /**
-     * Printer points per inch.
-     */
-    private static final float POINTS_PER_INCH = 72;
-
-    /**
-     * Printer points per millimeter.
-     */
-    private static final double POINTS_PER_MM = 1 / (10 * 2.54f) * POINTS_PER_INCH;
-
-    /**
-     * Points per pixel to calculate size with.
-     */
-    private static final double POINTS_PER_PX = 0.75;
-
     @Override
     public void export(Document document, Path path) throws ExportException {
         try (PDDocument doc = new PDDocument()) {
             ExportContext ctx = new ExportContext(doc, document);
 
-            SizeStyle sizeStyle = document.getRoot().getStyle().getStyleAttribute(
-                    StyleType.SIZE,
-                    style -> Optional.ofNullable(((SizeStyle) style))
-            ).orElseThrow();
-            ctx.setPageSize(new Size(
-                    sizeStyle.getWidth() * POINTS_PER_MM,
-                    sizeStyle.getHeight() * POINTS_PER_MM
-            ));
+            Styles styles = document.getRoot().getStyles();
 
-            InsetsStyle insetsStyle = document.getRoot().getStyle().getStyleAttribute(
-                    StyleType.INSETS,
-                    style -> Optional.ofNullable(((InsetsStyle) style))
-            ).orElseThrow();
+            final double width = styles.resolve(StyleType.WIDTH).orElseThrow().doubleValue(Unit.POINTS);
+            final double height = styles.resolve(StyleType.HEIGHT).orElseThrow().doubleValue(Unit.POINTS);
+
+            ctx.setPageSize(new Size(width, height));
+
+            final double marginTop = styles.resolve(StyleType.MARGIN_TOP).orElseThrow().doubleValue(Unit.POINTS);
+            final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM).orElseThrow().doubleValue(Unit.POINTS);
+            final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT).orElseThrow().doubleValue(Unit.POINTS);
+            final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT).orElseThrow().doubleValue(Unit.POINTS);
+
+            final double paddingTop = styles.resolve(StyleType.PADDING_TOP).orElseThrow().doubleValue(Unit.POINTS);
+            final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM).orElseThrow().doubleValue(Unit.POINTS);
+            final double paddingLeft = styles.resolve(StyleType.PADDING_LEFT).orElseThrow().doubleValue(Unit.POINTS);
+            final double paddingRight = styles.resolve(StyleType.PADDING_RIGHT).orElseThrow().doubleValue(Unit.POINTS);
+
             ctx.setPageInsets(new Insets(
-                    insetsStyle.getTop() * POINTS_PER_MM,
-                    insetsStyle.getLeft() * POINTS_PER_MM,
-                    insetsStyle.getBottom() * POINTS_PER_MM,
-                    insetsStyle.getRight() * POINTS_PER_MM
+                    marginTop + paddingTop,
+                    marginLeft + paddingLeft,
+                    marginBottom + paddingBottom,
+                    marginRight + paddingRight
             ));
 
             ThawFont mathFont;
@@ -315,7 +303,10 @@ public class PdfExporter implements Exporter {
                     File currentProcessingFolder = ThawContext.getInstance().getCurrentFolder();
                     File imgFile = new File(currentProcessingFolder, src);
 
-                    return new PdfImageSource(PDImageXObject.createFromFile(imgFile.getAbsolutePath(), ctx.getPdDocument()), POINTS_PER_PX);
+                    return new PdfImageSource(
+                            PDImageXObject.createFromFile(imgFile.getAbsolutePath(), ctx.getPdDocument()),
+                            Unit.convert(1, Unit.PIXEL, Unit.POINTS)
+                    );
                 })
                 .build());
     }

@@ -11,13 +11,16 @@ import de.be.thaw.font.util.FontFamily;
 import de.be.thaw.font.util.FontManager;
 import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.font.util.FontVariantLocator;
+import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.FontStyle;
+import de.be.thaw.style.model.style.value.FontVariantStyleValue;
+import de.be.thaw.style.model.style.value.KerningModeStyleValue;
 import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Size;
+import de.be.thaw.util.unit.Unit;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -239,10 +242,10 @@ public class ExportContext {
      * @return font variant
      */
     private FontVariant getFontVariantFromNode(DocumentNode node) {
-        FontVariant variant = node.getStyle().getStyleAttribute(
-                StyleType.FONT,
-                style -> Optional.ofNullable(((FontStyle) style).getVariant())
-        ).orElse(FontVariant.PLAIN);
+        FontVariant variant = node.getStyles()
+                .resolve(StyleType.FONT_VARIANT)
+                .orElse(new FontVariantStyleValue(FontVariant.PLAIN))
+                .fontVariant();
 
         if (node.getTextNode() instanceof FormattedNode) {
             Set<TextEmphasis> emphases = ((FormattedNode) node.getTextNode()).getEmphases();
@@ -272,10 +275,7 @@ public class ExportContext {
      * @return font
      */
     public ThawFont getFontForNode(DocumentNode node) throws ExportException {
-        String familyName = node.getStyle().getStyleAttribute(
-                StyleType.FONT,
-                style -> Optional.ofNullable(((FontStyle) style).getFamily())
-        ).orElseThrow();
+        String familyName = node.getStyles().resolve(StyleType.FONT_FAMILY).orElseThrow().value();
 
         FontVariant variant = getFontVariantFromNode(node);
 
@@ -290,10 +290,7 @@ public class ExportContext {
             locator = optionalLocator.get();
         } else {
             if (variant == FontVariant.MONOSPACE) {
-                String defaultMonoSpacedFamily = node.getStyle().getStyleAttribute(
-                        StyleType.FONT,
-                        style -> Optional.ofNullable(((FontStyle) style).getMonoSpacedFontFamily())
-                ).orElseThrow();
+                String defaultMonoSpacedFamily = node.getStyles().resolve(StyleType.INLINE_CODE_FONT_FAMILY).orElseThrow().value();
 
                 locator = FontManager.getInstance().getFamily(defaultMonoSpacedFamily).orElseThrow().getVariantFont(FontVariant.MONOSPACE).orElseThrow();
             } else {
@@ -318,10 +315,10 @@ public class ExportContext {
         }
 
         if (variant != FontVariant.MONOSPACE) { // Monospaced fonts should not be optically kerned
-            font.setKerningMode(node.getStyle().getStyleAttribute(
-                    StyleType.FONT,
-                    style -> Optional.ofNullable(((FontStyle) style).getKerningMode())
-            ).orElseThrow());
+            font.setKerningMode(node.getStyles()
+                    .resolve(StyleType.FONT_KERNING)
+                    .orElse(new KerningModeStyleValue(KerningMode.NATIVE))
+                    .kerningMode());
         }
 
         return font;
@@ -334,7 +331,9 @@ public class ExportContext {
      * @return font size
      */
     public double getFontSizeForNode(DocumentNode node) {
-        return node.getStyle().getStyleAttribute(StyleType.FONT, style -> Optional.ofNullable(((FontStyle) style).getSize())).orElse(11.0);
+        return node.getStyles().resolve(StyleType.FONT_SIZE)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
     }
 
     /**

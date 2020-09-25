@@ -8,11 +8,11 @@ import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
-import de.be.thaw.style.model.style.Style;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
+import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.HeaderFooterStyle;
-import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.impl.SizeStyle;
+import de.be.thaw.style.model.style.value.DoubleStyleValue;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.parser.exception.ParseException;
 import de.be.thaw.typeset.exception.TypeSettingException;
@@ -22,15 +22,18 @@ import de.be.thaw.typeset.knuthplass.util.RethrowingBiFunction;
 import de.be.thaw.typeset.page.AbstractElement;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.Page;
+import de.be.thaw.typeset.page.impl.LineElement;
+import de.be.thaw.typeset.page.util.LineStyle;
 import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
+import de.be.thaw.util.color.Color;
+import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,16 +41,6 @@ import java.util.Map;
  * Context used during typesetting.
  */
 public class TypeSettingContext {
-
-    /**
-     * Inches per printer point conversion factor.
-     */
-    private static final double INCHES_PER_POINT = 1.0 / 72;
-
-    /**
-     * Millimeters per inch conversion factor.
-     */
-    private static final double MM_PER_INCH = 25.4;
 
     /**
      * Configuration of the Knuth-Plass type setting algorithm.
@@ -138,6 +131,31 @@ public class TypeSettingContext {
      */
     private int lineNumberCounter = 0;
 
+    /**
+     * Margin top for foot notes.
+     */
+    private final double footNotesMarginTop;
+
+    /**
+     * Padding top for foot notes.
+     */
+    private final double footNotesPaddingTop;
+
+    /**
+     * Line length for the foot notes paragraph.
+     */
+    private final double footNoteLineLength;
+
+    /**
+     * Line size of the foot notes paragraph line.
+     */
+    private final double footNotesLineSize;
+
+    /**
+     * Color of the foot notes paragraph line.
+     */
+    private final Color footNoteLineColor;
+
     public TypeSettingContext(
             KnuthPlassTypeSettingConfig config,
             Document document,
@@ -161,6 +179,21 @@ public class TypeSettingContext {
         this.typesetDocumentFunction = typesetDocumentFunction;
 
         positionContext.setY(config.getPageInsets().getTop()); // Initialize y-offset
+
+        // Save some foot notes styles
+        Map<StyleType, StyleValue> footNotesStyles = getDocument().getStyleModel()
+                .getBlock(new StyleSelectorBuilder().setTargetName("footnotes").build())
+                .orElseThrow()
+                .getStyles();
+
+        footNoteLineLength = footNotesStyles.getOrDefault(
+                StyleType.FOOT_NOTE_LINE_LENGTH,
+                new DoubleStyleValue((getConfig().getPageSize().getWidth() - getConfig().getPageInsets().getLeft() - getConfig().getPageInsets().getRight()) / 3, Unit.POINTS)
+        ).doubleValue(Unit.POINTS);
+        footNotesMarginTop = footNotesStyles.get(StyleType.MARGIN_TOP).doubleValue(Unit.POINTS);
+        footNotesPaddingTop = footNotesStyles.get(StyleType.PADDING_TOP).doubleValue(Unit.POINTS);
+        footNoteLineColor = footNotesStyles.get(StyleType.FOOT_NOTE_LINE_COLOR).colorValue();
+        footNotesLineSize = footNotesStyles.get(StyleType.FOOT_NOTE_LINE_SIZE).doubleValue(Unit.POINTS);
     }
 
     /**
@@ -247,7 +280,22 @@ public class TypeSettingContext {
      * Add all pending foot notes to the page.
      */
     private void addFootNotesToPage() {
-        double startY = config.getPageSize().getHeight() - config.getPageInsets().getBottom() - currentFootNoteElementsHeight;
+        double startY = config.getPageSize().getHeight() - config.getPageInsets().getBottom() - currentFootNoteElementsHeight + footNotesMarginTop;
+
+        if (!currentFootNotePageElements.isEmpty()) {
+            // Add foot notes line first
+            double footNoteLineStartX = config.getPageInsets().getLeft();
+            currentPageElements.add(new LineElement(
+                    getCurrentPageNumber(),
+                    new Size(footNoteLineLength, 0),
+                    new Position(footNoteLineStartX, startY + footNotesLineSize / 2),
+                    LineStyle.SOLID,
+                    footNotesLineSize,
+                    footNoteLineColor
+            ));
+        }
+
+        startY += footNotesPaddingTop;
 
         for (List<Element> elements : currentFootNotePageElements) {
             // Position the elements properly
@@ -357,9 +405,10 @@ public class TypeSettingContext {
                 continue; // Skip the default header or footer entry
             }
 
-            int startPage = range.getStartPage().orElse(1);
+            int startPage = range.getStartPage();
+            int endPage = range.getEndPage();
 
-            if (startPage <= pageNumber && (range.getEndPage().isEmpty() || range.getEndPage().get() >= pageNumber)) {
+            if (startPage <= pageNumber && (endPage >= pageNumber || endPage == PageRange.LAST_PAGE)) {
                 return entry.getValue();
             }
         }
@@ -390,14 +439,30 @@ public class TypeSettingContext {
      */
     public void pushFootNote(DocumentNode node) throws TypeSettingException {
         List<List<Paragraph>> paragraphLists = footNoteParagraphs.get(node.getId());
-        List<Page> pages = typesettingFunction.apply(paragraphLists, new TypeSettingContext(config, document, paragraphLists, null, null, null, null, null));
+        List<Page> pages = typesettingFunction.apply(paragraphLists, new TypeSettingContext(
+                KnuthPlassTypeSettingConfig.newBuilder(config)
+                        .setPageNumberOffset(getCurrentPageNumber() - 1)
+                        .setAllowHeadersAndFooters(false)
+                        .build(),
+                document,
+                paragraphLists,
+                null,
+                null,
+                null,
+                null,
+                null
+        ));
         Page page = pages.get(0);
 
         page.getElements().sort(Comparator.comparingDouble(e -> e.getPosition().getY() + e.getSize().getHeight()));
         Element lastElement = page.getElements().get(page.getElements().size() - 1);
         double height = lastElement.getPosition().getY() + lastElement.getSize().getHeight() - page.getInsets().getTop();
 
-        // TODO Add foot note number as element
+        if (currentFootNotePageElements.isEmpty()) {
+            // Is first foot note being pushed
+            currentFootNoteElementsHeight += footNotesMarginTop + footNotesPaddingTop + footNotesLineSize;
+        }
+
         currentFootNotePageElements.add(page.getElements());
         currentFootNoteElementsHeight += height;
 
@@ -413,6 +478,12 @@ public class TypeSettingContext {
         Element lastElement = elements.get(elements.size() - 1);
         double height = lastElement.getPosition().getY() + lastElement.getSize().getHeight() - config.getPageInsets().getTop();
         currentFootNoteElementsHeight += height;
+
+        if (currentFootNotePageElements.isEmpty()) {
+            // Is first foot note being pushed
+            currentFootNoteElementsHeight += footNotesMarginTop + footNotesPaddingTop + footNotesLineSize;
+        }
+
         currentFootNotePageElements.add(elements);
     }
 
@@ -429,7 +500,13 @@ public class TypeSettingContext {
 
             currentFootNoteElementsHeight -= height;
 
-            return currentFootNotePageElements.remove(currentFootNotePageElements.size() - 1);
+            List<Element> result = currentFootNotePageElements.remove(currentFootNotePageElements.size() - 1);
+
+            if (currentFootNotePageElements.isEmpty()) {
+                currentFootNoteElementsHeight = 0;
+            }
+
+            return result;
         }
 
         return null;
@@ -481,16 +558,18 @@ public class TypeSettingContext {
         }
 
         // Create style model to use.
-        StyleModel styleModel = new StyleModel(new HashMap<>()).merge(getDocument().getStyleModel());
-
-        Map<StyleType, Style> styles = new HashMap<>();
-        double mmWidth = width * INCHES_PER_POINT * MM_PER_INCH;
-        styles.put(StyleType.SIZE, new SizeStyle(mmWidth, Double.MAX_VALUE));
-        styles.put(StyleType.INSETS, new InsetsStyle(0.0, 0.0, 0.0, 0.0));
-        styles.put(StyleType.HEADER_FOOTER, new HeaderFooterStyle(null, null));
-        StyleBlock newDocumentBlock = new StyleBlock("DOCUMENT", styles);
-
-        styleModel.addBlock(newDocumentBlock.getName(), newDocumentBlock.merge(styleModel.getBlock(newDocumentBlock.getName()).orElseThrow()));
+        StyleModel styleModel = new DefaultStyleModel().merge(getDocument().getStyleModel());
+        styleModel.addBlock(new StyleBlock(
+                new StyleSelectorBuilder().setTargetName("document").build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.WIDTH, new DoubleStyleValue(width, Unit.POINTS)),
+                        Map.entry(StyleType.HEIGHT, new DoubleStyleValue(Double.MAX_VALUE, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(0.0, Unit.MILLIMETER))
+                )
+        ));
 
         if (customStyleModel != null) {
             styleModel = customStyleModel.merge(styleModel);
@@ -519,6 +598,7 @@ public class TypeSettingContext {
                 .setPageSize(new Size(width, Double.MAX_VALUE))
                 .setPageInsets(new Insets(0))
                 .setPageNumberOffset(getCurrentPageNumber() - 1)
+                .setAllowHeadersAndFooters(false)
                 .build());
     }
 

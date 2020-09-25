@@ -134,6 +134,11 @@ public class KnuthPlassTypeSettingConfigBuilder {
     private Properties properties;
 
     /**
+     * Whether headers and footers are allowed to be typeset.
+     */
+    private boolean allowHeadersAndFooters = true;
+
+    /**
      * Get the size of the page to typeset on (in mm).
      *
      * @return size of the page
@@ -468,6 +473,28 @@ public class KnuthPlassTypeSettingConfigBuilder {
     }
 
     /**
+     * Whether typesetting headers and footers is allowed.
+     *
+     * @return allow headers and footers
+     */
+    public boolean isAllowHeadersAndFooters() {
+        return allowHeadersAndFooters;
+    }
+
+    /**
+     * Set whether headers and footers are allowed to be typeset.
+     *
+     * @param allow whether to allow
+     * @return the builder
+     */
+    public KnuthPlassTypeSettingConfigBuilder setAllowHeadersAndFooters(boolean allow) {
+        this.allowHeadersAndFooters = allow;
+
+        return this;
+    }
+
+
+    /**
      * Build the line breaking configuration.
      *
      * @return the build config
@@ -489,7 +516,8 @@ public class KnuthPlassTypeSettingConfigBuilder {
                 getWorkingDirectory(),
                 getTextParser(),
                 getPageNumberOffset(),
-                getProperties()
+                getProperties(),
+                isAllowHeadersAndFooters()
         );
     }
 

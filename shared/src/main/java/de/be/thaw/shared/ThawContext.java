@@ -2,7 +2,7 @@ package de.be.thaw.shared;
 
 import de.be.thaw.info.model.language.Language;
 import de.be.thaw.info.parser.InfoParser;
-import de.be.thaw.style.parser.StyleParser;
+import de.be.thaw.style.parser.StyleFormatParser;
 import de.be.thaw.text.parser.TextParser;
 
 import java.io.File;
@@ -36,7 +36,7 @@ public class ThawContext {
     /**
      * Style parser to use.
      */
-    private StyleParser styleParser;
+    private StyleFormatParser styleFormatParser;
 
     /**
      * The encoding of the current Thaw project.
@@ -137,17 +137,17 @@ public class ThawContext {
      *
      * @return style parser
      */
-    public StyleParser getStyleParser() {
-        return styleParser;
+    public StyleFormatParser getStyleParser() {
+        return styleFormatParser;
     }
 
     /**
      * Set the style parser to use.
      *
-     * @param styleParser to set
+     * @param styleFormatParser to set
      */
-    public void setStyleParser(StyleParser styleParser) {
-        this.styleParser = styleParser;
+    public void setStyleParser(StyleFormatParser styleFormatParser) {
+        this.styleFormatParser = styleFormatParser;
     }
 
     /**

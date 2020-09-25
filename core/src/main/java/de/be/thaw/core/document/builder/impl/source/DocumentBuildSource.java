@@ -6,6 +6,7 @@ import de.be.thaw.reference.ReferenceModel;
 import de.be.thaw.reference.citation.CitationManager;
 import de.be.thaw.reference.impl.DefaultReferenceModel;
 import de.be.thaw.style.model.StyleModel;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
 import de.be.thaw.text.model.TextModel;
 import org.jetbrains.annotations.Nullable;
 

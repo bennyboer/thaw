@@ -2,10 +2,11 @@ package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
 
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.block.StyleBlock;
-import de.be.thaw.style.model.style.Style;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
+import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.InsetsStyle;
-import de.be.thaw.style.model.style.impl.TextStyle;
+import de.be.thaw.style.model.style.Styles;
+import de.be.thaw.style.model.style.value.DoubleStyleValue;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
@@ -19,11 +20,10 @@ import de.be.thaw.typeset.page.impl.ImageElement;
 import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
+import de.be.thaw.util.unit.Unit;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Handler dealing with typesetting image paragraphs.
@@ -44,19 +44,49 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
     public void handle(Paragraph paragraph, TypeSettingContext ctx) throws TypeSettingException {
         ImageParagraph imageParagraph = (ImageParagraph) paragraph;
 
-        final InsetsStyle insetsStyle = paragraph.getNode().getStyle().getStyleAttribute(
-                StyleType.INSETS,
-                style -> Optional.ofNullable((InsetsStyle) style)
-        ).orElseThrow();
+        Styles styles = paragraph.getNode().getStyles();
 
-        ctx.getPositionContext().increaseY(insetsStyle.getTop());
+        // Calculate margins
+        final double marginTop = styles.resolve(StyleType.MARGIN_TOP)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
 
-        double width = imageParagraph.getDefaultLineWidth() - (insetsStyle.getLeft() + insetsStyle.getRight());
+        // Calculate paddings (Only affecting the image, not the caption)
+        final double paddingTop = styles.resolve(StyleType.PADDING_TOP)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double paddingLeft = styles.resolve(StyleType.PADDING_LEFT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double paddingRight = styles.resolve(StyleType.PADDING_RIGHT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+
+        ctx.getPositionContext().increaseY(marginTop + paddingTop);
+
+        double width = imageParagraph.getDefaultLineWidth()
+                - (marginLeft + marginRight)
+                - (paddingLeft + paddingRight);
 
         double ratio = imageParagraph.getSrc().getSize().getWidth() / imageParagraph.getSrc().getSize().getHeight();
         double height = width / ratio;
 
-        double maxWidth = ctx.getConfig().getPageSize().getWidth() - (ctx.getConfig().getPageInsets().getLeft() + ctx.getConfig().getPageInsets().getRight()) - (insetsStyle.getLeft() + insetsStyle.getRight());
+        double maxWidth = ctx.getConfig().getPageSize().getWidth()
+                - (ctx.getConfig().getPageInsets().getLeft() + ctx.getConfig().getPageInsets().getRight())
+                - (marginLeft + marginRight)
+                - (paddingLeft + paddingRight);
         double x = ctx.getConfig().getPageInsets().getLeft();
         if (imageParagraph.getAlignment() == HorizontalAlignment.CENTER) {
             x += (maxWidth - width) / 2;
@@ -64,7 +94,7 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
             x += maxWidth - width;
         }
 
-        x += insetsStyle.getLeft();
+        x += marginLeft + paddingLeft;
 
         boolean isFloating = imageParagraph.isFloating() && imageParagraph.getAlignment() != HorizontalAlignment.CENTER;
 
@@ -85,10 +115,10 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
         );
         ctx.pushPageElement(imageElement);
 
-        double endY = ctx.getPositionContext().getY() + height + insetsStyle.getBottom();
+        double endY = ctx.getPositionContext().getY() + height + marginBottom + paddingBottom;
         if (isFloating) {
             ctx.getFloatConfig().setFloatUntilY(endY);
-            ctx.getFloatConfig().setFloatWidth(width + insetsStyle.getLeft() + insetsStyle.getRight());
+            ctx.getFloatConfig().setFloatWidth(width + marginLeft + marginRight + paddingLeft + paddingRight);
             ctx.getFloatConfig().setFloatIndent(imageParagraph.getAlignment() == HorizontalAlignment.LEFT ? ctx.getFloatConfig().getFloatWidth() : 0);
         } else {
             ctx.getPositionContext().setY(endY);
@@ -97,31 +127,35 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
         // Deal with the image paragraphs caption (if any).
         if (imageParagraph.getCaption().isPresent()) {
             String caption = imageParagraph.getCaption().orElseThrow();
-            addCaption(caption, imageParagraph, imageElement, insetsStyle, ctx);
+            addCaption(caption, imageParagraph, imageElement, marginBottom, paddingBottom, ctx);
         }
     }
 
     /**
      * Add the passed caption string under the image.
      *
-     * @param caption      to add
-     * @param paragraph    the image paragraph
-     * @param imageElement the already typeset image element
-     * @param insetsStyle  the insets of the image
-     * @param ctx          the typesetting context
+     * @param caption       to add
+     * @param paragraph     the image paragraph
+     * @param imageElement  the already typeset image element
+     * @param marginBottom  the bottom margin of the image
+     * @param paddingBottom the bottom padding of the image
+     * @param ctx           the typesetting context
      * @throws TypeSettingException in case the caption could not be added properly
      */
-    private void addCaption(String caption, ImageParagraph paragraph, ImageElement imageElement, InsetsStyle insetsStyle, TypeSettingContext ctx) throws TypeSettingException {
+    private void addCaption(String caption, ImageParagraph paragraph, ImageElement imageElement, double marginBottom, double paddingBottom, TypeSettingContext ctx) throws TypeSettingException {
         boolean isFloating = paragraph.isFloating() && paragraph.getAlignment() != HorizontalAlignment.CENTER;
-        double endY = imageElement.getPosition().getY() + imageElement.getSize().getHeight() + insetsStyle.getBottom();
+        double endY = imageElement.getPosition().getY() + imageElement.getSize().getHeight() + paddingBottom;
         double x = imageElement.getPosition().getX();
 
         // Typeset the caption
-        Map<StyleType, Style> styles = new HashMap<>();
-        styles.put(StyleType.TEXT, new TextStyle(0.0, null, null, null, null, null, null, null));
-        StyleBlock documentStyleBlock = new StyleBlock("DOCUMENT", styles);
-        StyleModel styleModel = new StyleModel(new HashMap<>());
-        styleModel.addBlock(documentStyleBlock.getName(), documentStyleBlock);
+
+        StyleModel styleModel = new DefaultStyleModel();
+        styleModel.addBlock(new StyleBlock(
+                new StyleSelectorBuilder().setTargetName("document").build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.FIRST_LINE_INDENT, new DoubleStyleValue(0.0, Unit.MILLIMETER))
+                )
+        ));
 
         List<Page> pages = ctx.typesetThawTextFormat(String.format(
                 "**%s %d**: %s",
@@ -173,7 +207,7 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
             }
         }
 
-        maxY += insetsStyle.getBottom();
+        maxY += marginBottom;
 
         // Adjust floating configuration (if needed)
         if (isFloating) {

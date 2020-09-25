@@ -87,8 +87,12 @@ public class KnuthPlassTypeSetter implements TypeSetter {
         List<List<Paragraph>> consecutiveParagraphLists = convertToParagraphs(document, document.getRoot(), configuration);
 
         // Convert headers and footers to paragraph lists for later use during the typesetting
-        Map<PageRange, List<List<Paragraph>>> headerParagraphs = convertHeadersOrFootersToParagraphs(document, document.getHeaderNodes());
-        Map<PageRange, List<List<Paragraph>>> footerParagraphs = convertHeadersOrFootersToParagraphs(document, document.getFooterNodes());
+        Map<PageRange, List<List<Paragraph>>> headerParagraphs = new HashMap<>();
+        Map<PageRange, List<List<Paragraph>>> footerParagraphs = new HashMap<>();
+        if (configuration.isAllowHeadersAndFooters()) {
+            headerParagraphs = convertHeadersOrFootersToParagraphs(document, document.getHeaderNodes());
+            footerParagraphs = convertHeadersOrFootersToParagraphs(document, document.getFooterNodes());
+        }
 
         // Convert foot notes to paragraph lists for later use during the typesetting
         Map<String, List<List<Paragraph>>> footNoteParagraphs = new HashMap<>();

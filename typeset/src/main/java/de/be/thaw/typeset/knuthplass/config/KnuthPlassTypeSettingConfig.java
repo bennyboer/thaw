@@ -100,6 +100,11 @@ public class KnuthPlassTypeSettingConfig {
      */
     private final Properties properties;
 
+    /**
+     * Whether typesetting headers and footers is allowed.
+     */
+    private boolean allowHeadersAndFooters;
+
     public KnuthPlassTypeSettingConfig(
             Size pageSize,
             Insets pageInsets,
@@ -116,7 +121,8 @@ public class KnuthPlassTypeSettingConfig {
             File workingDirectory,
             TextParser textParser,
             int pageNumberOffset,
-            Properties properties
+            Properties properties,
+            boolean allowHeadersAndFooters
     ) {
         if (fontDetailsSupplier == null) {
             throw new NullPointerException("Cannot build line breaking configuration as the font details supplier is null which is required to properly typeset");
@@ -169,6 +175,8 @@ public class KnuthPlassTypeSettingConfig {
         this.pageNumberOffset = pageNumberOffset;
 
         this.properties = properties;
+
+        this.allowHeadersAndFooters = allowHeadersAndFooters;
     }
 
     /**
@@ -329,6 +337,15 @@ public class KnuthPlassTypeSettingConfig {
     }
 
     /**
+     * Whether typesetting headers and footers is allowed.
+     *
+     * @return allow headers and footers
+     */
+    public boolean isAllowHeadersAndFooters() {
+        return allowHeadersAndFooters;
+    }
+
+    /**
      * Create a new builder for the line breaking configuration.
      *
      * @param config to initialize settings from
@@ -351,7 +368,8 @@ public class KnuthPlassTypeSettingConfig {
                 .setPageSize(config.getPageSize())
                 .setTolerance(config.getTolerance())
                 .setPageNumberOffset(config.getPageNumberOffset())
-                .setProperties(config.getProperties());
+                .setProperties(config.getProperties())
+                .setAllowHeadersAndFooters(config.isAllowHeadersAndFooters());
     }
 
 }

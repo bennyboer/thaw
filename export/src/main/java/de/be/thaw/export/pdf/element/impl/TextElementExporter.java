@@ -12,9 +12,6 @@ import de.be.thaw.reference.ReferenceType;
 import de.be.thaw.reference.impl.ExternalReference;
 import de.be.thaw.reference.impl.InternalReference;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.ColorStyle;
-import de.be.thaw.style.model.style.impl.FontStyle;
-import de.be.thaw.style.model.style.impl.ReferenceStyle;
 import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
@@ -24,6 +21,7 @@ import de.be.thaw.typeset.page.impl.PageNumberPlaceholderElement;
 import de.be.thaw.typeset.page.impl.TextElement;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
+import de.be.thaw.util.color.Color;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
@@ -38,7 +36,6 @@ import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPa
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public class TextElementExporter implements ElementExporter {
@@ -74,9 +71,9 @@ public class TextElementExporter implements ElementExporter {
             out.setFont(font.getPdFont(), (float) fontSize);
 
             // Apply font color
-            ColorStyle colorStyle = getFontColor(node, reference);
+            Color colorStyle = getFontColor(node, reference);
             out.setNonStrokingColor(new PDColor(
-                    new float[]{colorStyle.getRed().floatValue(), colorStyle.getGreen().floatValue(), colorStyle.getBlue().floatValue()},
+                    new float[]{(float) colorStyle.getRed(), (float) colorStyle.getGreen(), (float) colorStyle.getBlue()},
                     PDDeviceRGB.INSTANCE
             ));
 
@@ -144,24 +141,15 @@ public class TextElementExporter implements ElementExporter {
      * @param reference if there is one
      * @return font color
      */
-    private ColorStyle getFontColor(DocumentNode node, Reference reference) {
+    private Color getFontColor(DocumentNode node, Reference reference) {
         if (reference != null) {
             if (reference.getType() == ReferenceType.INTERNAL) {
-                return node.getStyle().getStyleAttribute(
-                        StyleType.REFERENCE,
-                        style -> Optional.ofNullable(((ReferenceStyle) style).getInternalColor())
-                ).orElseThrow();
+                return node.getStyles().resolve(StyleType.INTERNAL_LINK_COLOR).orElseThrow().colorValue();
             } else {
-                return node.getStyle().getStyleAttribute(
-                        StyleType.REFERENCE,
-                        style -> Optional.ofNullable(((ReferenceStyle) style).getExternalColor())
-                ).orElseThrow();
+                return node.getStyles().resolve(StyleType.EXTERNAL_LINK_COLOR).orElseThrow().colorValue();
             }
         } else {
-            return node.getStyle().getStyleAttribute(
-                    StyleType.FONT,
-                    style -> Optional.ofNullable(((FontStyle) style).getColor())
-            ).orElseThrow();
+            return node.getStyles().resolve(StyleType.COLOR).orElseThrow().colorValue();
         }
     }
 

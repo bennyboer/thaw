@@ -4,7 +4,6 @@ import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.style.model.style.StyleType;
-import de.be.thaw.style.model.style.impl.TextStyle;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWord;
@@ -15,10 +14,10 @@ import de.be.thaw.typeset.knuthplass.item.impl.box.EmptyBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
+import de.be.thaw.util.unit.Unit;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -332,10 +331,9 @@ public class ConversionContext {
      * @param paragraph to append empty box to
      */
     public void appendEmptyBoxToParagraph(DocumentNode node, TextParagraph paragraph) {
-        double firstLineIndent = node.getStyle().getStyleAttribute(
-                StyleType.TEXT,
-                style -> Optional.ofNullable(((TextStyle) style).getFirstLineIndent())
-        ).orElse(0.0);
+        final double firstLineIndent = node.getStyles().resolve(StyleType.FIRST_LINE_INDENT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
 
         paragraph.addItem(new EmptyBox(firstLineIndent));
     }

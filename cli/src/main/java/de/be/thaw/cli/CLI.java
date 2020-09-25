@@ -12,8 +12,10 @@ import de.be.thaw.info.parser.impl.DefaultInfoParser;
 import de.be.thaw.reference.citation.CitationManagerFactory;
 import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.StyleModel;
-import de.be.thaw.style.parser.StyleParser;
-import de.be.thaw.style.parser.impl.DefaultStyleParser;
+import de.be.thaw.style.model.impl.DefaultStyleModel;
+import de.be.thaw.style.parser.StyleFormatParser;
+import de.be.thaw.style.parser.exception.StyleModelParseException;
+import de.be.thaw.style.parser.impl.DefaultStyleFormatParser;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.parser.TextParser;
 import de.be.thaw.text.parser.exception.ParseException;
@@ -190,8 +192,8 @@ public class CLI implements Callable<Integer> {
 
         String[] styleFiles = root.list((dir, name) -> name.endsWith(".tds"));
 
-        StyleParser styleParser = new DefaultStyleParser();
-        ThawContext.getInstance().setStyleParser(styleParser);
+        StyleFormatParser styleFormatParser = new DefaultStyleFormatParser();
+        ThawContext.getInstance().setStyleParser(styleFormatParser);
         StyleModel styleModel;
         if (styleFiles.length > 1) {
             System.err.println(String.format("There are more than one Thaw style files (ending with *.tds) in the folder at '%s'", root.getAbsolutePath()));
@@ -202,9 +204,9 @@ public class CLI implements Callable<Integer> {
             File styleFile = new File(root, styleFiles[0]);
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(styleFile), info.getEncoding()))) {
-                styleModel = styleParser.parse(br);
-                styleModel = styleModel.merge(StyleModel.defaultModel());
-            } catch (de.be.thaw.style.parser.exception.ParseException e) {
+                styleModel = styleFormatParser.parse(br);
+                styleModel = styleModel.merge(DefaultStyleModel.defaultModel());
+            } catch (StyleModelParseException e) {
                 System.err.println(String.format(
                         "An exception occurred while trying to parse the provided style file at '%s'.\n" +
                                 "The exception message is: '%s'",
@@ -215,7 +217,7 @@ public class CLI implements Callable<Integer> {
                 return ErrorResult.STYLE_FILE_PARSING_ERROR.getCode();
             }
         } else {
-            styleModel = StyleModel.defaultModel();
+            styleModel = DefaultStyleModel.defaultModel();
         }
 
         Document document = new DefaultDocumentBuilder().build(new DocumentBuildSource(
