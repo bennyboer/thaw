@@ -69,7 +69,14 @@ public class TableOfContentsItemParagraphHandler extends TextParagraphHandler {
             numberingPageElements = ctx.getCurrentPageElements();
         }
 
-        TextElement firstHeadlineTextElement = (TextElement) numberingPageElements.get(oldPageElementsSize);
+        TextElement firstHeadlineTextElement;
+        for (int i = oldPageElementsSize; ; i++) {
+            Element e = numberingPageElements.get(i);
+            if (e instanceof TextElement) {
+                firstHeadlineTextElement = (TextElement) e;
+                break;
+            }
+        }
         TextElement lastTextElement = (TextElement) ctx.getCurrentPageElements().get(ctx.getCurrentPageElements().size() - 1);
 
         // Add the numbering string text element before the headline text that has already been typeset

@@ -127,6 +127,12 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM)
                 .orElseThrow()
                 .doubleValue(Unit.POINTS);
+        final double paddingLeft = styles.resolve(StyleType.PADDING_LEFT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double paddingRight = styles.resolve(StyleType.PADDING_RIGHT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
 
         // Typeset the caption
         StyleModel styleModel = new DefaultStyleModel();
@@ -142,7 +148,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
                 paragraph.getCaptionPrefix() != null ? paragraph.getCaptionPrefix() : ctx.getConfig().getProperties().getOrDefault("code.caption.prefix", DEFAULT_CODE_CAPTION_PREFIX),
                 ctx.getDocument().getReferenceModel().getReferenceNumber(paragraph.getNode().getId()),
                 caption
-        ), paragraph.getDefaultLineWidth() - marginLeft - marginRight, styleModel);
+        ), paragraph.getDefaultLineWidth() - marginLeft - marginRight - paddingLeft - paddingRight, styleModel);
 
         // Re-layout the elements below the code paragraph
         double endY = ctx.getPositionContext().getY() + paddingBottom;

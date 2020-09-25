@@ -73,18 +73,20 @@ public class RectangleElementExporter implements ElementExporter {
 
             // Now stroke the border sides (if any)
             if (strokeAround) {
-                out.setStrokingColor(
-                        (float) rect.getStrokeColors()[0].getRed(),
-                        (float) rect.getStrokeColors()[0].getGreen(),
-                        (float) rect.getStrokeColors()[0].getBlue()
-                );
-                out.setLineWidth((float) rect.getBorderWidths().getTop());
-                if (rect.getBorderStyles()[0] == LineStyle.DOTTED) {
-                    out.setLineDashPattern(new float[]{(float) rect.getBorderWidths().getTop(), 3.0f}, 0);
-                }
+                if (rect.getBorderWidths().getTop() > 0) {
+                    out.setStrokingColor(
+                            (float) rect.getStrokeColors()[0].getRed(),
+                            (float) rect.getStrokeColors()[0].getGreen(),
+                            (float) rect.getStrokeColors()[0].getBlue()
+                    );
+                    out.setLineWidth((float) rect.getBorderWidths().getTop());
+                    if (rect.getBorderStyles()[0] == LineStyle.DOTTED) {
+                        out.setLineDashPattern(new float[]{(float) rect.getBorderWidths().getTop(), 3.0f}, 0);
+                    }
 
-                doRectPath(out, xStart, xEnd, yStart, yEnd, rect);
-                out.stroke();
+                    doRectPath(out, xStart, xEnd, yStart, yEnd, rect);
+                    out.stroke();
+                }
             } else {
                 // Right side
                 if (rect.getBorderWidths().getRight() > 0) {

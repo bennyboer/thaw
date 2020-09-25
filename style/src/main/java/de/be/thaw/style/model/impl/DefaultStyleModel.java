@@ -98,7 +98,7 @@ public class DefaultStyleModel implements StyleModel {
                         Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.PADDING_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.PADDING_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
-                        Map.entry(StyleType.BACKGROUND_COLOR, new ColorStyleValue(new Color(1.0, 1.0, 1.0))), // White background color
+                        Map.entry(StyleType.BACKGROUND_COLOR, new ColorStyleValue(new Color(1.0, 1.0, 1.0, 0.0))), // White background color
                         Map.entry(StyleType.FIRST_LINE_INDENT, new DoubleStyleValue(0.6, Unit.CENTIMETER)),
                         Map.entry(StyleType.TEXT_ALIGN, new HorizontalAlignmentStyleValue(HorizontalAlignment.LEFT)),
                         Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.2, Unit.UNITARY)),

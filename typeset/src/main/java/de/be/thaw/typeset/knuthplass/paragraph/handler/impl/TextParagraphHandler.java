@@ -32,7 +32,10 @@ import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.impl.MathExpressionElement;
+import de.be.thaw.typeset.page.impl.RectangleElement;
 import de.be.thaw.typeset.page.impl.TextElement;
+import de.be.thaw.typeset.page.util.LineStyle;
+import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
@@ -124,6 +127,10 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             throw new TypeSettingException(e);
         }
 
+        // Save the start y position of the background for later use
+        double backgroundStartY = ctx.getPositionContext().getY() + marginTop;
+        int firstElementIndex = ctx.getCurrentPageElements().size(); // First element index of the text paragraph
+
         // Set up the initial position of the paragraph
         ctx.getPositionContext().increaseY(marginTop + paddingTop);
         ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + marginLeft + paddingLeft);
@@ -186,7 +193,12 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                     if (ctx.getAvailableHeight() < lineHeight) {
                         // Create new page first as foot note and foot note reference do not fit on the same page anymore
                         List<Element> footNoteElements = ctx.popFootNote(); // Pop the last foot note again from the current page
+
+                        pushRectangleElementIfNecessary(ctx, backgroundStartY, firstElementIndex, textParagraph); // Push background rectangle element if necessary
                         ctx.pushPage(); // Push the next page
+                        backgroundStartY = ctx.getPositionContext().getY();
+                        firstElementIndex = ctx.getCurrentPageElements().size();
+
                         ctx.pushFootNote(footNoteElements);
                     }
                 }
@@ -196,7 +208,10 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             double availableHeight = ctx.getAvailableHeight();
             if (availableHeight < lineHeight) {
                 // Not enough space for this line left on the current page -> Create next page
+                pushRectangleElementIfNecessary(ctx, backgroundStartY, firstElementIndex, textParagraph); // Push background rectangle element if necessary
                 ctx.pushPage();
+                backgroundStartY = ctx.getPositionContext().getY();
+                firstElementIndex = ctx.getCurrentPageElements().size();
             }
 
             boolean isFloating = ctx.getFloatConfig().getFloatUntilY() > ctx.getPositionContext().getY();
@@ -336,7 +351,90 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft() + indent);
         }
 
+        pushRectangleElementIfNecessary(ctx, backgroundStartY, firstElementIndex, textParagraph);
         ctx.getPositionContext().increaseY(marginBottom + paddingBottom);
+    }
+
+    /**
+     * Push a rectangle element for the background if necessary.
+     */
+    private void pushRectangleElementIfNecessary(TypeSettingContext ctx, double startY, int startElementIndex, TextParagraph paragraph) {
+        // Fetch background and border styles
+        Styles styles = paragraph.getNode().getStyles();
+
+        final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+        final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM)
+                .orElseThrow()
+                .doubleValue(Unit.POINTS);
+
+        Color backgroundColor = styles.resolve(StyleType.BACKGROUND_COLOR).map(StyleValue::colorValue).orElse(new Color(1.0, 1.0, 1.0, 0.0));
+        Insets borderWidths = new Insets(
+                styles.resolve(StyleType.BORDER_TOP_WIDTH).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_RIGHT_WIDTH).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_BOTTOM_WIDTH).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_LEFT_WIDTH).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0)
+        );
+        Insets borderRadius = new Insets(
+                styles.resolve(StyleType.BORDER_RADIUS_TOP).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_RADIUS_RIGHT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_RADIUS_BOTTOM).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.BORDER_RADIUS_LEFT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0)
+        );
+        Color[] borderColors = new Color[]{
+                new Color(0.0, 0.0, 0.0),
+                new Color(0.0, 0.0, 0.0),
+                new Color(0.0, 0.0, 0.0),
+                new Color(0.0, 0.0, 0.0)
+        };
+        styles.resolve(StyleType.BORDER_TOP_COLOR).ifPresent(v -> borderColors[0] = v.colorValue());
+        styles.resolve(StyleType.BORDER_RIGHT_COLOR).ifPresent(v -> borderColors[1] = v.colorValue());
+        styles.resolve(StyleType.BORDER_BOTTOM_COLOR).ifPresent(v -> borderColors[2] = v.colorValue());
+        styles.resolve(StyleType.BORDER_LEFT_COLOR).ifPresent(v -> borderColors[3] = v.colorValue());
+        LineStyle[] borderStyles = new LineStyle[]{
+                LineStyle.SOLID,
+                LineStyle.SOLID,
+                LineStyle.SOLID,
+                LineStyle.SOLID
+        };
+        styles.resolve(StyleType.BORDER_TOP_STYLE).ifPresent(v -> borderStyles[0] = LineStyle.valueOf(v.fillStyle().name()));
+        styles.resolve(StyleType.BORDER_RIGHT_STYLE).ifPresent(v -> borderStyles[1] = LineStyle.valueOf(v.fillStyle().name()));
+        styles.resolve(StyleType.BORDER_BOTTOM_STYLE).ifPresent(v -> borderStyles[2] = LineStyle.valueOf(v.fillStyle().name()));
+        styles.resolve(StyleType.BORDER_LEFT_STYLE).ifPresent(v -> borderStyles[3] = LineStyle.valueOf(v.fillStyle().name()));
+
+        Size size = new Size(
+                ctx.getConfig().getPageSize().getWidth() - ctx.getConfig().getPageInsets().getLeft() - ctx.getConfig().getPageInsets().getRight() - marginLeft - marginRight,
+                ctx.getPositionContext().getY() - startY + paddingBottom
+        );
+        Position position = new Position(
+                ctx.getConfig().getPageInsets().getLeft() + marginLeft,
+                startY
+        );
+
+        RectangleElement rect = new RectangleElement(ctx.getCurrentPageNumber(), size, position);
+
+        // Check if we have enough settings to push a rectangle
+        boolean pushRectangle = false;
+        if (backgroundColor.getAlpha() > 0.0) {
+            pushRectangle = true;
+            rect.setFillColor(backgroundColor);
+        }
+        if (borderWidths.getTop() > 0 || borderWidths.getRight() > 0 || borderWidths.getBottom() > 0 || borderWidths.getLeft() > 0) {
+            pushRectangle = true;
+            rect.setBorderWidths(borderWidths);
+        }
+
+        if (pushRectangle) {
+            rect.setStrokeColors(borderColors);
+            rect.setBorderStyles(borderStyles);
+            rect.setBorderRadius(borderRadius);
+
+            ctx.getCurrentPageElements().add(startElementIndex, rect);
+        }
     }
 
     /**
