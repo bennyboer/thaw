@@ -32,11 +32,11 @@ public class Insets {
         this.right = all;
     }
 
-    public Insets(double top, double left, double bottom, double right) {
+    public Insets(double top, double right, double bottom, double left) {
         this.top = top;
-        this.left = left;
-        this.bottom = bottom;
         this.right = right;
+        this.bottom = bottom;
+        this.left = left;
     }
 
     /**

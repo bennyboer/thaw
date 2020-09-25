@@ -73,6 +73,34 @@ public class Color {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Color color = (Color) o;
+
+        if (Double.compare(color.red, red) != 0) return false;
+        if (Double.compare(color.green, green) != 0) return false;
+        if (Double.compare(color.blue, blue) != 0) return false;
+        return Double.compare(color.alpha, alpha) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        temp = Double.doubleToLongBits(red);
+        result = (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(green);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(blue);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(alpha);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+    @Override
     public String toString() {
         return String.format("rgba(%f, %f, %f, %f)", getRed(), getGreen(), getBlue(), getAlpha());
     }
