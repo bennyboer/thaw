@@ -127,7 +127,18 @@ public class StyleFormatParserTest {
                 "\tfont-family: Calibri;\n" +
                 "}\n" +
                 "image {\n" +
-                "\tborder: 1px solid #000000;\n" +
+                "\tborder-bottom-color: rgba(0.000000, 0.000000, 0.000000, 1.000000);\n" +
+                "\tborder-bottom-style: solid;\n" +
+                "\tborder-bottom-width: 1.000000px;\n" +
+                "\tborder-left-color: rgba(0.000000, 0.000000, 0.000000, 1.000000);\n" +
+                "\tborder-left-style: solid;\n" +
+                "\tborder-left-width: 1.000000px;\n" +
+                "\tborder-right-color: rgba(0.000000, 0.000000, 0.000000, 1.000000);\n" +
+                "\tborder-right-style: solid;\n" +
+                "\tborder-right-width: 1.000000px;\n" +
+                "\tborder-top-color: rgba(0.000000, 0.000000, 0.000000, 1.000000);\n" +
+                "\tborder-top-style: solid;\n" +
+                "\tborder-top-width: 1.000000px;\n" +
                 "\tmargin-bottom: 5.000000mm;\n" +
                 "\tmargin-top: 5.000000mm;\n" +
                 "}\n" +
