@@ -113,7 +113,8 @@ public class DefaultStyleModel implements StyleModel {
                         Map.entry(StyleType.FONT_KERNING, new KerningModeStyleValue(KerningMode.NATIVE)),
                         Map.entry(StyleType.COLOR, new ColorStyleValue(new Color(0.0, 0.0, 0.0))),
                         Map.entry(StyleType.INTERNAL_LINK_COLOR, new ColorStyleValue(new Color(0.439, 0.503, 0.565))),
-                        Map.entry(StyleType.EXTERNAL_LINK_COLOR, new ColorStyleValue(new Color(0.439, 0.503, 0.565)))
+                        Map.entry(StyleType.EXTERNAL_LINK_COLOR, new ColorStyleValue(new Color(0.439, 0.503, 0.565))),
+                        Map.entry(StyleType.HYPHENATION, new BooleanStyleValue(true))
                 )
         ));
 

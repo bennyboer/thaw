@@ -4,6 +4,7 @@ import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.convert.exception.DocumentConversionException;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.typeset.knuthplass.config.KnuthPlassTypeSettingConfig;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.config.util.hyphen.HyphenatedWord;
@@ -17,6 +18,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 import de.be.thaw.util.unit.Unit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -239,6 +241,10 @@ public class ConversionContext {
         // Split by punctuation characters
         List<WordPartSplitByPunctuationCharacter> splitWord = splitByPunctuationCharacter(word);
 
+        final boolean allowHyphenation = node.getStyles().resolve(StyleType.HYPHENATION)
+                .map(StyleValue::booleanValue)
+                .orElse(true);
+
         try {
             int lastChar = -1;
             for (WordPartSplitByPunctuationCharacter splitWordPart : splitWord) {
@@ -251,9 +257,14 @@ public class ConversionContext {
                             node
                     ));
                 } else { // Is an actual word without punctuation characters
-                    // Hyphenate word first
-                    HyphenatedWord hyphenatedWord = config.getHyphenator().hyphenate(splitWordPart.getPart());
-                    List<HyphenatedWordPart> parts = hyphenatedWord.getParts();
+                    // Hyphenate word first if allowed
+                    List<HyphenatedWordPart> parts;
+                    if (allowHyphenation) {
+                        HyphenatedWord hyphenatedWord = config.getHyphenator().hyphenate(splitWordPart.getPart());
+                        parts = hyphenatedWord.getParts();
+                    } else {
+                        parts = Collections.singletonList(new HyphenatedWordPart(splitWordPart.getPart()));
+                    }
 
                     int len = parts.size();
                     FontDetailsSupplier.StringMetrics hyphenMetrics = config.getFontDetailsSupplier().measureString(node, lastChar, "-");

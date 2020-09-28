@@ -18,9 +18,12 @@ import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.selector.StyleSelector;
 import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
+import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;
+import de.be.thaw.style.model.style.value.BooleanStyleValue;
 import de.be.thaw.style.parser.exception.StyleModelParseException;
 import de.be.thaw.text.model.TextModel;
+import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.model.tree.impl.BoxNode;
@@ -342,6 +345,13 @@ public class DocumentBuildContext {
 
         if (node.getType() == NodeType.THINGY) {
             processThingy((ThingyNode) node, documentNode);
+        } else if (node.getType() == NodeType.FORMATTED) {
+            FormattedNode formattedNode = (FormattedNode) node;
+
+            // Check if it is a monospaced node which needs special hyphenation handling
+            if (formattedNode.getEmphases().iterator().next() == TextEmphasis.CODE) {
+                documentNode.getStyles().overrideStyle(StyleType.HYPHENATION, new BooleanStyleValue(false));
+            }
         }
     }
 
