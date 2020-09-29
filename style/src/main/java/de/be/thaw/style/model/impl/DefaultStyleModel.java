@@ -16,7 +16,7 @@ import de.be.thaw.style.model.style.value.BooleanStyleValue;
 import de.be.thaw.style.model.style.value.ColorStyleValue;
 import de.be.thaw.style.model.style.value.DoubleStyleValue;
 import de.be.thaw.style.model.style.value.FillStyleValue;
-import de.be.thaw.style.model.style.value.FontStyleValue;
+import de.be.thaw.style.model.style.value.FontFamilyStyleValue;
 import de.be.thaw.style.model.style.value.FontVariantStyleValue;
 import de.be.thaw.style.model.style.value.HorizontalAlignmentStyleValue;
 import de.be.thaw.style.model.style.value.IntStyleValue;
@@ -105,10 +105,10 @@ public class DefaultStyleModel implements StyleModel {
                         Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.2, Unit.UNITARY)),
                         Map.entry(StyleType.TEXT_JUSTIFY, new BooleanStyleValue(true)),
                         Map.entry(StyleType.SHOW_LINE_NUMBERS, new BooleanStyleValue(false)),
-                        Map.entry(StyleType.LINE_NUMBER_FONT_FAMILY, new FontStyleValue(monospaceFamilies.isEmpty() ? "" : monospaceFamilies.get(0).getName())),
+                        Map.entry(StyleType.LINE_NUMBER_FONT_FAMILY, new FontFamilyStyleValue(monospaceFamilies.isEmpty() ? "" : monospaceFamilies.get(0).getName())),
                         Map.entry(StyleType.LINE_NUMBER_FONT_SIZE, new DoubleStyleValue(7.0, Unit.POINTS)),
                         Map.entry(StyleType.LINE_NUMBER_COLOR, new ColorStyleValue(new Color(0.6, 0.6, 0.6))),
-                        Map.entry(StyleType.FONT_FAMILY, new FontStyleValue(plainFamilies.isEmpty() ? "" : plainFamilies.get(0).getName())),
+                        Map.entry(StyleType.FONT_FAMILY, new FontFamilyStyleValue(plainFamilies.isEmpty() ? "" : plainFamilies.get(0).getName())),
                         Map.entry(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.PLAIN)),
                         Map.entry(StyleType.FONT_SIZE, new IntStyleValue(12, Unit.POINTS)),
                         Map.entry(StyleType.FONT_KERNING, new KerningModeStyleValue(KerningMode.NATIVE)),
@@ -166,7 +166,7 @@ public class DefaultStyleModel implements StyleModel {
                         .setTargetName("code")
                         .build(),
                 Map.ofEntries(
-                        Map.entry(StyleType.FONT_FAMILY, new FontStyleValue(monospaceFamilies.isEmpty() ? "" : monospaceFamilies.get(0).getName())),
+                        Map.entry(StyleType.FONT_FAMILY, new FontFamilyStyleValue(monospaceFamilies.isEmpty() ? "" : monospaceFamilies.get(0).getName())),
                         Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.3, Unit.UNITARY)),
                         Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),

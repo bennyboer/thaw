@@ -7,7 +7,7 @@ import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.model.style.value.BooleanStyleValue;
 import de.be.thaw.style.model.style.value.ColorStyleValue;
 import de.be.thaw.style.model.style.value.DoubleStyleValue;
-import de.be.thaw.style.model.style.value.FontStyleValue;
+import de.be.thaw.style.model.style.value.FontFamilyStyleValue;
 import de.be.thaw.style.model.style.value.FontVariantStyleValue;
 import de.be.thaw.style.model.style.value.HorizontalAlignmentStyleValue;
 import de.be.thaw.style.model.style.value.StyleValue;
@@ -262,7 +262,7 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
 
                 // Create dummy document node representing the line number string
                 Styles lineNumberDocumentNodeStyles = new Styles(paragraph.getNode().getStyles());
-                lineNumberDocumentNodeStyles.overrideStyle(StyleType.FONT_FAMILY, new FontStyleValue(lineNumberFontFamily));
+                lineNumberDocumentNodeStyles.overrideStyle(StyleType.FONT_FAMILY, new FontFamilyStyleValue(lineNumberFontFamily));
                 lineNumberDocumentNodeStyles.overrideStyle(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.MONOSPACE));
                 lineNumberDocumentNodeStyles.overrideStyle(StyleType.FONT_SIZE, new DoubleStyleValue(lineNumberFontSize, Unit.POINTS));
                 lineNumberDocumentNodeStyles.overrideStyle(StyleType.COLOR, new ColorStyleValue(lineNumberColor));

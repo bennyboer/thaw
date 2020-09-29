@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -200,7 +201,9 @@ public class ThawPdfFont extends AbstractFont {
                 try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(cacheFile)))) {
                     opticalKerningTable = (OpticalKerningTable) ois.readObject();
                 } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+                    throw new IOException(e);
+                } catch (InvalidClassException e) {
+                    // Recalculate optical kerning table
                 }
             }
         }

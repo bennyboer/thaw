@@ -17,11 +17,6 @@ public class ValueState implements SFLexerState {
         } else if (c == '}') {
             ctx.popState();
             ctx.pushState(new BlockClosingState());
-        } else if (c == ':') {
-            throw new StyleFormatLexerException(
-                    "Encountered ':' character in a value. Most likely you forgot to add a semicolon (';') after a property?",
-                    ctx.getCurrentPosition()
-            );
         }
     }
 

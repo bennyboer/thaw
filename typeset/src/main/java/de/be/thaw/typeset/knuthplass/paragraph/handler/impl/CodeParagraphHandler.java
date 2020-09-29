@@ -18,7 +18,7 @@ import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.model.style.value.BooleanStyleValue;
 import de.be.thaw.style.model.style.value.ColorStyleValue;
 import de.be.thaw.style.model.style.value.DoubleStyleValue;
-import de.be.thaw.style.model.style.value.FontStyleValue;
+import de.be.thaw.style.model.style.value.FontFamilyStyleValue;
 import de.be.thaw.style.model.style.value.FontVariantStyleValue;
 import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.tree.impl.TextNode;
@@ -657,7 +657,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             }
 
             Styles dummyDocumentNodeStyles = new Styles(codeParagraph.getNode().getStyles());
-            dummyDocumentNodeStyles.overrideStyle(StyleType.FONT_FAMILY, new FontStyleValue(monoSpacedFontFamily));
+            dummyDocumentNodeStyles.overrideStyle(StyleType.FONT_FAMILY, new FontFamilyStyleValue(monoSpacedFontFamily));
             dummyDocumentNodeStyles.overrideStyle(StyleType.FONT_VARIANT, new FontVariantStyleValue(variant));
             dummyDocumentNodeStyles.overrideStyle(StyleType.COLOR, new ColorStyleValue(curCtx.getColor()));
 

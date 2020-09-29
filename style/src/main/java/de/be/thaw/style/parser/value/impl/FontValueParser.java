@@ -1,6 +1,6 @@
 package de.be.thaw.style.parser.value.impl;
 
-import de.be.thaw.style.model.style.value.FontStyleValue;
+import de.be.thaw.style.model.style.value.FontFamilyStyleValue;
 import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.style.parser.value.StyleValueParser;
 import de.be.thaw.style.parser.value.exception.StyleValueParseException;
@@ -16,17 +16,21 @@ public class FontValueParser implements StyleValueParser {
     public StyleValue parse(String src, File workingDirectory) throws StyleValueParseException {
         src = src.trim();
 
-        boolean isURL = src.startsWith("url(");
+        boolean isURL = src.contains(":url(");
         if (isURL) {
-            String filePath = src.substring(4, src.length() - 1);
+            int index = src.indexOf(":url(");
+
+            String familyName = src.substring(0, index);
+            String filePath = src.substring(index + 5, src.length() - 1);
+
             File fontFile = new File(filePath);
             if (fontFile.exists()) {
-                return new FontStyleValue(fontFile);
+                return new FontFamilyStyleValue(familyName, fontFile);
             } else {
                 // Try a relative path.
                 fontFile = new File(workingDirectory, filePath);
                 if (fontFile.exists()) {
-                    return new FontStyleValue(fontFile);
+                    return new FontFamilyStyleValue(familyName, fontFile);
                 } else {
                     throw new StyleValueParseException(String.format(
                             "Could not resolve font file at '%s'",
@@ -36,7 +40,7 @@ public class FontValueParser implements StyleValueParser {
             }
 
         } else {
-            return new FontStyleValue(src);
+            return new FontFamilyStyleValue(src);
         }
     }
 

@@ -22,7 +22,17 @@ public class OpticalKerningTable implements KerningTable, Serializable {
     /**
      * The mean minimum distance between optical kernable character pairs.
      */
-    private double meanMinDistance = 0;
+    private double meanMinDistance;
+
+    /**
+     * The mean area between optical kernable character pairs.
+     */
+    private double meanArea;
+
+    /**
+     * Height of the mean area between optical kernable character pairs.
+     */
+    private double meanAreaHeight;
 
     /**
      * The lookup for kerning per kerning pair.
@@ -34,6 +44,9 @@ public class OpticalKerningTable implements KerningTable, Serializable {
         kerningLookup.clear();
 
         double meanMinDistanceSum = 0;
+        double meanAreaSum = 0;
+        double meanAreaHeightSum = 0;
+
         long counter = 0;
 
         for (Glyph leftGlyph : glyphs) {
@@ -50,11 +63,16 @@ public class OpticalKerningTable implements KerningTable, Serializable {
                 );
 
                 meanMinDistanceSum += result.getMinDistance();
+                meanAreaSum += result.getArea();
+                meanAreaHeightSum += result.getAreaHeight();
+
                 counter++;
             }
         }
 
         meanMinDistance = meanMinDistanceSum / counter;
+        meanArea = meanAreaSum / counter;
+        meanAreaHeight = meanAreaHeightSum / counter;
     }
 
     @Override
