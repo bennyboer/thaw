@@ -9,6 +9,7 @@ import de.be.thaw.core.document.builder.impl.thingy.impl.HyperRefHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.IncludeHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.RefHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.ReferenceListHandler;
+import de.be.thaw.core.document.builder.impl.thingy.impl.VariableHandler;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.util.PageRange;
 import de.be.thaw.info.ThawInfo;
@@ -63,6 +64,7 @@ public class DocumentBuildContext {
         initThingyHandler(new FootNoteHandler());
         initThingyHandler(new CiteHandler());
         initThingyHandler(new ReferenceListHandler());
+        initThingyHandler(new VariableHandler());
     }
 
     /**

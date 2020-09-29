@@ -47,4 +47,12 @@ public interface ThawInfo {
      */
     String getBibliographyStyle();
 
+    /**
+     * Get a variable defined in the info file.
+     *
+     * @param key to get variable for
+     * @return variable (or empty Optional)
+     */
+    Optional<String> getVariable(String key);
+
 }

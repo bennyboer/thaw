@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -45,10 +46,16 @@ public class DefaultThawInfo implements ThawInfo {
      */
     private String bibliographyStyle = DEFAULT_CITATION_STYLE_NAME;
 
-    public DefaultThawInfo(Charset encoding, Language language, Author author) {
+    /**
+     * Map holding available variables.
+     */
+    private final Map<String, String> variables;
+
+    public DefaultThawInfo(Charset encoding, Language language, Author author, Map<String, String> variables) {
         this.encoding = encoding;
         this.language = language;
         this.author = author;
+        this.variables = variables;
     }
 
     @Override
@@ -83,6 +90,15 @@ public class DefaultThawInfo implements ThawInfo {
     @Override
     public String getBibliographyStyle() {
         return bibliographyStyle;
+    }
+
+    @Override
+    public Optional<String> getVariable(String key) {
+        if (variables == null) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(variables.get(key));
     }
 
     /**

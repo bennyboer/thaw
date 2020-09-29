@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -34,10 +36,17 @@ public class DefaultInfoParser implements InfoParser {
         Language language = parseLanguage(properties);
         Author author = parseAuthor(properties);
 
+        // Collect variables from properties
+        Map<String, String> variables = new HashMap<>();
+        for (var entry : properties.entrySet()) {
+            variables.put((String) entry.getKey(), (String) entry.getValue());
+        }
+
         DefaultThawInfo info = new DefaultThawInfo(
                 encoding,
                 language,
-                author
+                author,
+                variables
         );
 
         info.setBibliographyFile(parseBibliographyFile(properties, workingDirectory));
