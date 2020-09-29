@@ -6,6 +6,8 @@ import de.be.thaw.style.parser.value.StyleValueParser;
 import de.be.thaw.style.parser.value.exception.StyleValueParseException;
 import de.be.thaw.util.unit.Unit;
 
+import java.io.File;
+
 /**
  * Style value parser for double values.
  */
@@ -21,7 +23,7 @@ public class DoubleValueParser implements StyleValueParser {
     }
 
     @Override
-    public StyleValue parse(String src) throws StyleValueParseException {
+    public StyleValue parse(String src, File workingDirectory) throws StyleValueParseException {
         src = src.trim();
 
         // Try to extract unit from string

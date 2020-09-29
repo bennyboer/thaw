@@ -18,8 +18,8 @@ import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.model.style.value.BooleanStyleValue;
 import de.be.thaw.style.model.style.value.ColorStyleValue;
 import de.be.thaw.style.model.style.value.DoubleStyleValue;
+import de.be.thaw.style.model.style.value.FontStyleValue;
 import de.be.thaw.style.model.style.value.FontVariantStyleValue;
-import de.be.thaw.style.model.style.value.StringStyleValue;
 import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.tree.impl.TextNode;
 import de.be.thaw.typeset.exception.TypeSettingException;
@@ -386,7 +386,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         /**
          * Font family to use for drawing line numbers.
          */
-        private final String lineNumberFontFamily;
+        private final StyleValue lineNumberFontFamilyStyleValue;
 
         /**
          * Font size to draw line numbers with.
@@ -493,7 +493,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             }
 
             showLineNumbers = styles.resolve(StyleType.SHOW_LINE_NUMBERS).orElse(new BooleanStyleValue(true)).booleanValue();
-            lineNumberFontFamily = styles.resolve(StyleType.LINE_NUMBER_FONT_FAMILY).orElseThrow().value();
+            lineNumberFontFamilyStyleValue = styles.resolve(StyleType.LINE_NUMBER_FONT_FAMILY).orElseThrow();
 
             lineNumberFontSize = styles.resolve(StyleType.LINE_NUMBER_FONT_SIZE)
                     .orElse(new DoubleStyleValue(10.0, Unit.POINTS))
@@ -657,7 +657,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             }
 
             Styles dummyDocumentNodeStyles = new Styles(codeParagraph.getNode().getStyles());
-            dummyDocumentNodeStyles.overrideStyle(StyleType.FONT_FAMILY, new StringStyleValue(monoSpacedFontFamily));
+            dummyDocumentNodeStyles.overrideStyle(StyleType.FONT_FAMILY, new FontStyleValue(monoSpacedFontFamily));
             dummyDocumentNodeStyles.overrideStyle(StyleType.FONT_VARIANT, new FontVariantStyleValue(variant));
             dummyDocumentNodeStyles.overrideStyle(StyleType.COLOR, new ColorStyleValue(curCtx.getColor()));
 
@@ -922,7 +922,7 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
 
             // Create dummy document node representing the line number string
             Styles lineNumberNodeStyles = new Styles(paragraph.getNode().getStyles());
-            lineNumberNodeStyles.overrideStyle(StyleType.FONT_FAMILY, new StringStyleValue(lineNumberFontFamily));
+            lineNumberNodeStyles.overrideStyle(StyleType.FONT_FAMILY, lineNumberFontFamilyStyleValue);
             lineNumberNodeStyles.overrideStyle(StyleType.FONT_VARIANT, new FontVariantStyleValue(FontVariant.MONOSPACE));
             lineNumberNodeStyles.overrideStyle(StyleType.FONT_SIZE, new DoubleStyleValue(lineNumberFontSize, Unit.POINTS));
             lineNumberNodeStyles.overrideStyle(StyleType.COLOR, new ColorStyleValue(lineNumberColor));

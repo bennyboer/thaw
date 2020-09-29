@@ -9,6 +9,8 @@ import de.be.thaw.util.color.Color;
 import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+
 /**
  * Abstract representation of a style value.
  */
@@ -62,6 +64,11 @@ public abstract class AbstractStyleValue implements StyleValue {
     @Override
     public ListStyleType listStyleType() {
         throw new UnsupportedOperationException("Could not express style value as list style type");
+    }
+
+    @Override
+    public File file() {
+        throw new UnsupportedOperationException("Could not express style value as file");
     }
 
 }

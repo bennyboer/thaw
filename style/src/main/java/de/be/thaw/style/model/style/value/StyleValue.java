@@ -9,6 +9,8 @@ import de.be.thaw.util.color.Color;
 import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+
 /**
  * Representation of a style value.
  */
@@ -95,5 +97,12 @@ public interface StyleValue {
      * @return list style type
      */
     ListStyleType listStyleType();
+
+    /**
+     * Get the file this style value represents.
+     *
+     * @return file
+     */
+    File file();
 
 }

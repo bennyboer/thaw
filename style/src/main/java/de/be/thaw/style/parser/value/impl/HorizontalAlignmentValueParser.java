@@ -6,6 +6,7 @@ import de.be.thaw.style.parser.value.StyleValueParser;
 import de.be.thaw.style.parser.value.exception.StyleValueParseException;
 import de.be.thaw.util.HorizontalAlignment;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 public class HorizontalAlignmentValueParser implements StyleValueParser {
 
     @Override
-    public StyleValue parse(String src) throws StyleValueParseException {
+    public StyleValue parse(String src, File workingDirectory) throws StyleValueParseException {
         try {
             return new HorizontalAlignmentStyleValue(HorizontalAlignment.valueOf(src.toUpperCase()));
         } catch (IllegalArgumentException e) {

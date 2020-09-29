@@ -459,7 +459,7 @@ public class DocumentBuildContext {
             File styleFile = new File(folder, styleFiles[0]);
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(styleFile), ThawContext.getInstance().getEncoding()))) {
-                styleModel = ThawContext.getInstance().getStyleParser().parse(br);
+                styleModel = ThawContext.getInstance().getStyleParser().parse(br, folder);
             } catch (IOException | StyleModelParseException e) {
                 throw new DocumentBuildException(String.format(
                         "Could not parse style file at '%s' that should be included as header or footer",

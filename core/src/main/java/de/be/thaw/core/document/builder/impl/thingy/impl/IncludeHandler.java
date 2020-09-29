@@ -107,7 +107,7 @@ public class IncludeHandler implements ThingyHandler {
             File styleFile = new File(subFolder, styleFiles[0]);
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(styleFile), ThawContext.getInstance().getEncoding()))) {
-                styleModel = ThawContext.getInstance().getStyleParser().parse(br);
+                styleModel = ThawContext.getInstance().getStyleParser().parse(br, subFolder);
             } catch (IOException | StyleModelParseException e) {
                 throw new DocumentBuildException(String.format(
                         "Could not parse style file at '%s' included by the #INCLUDE# Thingy at %s",

@@ -12,9 +12,12 @@ import de.be.thaw.font.util.FontManager;
 import de.be.thaw.font.util.FontVariant;
 import de.be.thaw.font.util.FontVariantLocator;
 import de.be.thaw.font.util.KerningMode;
+import de.be.thaw.font.util.exception.FontRegisterException;
 import de.be.thaw.style.model.style.StyleType;
+import de.be.thaw.style.model.style.value.FontStyleValue;
 import de.be.thaw.style.model.style.value.FontVariantStyleValue;
 import de.be.thaw.style.model.style.value.KerningModeStyleValue;
+import de.be.thaw.style.model.style.value.StyleValue;
 import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.model.tree.impl.FormattedNode;
 import de.be.thaw.typeset.page.Page;
@@ -269,38 +272,94 @@ public class ExportContext {
     }
 
     /**
+     * Get the font variant locator for the passed style value (FontStyleValue)
+     * and the preferred font variant.
+     *
+     * @param value   to get locator for
+     * @param variant the preferred variant
+     * @param node    of the style value
+     * @return locator
+     * @throws ExportException in case the variant locator could not be resolved
+     */
+    private FontVariantLocator getFontVariantLocatorForStyleValue(StyleValue value, FontVariant variant, DocumentNode node) throws ExportException {
+        if (!(value instanceof FontStyleValue)) {
+            throw new ExportException("Expected style value to fetch font from to be of type FontStyleValue");
+        }
+
+        FontVariantLocator locator;
+        boolean overrideVariant = false;
+        if (value.file() != null) {
+            // Is font family folder or file
+            File fontFile = value.file();
+
+            try {
+                if (fontFile.isDirectory()) {
+                    // Is a folder of font files (multiple font variants)
+                    locator = FontManager.getInstance().registerFontFolder(fontFile).get(0);
+                } else {
+                    // Is only one font file (one font variant) -> we ignore the wanted font variant and just use the font specified
+                    locator = FontManager.getInstance().registerFont(fontFile).get(0);
+
+                    // Ignore the set font variant
+                    overrideVariant = true;
+                }
+            } catch (FontRegisterException e) {
+                throw new ExportException(e);
+            }
+        } else {
+            // Is a font family name -> search in fonts installed in the OS
+            String familyName = value.value();
+
+            FontFamily family = FontManager.getInstance().getFamily(familyName).orElseThrow(() -> new ExportException(String.format(
+                    "Could not find font family '%s' in OS installed fonts. " +
+                            "If on Windows make sure that the fonts were installed for all users for Thaw to be able to pick it up.",
+                    familyName
+            )));
+
+            Optional<FontVariantLocator> optionalLocator = family.getVariantFont(variant);
+            if (optionalLocator.isPresent()) {
+                locator = optionalLocator.get();
+            } else {
+                if (variant == FontVariant.MONOSPACE) {
+                    StyleValue monospacedFontFamilyStyleValue = node.getStyles().resolve(StyleType.INLINE_CODE_FONT_FAMILY).orElseThrow();
+                    return getFontVariantLocatorForStyleValue(monospacedFontFamilyStyleValue, FontVariant.MONOSPACE, node);
+                } else {
+                    throw new ExportException(String.format(
+                            "Could not find font variant '%s' in font family '%s'",
+                            variant.name(),
+                            familyName
+                    ));
+                }
+            }
+        }
+
+        if (locator.getVariant() != variant) {
+            if (overrideVariant) {
+                return locator;
+            } else {
+                throw new ExportException(String.format(
+                        "Could not find font of family '%s' for variant '%s'",
+                        locator.getFamilyName(),
+                        variant.name()
+                ));
+            }
+        }
+
+        return locator;
+    }
+
+    /**
      * Get the font for the passed node.
      *
      * @param node to get font for
      * @return font
      */
     public ThawFont getFontForNode(DocumentNode node) throws ExportException {
-        String familyName = node.getStyles().resolve(StyleType.FONT_FAMILY).orElseThrow().value();
-
-        FontVariant variant = getFontVariantFromNode(node);
-
-        FontFamily family = FontManager.getInstance().getFamily(familyName).orElseThrow(() -> new ExportException(String.format(
-                "Could not find font family '%s'",
-                familyName
-        )));
-
-        Optional<FontVariantLocator> optionalLocator = family.getVariantFont(variant);
-        FontVariantLocator locator;
-        if (optionalLocator.isPresent()) {
-            locator = optionalLocator.get();
-        } else {
-            if (variant == FontVariant.MONOSPACE) {
-                String defaultMonoSpacedFamily = node.getStyles().resolve(StyleType.INLINE_CODE_FONT_FAMILY).orElseThrow().value();
-
-                locator = FontManager.getInstance().getFamily(defaultMonoSpacedFamily).orElseThrow().getVariantFont(FontVariant.MONOSPACE).orElseThrow();
-            } else {
-                throw new ExportException(String.format(
-                        "Could not find font variant '%s' in font family '%s'",
-                        variant.name(),
-                        familyName
-                ));
-            }
-        }
+        FontVariantLocator locator = getFontVariantLocatorForStyleValue(
+                node.getStyles().resolve(StyleType.FONT_FAMILY).orElseThrow(),
+                getFontVariantFromNode(node),
+                node
+        );
 
         ThawPdfFont font = (ThawPdfFont) fontCache.get(locator);
         if (font == null) {
@@ -314,7 +373,7 @@ public class ExportContext {
             }
         }
 
-        if (variant != FontVariant.MONOSPACE) { // Monospaced fonts should not be optically kerned
+        if (locator.getVariant() != FontVariant.MONOSPACE) { // Monospaced fonts should not be optically kerned
             font.setKerningMode(node.getStyles()
                     .resolve(StyleType.FONT_KERNING)
                     .orElse(new KerningModeStyleValue(KerningMode.NATIVE))

@@ -3,14 +3,18 @@ package de.be.thaw.font.util;
 import de.be.thaw.font.system.SystemFontManager;
 import de.be.thaw.font.util.exception.CouldNotDetermineFontVariantException;
 import de.be.thaw.font.util.exception.CouldNotGetFontsException;
+import de.be.thaw.font.util.exception.FontRegisterException;
 import de.be.thaw.font.util.file.FontCollectionFile;
 import de.be.thaw.font.util.file.FontFile;
 import de.be.thaw.font.util.file.SingleFontFile;
 
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -82,6 +86,103 @@ public class FontManager {
     }
 
     /**
+     * Register a whole font folder.
+     *
+     * @param fontFolder to register fonts in
+     * @return a list of font locators that have been registered
+     * @throws FontRegisterException in case one or multiple of the fonts could not be registered
+     */
+    public List<FontVariantLocator> registerFontFolder(File fontFolder) throws FontRegisterException {
+        List<FontVariantLocator> locators = new ArrayList<>();
+
+        for (File files : fontFolder.listFiles()) {
+            locators.addAll(registerFont(files));
+        }
+
+        return locators;
+    }
+
+    /**
+     * Register another font.
+     *
+     * @param fontFile file of the font to register
+     * @return the font variant locators that has been registered for the font file
+     * @throws FontRegisterException in case the font could not be registered
+     */
+    public List<FontVariantLocator> registerFont(File fontFile) throws FontRegisterException {
+        String fileName = fontFile.getName().toLowerCase();
+
+        FontFile file;
+        if (fileName.endsWith(".ttf")) {
+            // Is normal OpenType font with TTF-flavoured glyph outlines
+            try {
+                file = new SingleFontFile(fontFile.getAbsolutePath());
+            } catch (IOException | FontFormatException e) {
+                throw new FontRegisterException(e);
+            }
+        } else if (fileName.endsWith(".ttc")) {
+            // Is collection of OpenType fonts with TTF-flavoured glyph outlines
+            try {
+                file = new FontCollectionFile(fontFile.getAbsolutePath());
+            } catch (IOException | FontFormatException e) {
+                throw new FontRegisterException(e);
+            }
+        } else {
+            throw new FontRegisterException(String.format(
+                    "Could not register font with path '%s' as we currently only support OpenType fonts with file endings '*.ttf' and '*.ttc'." +
+                            "If you want to use a font file with ending '*.otf' please consider converting it to a '*.ttf' file (This is a mostly loseless process!).",
+                    fontFile.getAbsolutePath()
+            ));
+        }
+
+        if (file.isCollection()) {
+            List<FontVariantLocator> locators = new ArrayList<>();
+            for (Font font : ((FontCollectionFile) file).getFonts()) {
+                locators.add(registerFontInternal(file, font));
+            }
+
+            return locators;
+        } else {
+            return Collections.singletonList(registerFontInternal(file, ((SingleFontFile) file).getFont()));
+        }
+    }
+
+    /**
+     * Register a font file internally.
+     *
+     * @param file to register font of
+     * @param font to register
+     * @return the font variant locator of the font that has been registered
+     * @throws FontRegisterException in case the font could not be registered in the manager
+     */
+    private FontVariantLocator registerFontInternal(FontFile file, Font font) throws FontRegisterException {
+        FontVariant variant;
+        try {
+            variant = getVariantForFont(font);
+        } catch (CouldNotDetermineFontVariantException e) {
+            throw new FontRegisterException(e);
+        }
+
+        FontVariantLocator locator = new FontVariantLocator(file, font.getFontName(), font.getFamily(), variant);
+
+        // Check if font family already exists
+        FontFamily family = families.get(font.getFamily());
+        if (family != null) {
+            // Add font to family
+            family.addVariant(variant, locator);
+        } else {
+            // Create font family
+            Map<FontVariant, FontVariantLocator> mapping = new HashMap<>();
+            mapping.put(variant, locator);
+            family = new FontFamily(font.getFamily(), mapping);
+
+            families.put(family.getName(), family);
+        }
+
+        return locator;
+    }
+
+    /**
      * Initialize the available font families.
      */
     private void initFamilies() {
@@ -134,7 +235,7 @@ public class FontManager {
             Map<FontVariant, FontVariantLocator> currentMapping = familyMapping.computeIfAbsent(familyName, (k) -> new HashMap<>());
             if (!currentMapping.containsKey(variant)) {
                 // Do not overwrite existing variants
-                currentMapping.put(variant, new FontVariantLocator(file, font.getFontName()));
+                currentMapping.put(variant, new FontVariantLocator(file, font.getFontName(), familyName, variant));
             }
         } catch (CouldNotDetermineFontVariantException e) {
             System.out.println(String.format("[WARN] '%s'", e.getMessage()));

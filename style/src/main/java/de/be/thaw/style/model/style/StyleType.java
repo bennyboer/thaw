@@ -10,6 +10,7 @@ import de.be.thaw.style.parser.value.impl.ColorValueParser;
 import de.be.thaw.style.parser.value.impl.DoubleValueParser;
 import de.be.thaw.style.parser.value.impl.FillValueParser;
 import de.be.thaw.style.parser.value.impl.FontKerningValueParser;
+import de.be.thaw.style.parser.value.impl.FontValueParser;
 import de.be.thaw.style.parser.value.impl.FontVariantValueParser;
 import de.be.thaw.style.parser.value.impl.HorizontalAlignmentValueParser;
 import de.be.thaw.style.parser.value.impl.InsetsValueParser;
@@ -17,6 +18,7 @@ import de.be.thaw.style.parser.value.impl.ListStyleTypeValueParser;
 import de.be.thaw.style.parser.value.impl.StringValueParser;
 import de.be.thaw.util.unit.Unit;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,11 +27,11 @@ import java.util.Map;
  */
 public enum StyleType {
 
-    FONT_FAMILY("font-family", new StringValueParser()),
+    FONT_FAMILY("font-family", new FontValueParser()),
     FONT_SIZE("font-size", new DoubleValueParser(Unit.POINTS)),
     FONT_VARIANT("font-variant", new FontVariantValueParser()),
     FONT_KERNING("font-kerning", new FontKerningValueParser()),
-    INLINE_CODE_FONT_FAMILY("inline-code-font-family", new StringValueParser()),
+    INLINE_CODE_FONT_FAMILY("inline-code-font-family", new FontValueParser()),
 
     WIDTH("width", new DoubleValueParser(Unit.MILLIMETER)),
     HEIGHT("height", new DoubleValueParser(Unit.MILLIMETER)),
@@ -41,8 +43,8 @@ public enum StyleType {
         private final ColorValueParser colorValueParser = new ColorValueParser();
 
         @Override
-        public StyleValue parse(String src) throws StyleValueParseException {
-            return new StyleValueCollection(Map.of(StyleType.BACKGROUND_COLOR, colorValueParser.parse(src)));
+        public StyleValue parse(String src, File workingDirectory) throws StyleValueParseException {
+            return new StyleValueCollection(Map.of(StyleType.BACKGROUND_COLOR, colorValueParser.parse(src, workingDirectory)));
         }
     }),
 
@@ -50,7 +52,7 @@ public enum StyleType {
     FIRST_LINE_INDENT("first-line-indent", new DoubleValueParser(Unit.MILLIMETER)),
 
     SHOW_LINE_NUMBERS("show-line-numbers", new BooleanValueParser()),
-    LINE_NUMBER_FONT_FAMILY("line-number-font-family", new StringValueParser()),
+    LINE_NUMBER_FONT_FAMILY("line-number-font-family", new FontValueParser()),
     LINE_NUMBER_FONT_SIZE("line-number-font-size", new DoubleValueParser(Unit.POINTS)),
     LINE_NUMBER_COLOR("line-number-color", new ColorValueParser()),
 
@@ -121,8 +123,8 @@ public enum StyleType {
         private final ColorValueParser colorValueParser = new ColorValueParser();
 
         @Override
-        public StyleValue parse(String src) throws StyleValueParseException {
-            StyleValue color = colorValueParser.parse(src);
+        public StyleValue parse(String src, File workingDirectory) throws StyleValueParseException {
+            StyleValue color = colorValueParser.parse(src, workingDirectory);
 
             return new StyleValueCollection(Map.ofEntries(
                     Map.entry(StyleType.BORDER_TOP_COLOR, color),
@@ -137,8 +139,8 @@ public enum StyleType {
         private final FillValueParser fillValueParser = new FillValueParser();
 
         @Override
-        public StyleValue parse(String src) throws StyleValueParseException {
-            StyleValue fillStyle = fillValueParser.parse(src);
+        public StyleValue parse(String src, File workingDirectory) throws StyleValueParseException {
+            StyleValue fillStyle = fillValueParser.parse(src, workingDirectory);
 
             return new StyleValueCollection(Map.ofEntries(
                     Map.entry(StyleType.BORDER_TOP_STYLE, fillStyle),

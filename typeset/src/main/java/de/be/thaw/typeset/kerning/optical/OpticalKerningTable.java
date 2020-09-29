@@ -84,6 +84,10 @@ public class OpticalKerningTable implements KerningTable, Serializable {
      * @return the area between the passed contours
      */
     private AreaCalculationResult calcAreaBetweenContours(List<Coordinate> right, List<Coordinate> left, double xOffset) {
+        if (right.isEmpty() || left.isEmpty()) {
+            return new AreaCalculationResult(0, 0, 0, 0, 0);
+        }
+
         double maxY = Math.min(right.get(0).getY(), left.get(0).getY());
         double minY = Math.max(right.get(right.size() - 1).getY(), left.get(left.size() - 1).getY());
 

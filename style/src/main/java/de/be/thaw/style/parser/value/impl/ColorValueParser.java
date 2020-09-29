@@ -6,13 +6,15 @@ import de.be.thaw.style.parser.value.StyleValueParser;
 import de.be.thaw.style.parser.value.exception.StyleValueParseException;
 import de.be.thaw.util.color.Color;
 
+import java.io.File;
+
 /**
  * Style value parser for color values.
  */
 public class ColorValueParser implements StyleValueParser {
 
     @Override
-    public StyleValue parse(String src) throws StyleValueParseException {
+    public StyleValue parse(String src, File workingDirectory) throws StyleValueParseException {
         src = src.trim();
 
         Color result;

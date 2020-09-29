@@ -15,7 +15,9 @@ import de.be.thaw.style.parser.lexer.exception.StyleFormatLexerException;
 import de.be.thaw.style.parser.lexer.token.StyleFormatToken;
 import de.be.thaw.style.parser.lexer.token.StyleFormatTokenType;
 import de.be.thaw.style.parser.value.exception.StyleValueParseException;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,8 +29,15 @@ import java.util.Map;
  */
 public class DefaultStyleFormatParser implements StyleFormatParser {
 
+    /**
+     * The current working directory.
+     */
+    private File workingDirectory;
+
     @Override
-    public StyleModel parse(Reader reader) throws StyleModelParseException {
+    public StyleModel parse(Reader reader, @Nullable File workingDirectory) throws StyleModelParseException {
+        this.workingDirectory = workingDirectory;
+
         return convertStyleBlocksToStyleModel(parseStyleBlocksFromTokens(tokenize(reader)));
     }
 
@@ -92,7 +101,7 @@ public class DefaultStyleFormatParser implements StyleFormatParser {
 
             StyleValue styleValue;
             try {
-                styleValue = type.getParser().parse(value);
+                styleValue = type.getParser().parse(value, workingDirectory);
             } catch (StyleValueParseException e) {
                 throw new StyleModelParseException(e);
             }

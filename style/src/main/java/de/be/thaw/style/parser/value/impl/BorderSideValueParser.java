@@ -7,6 +7,7 @@ import de.be.thaw.style.parser.value.StyleValueParser;
 import de.be.thaw.style.parser.value.exception.StyleValueParseException;
 import de.be.thaw.util.unit.Unit;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,7 +35,7 @@ public class BorderSideValueParser implements StyleValueParser {
     }
 
     @Override
-    public StyleValue parse(String src) throws StyleValueParseException {
+    public StyleValue parse(String src, File workingDirectory) throws StyleValueParseException {
         src = src.trim();
 
         String[] parts = src.split(" ");
@@ -42,9 +43,9 @@ public class BorderSideValueParser implements StyleValueParser {
             throw new StyleValueParseException("A border specification expects the format 'border: border-width border-style border-color;'");
         }
 
-        StyleValue borderWidth = doubleValueParser.parse(parts[0]);
-        StyleValue fillValue = fillValueParser.parse(parts[1]);
-        StyleValue colorValue = colorValueParser.parse(parts[2]);
+        StyleValue borderWidth = doubleValueParser.parse(parts[0], workingDirectory);
+        StyleValue fillValue = fillValueParser.parse(parts[1], workingDirectory);
+        StyleValue colorValue = colorValueParser.parse(parts[2], workingDirectory);
 
         Map<StyleType, StyleValue> result = new HashMap<>();
 

@@ -7,6 +7,7 @@ import de.be.thaw.style.model.style.value.StyleValueCollection;
 import de.be.thaw.style.parser.value.exception.StyleValueParseException;
 import de.be.thaw.util.unit.Unit;
 
+import java.io.File;
 import java.util.Map;
 
 /**
@@ -30,7 +31,7 @@ public class InsetsValueParser extends DoubleValueParser {
     }
 
     @Override
-    public StyleValue parse(String src) throws StyleValueParseException {
+    public StyleValue parse(String src, File workingDirectory) throws StyleValueParseException {
         src = src.trim();
 
         String[] parts = src.split(" ");
@@ -39,25 +40,25 @@ public class InsetsValueParser extends DoubleValueParser {
         DoubleStyleValue bottom;
         DoubleStyleValue left;
         if (parts.length == 1) {
-            DoubleStyleValue value = (DoubleStyleValue) super.parse(parts[0]);
+            DoubleStyleValue value = (DoubleStyleValue) super.parse(parts[0], workingDirectory);
 
             top = value;
             right = value;
             bottom = value;
             left = value;
         } else if (parts.length == 2) {
-            DoubleStyleValue topBottom = (DoubleStyleValue) super.parse(parts[0]);
-            DoubleStyleValue leftRight = (DoubleStyleValue) super.parse(parts[1]);
+            DoubleStyleValue topBottom = (DoubleStyleValue) super.parse(parts[0], workingDirectory);
+            DoubleStyleValue leftRight = (DoubleStyleValue) super.parse(parts[1], workingDirectory);
 
             top = topBottom;
             bottom = topBottom;
             left = leftRight;
             right = leftRight;
         } else if (parts.length == 4) {
-            top = (DoubleStyleValue) super.parse(parts[0]);
-            right = (DoubleStyleValue) super.parse(parts[1]);
-            bottom = (DoubleStyleValue) super.parse(parts[2]);
-            left = (DoubleStyleValue) super.parse(parts[3]);
+            top = (DoubleStyleValue) super.parse(parts[0], workingDirectory);
+            right = (DoubleStyleValue) super.parse(parts[1], workingDirectory);
+            bottom = (DoubleStyleValue) super.parse(parts[2], workingDirectory);
+            left = (DoubleStyleValue) super.parse(parts[3], workingDirectory);
         } else {
             throw new StyleValueParseException(String.format(
                     "A insets value ('margin', 'padding', ...) must be in either of the following formats:\n" +

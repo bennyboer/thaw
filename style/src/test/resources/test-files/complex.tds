@@ -1,7 +1,7 @@
 document { // Styles applying to the whole document
   width: 210mm;
   height: 297mm;
-  font-family: url(my-cool-font.ttf); // Can also be "font-family: Arial", or alike
+  font-family: Calibri; // Can also be "font-family: Arial", or alike
   font-size: 12pt;
   font-variant: plain; // Allowed are also 'bold', 'italic', 'underlined' or even a combination of them like 'bold italic underlined'
   color: #333333; // Font color, also rgba(0.5, 0.5, 0.5, 1.0) or rgb(0.5, 0.5, 0.5) should be allowed

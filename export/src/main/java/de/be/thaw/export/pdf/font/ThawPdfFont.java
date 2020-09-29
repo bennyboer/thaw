@@ -350,7 +350,7 @@ public class ThawPdfFont extends AbstractFont {
         Size size = new Size(data.getXMaximum() - data.getXMinimum(), data.getYMaximum() - data.getYMinimum());
         Coordinate position = new Coordinate(data.getXMinimum(), data.getYMinimum());
 
-        List<List<Coordinate>> contours = new ArrayList<>(data.getNumberOfContours());
+        List<List<Coordinate>> contours = new ArrayList<>(Math.max(0, data.getNumberOfContours()));
         GlyphDescription description = data.getDescription();
         int start = 0;
         for (int c = 0; c < data.getNumberOfContours(); c++) {

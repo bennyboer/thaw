@@ -41,4 +41,21 @@ public class FontFamily {
         return Optional.ofNullable(variants.get(variant));
     }
 
+    /**
+     * Add a variant to the font family.
+     *
+     * @param variant to add
+     * @param locator of the font variant
+     * @return whether the font variant has been added to the family (true) or does already exist (false).
+     */
+    public boolean addVariant(FontVariant variant, FontVariantLocator locator) {
+        FontVariantLocator existingLocator = variants.get(variant);
+        if (existingLocator != null) {
+            return false;
+        } else {
+            variants.put(variant, locator);
+            return true;
+        }
+    }
+
 }

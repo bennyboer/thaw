@@ -21,7 +21,7 @@ public class StyleFormatParserTest {
      * @return the parsed style model
      */
     private StyleModel parse(String text) throws StyleModelParseException {
-        return StyleFormatParserFactory.getInstance().getParser().parse(new StringReader(text));
+        return StyleFormatParserFactory.getInstance().getParser().parse(new StringReader(text), null);
     }
 
     /**
@@ -60,13 +60,13 @@ public class StyleFormatParserTest {
                 StyleFormatParserTest.class.getResourceAsStream("/test-files/complex.tds"),
                 StandardCharsets.UTF_8
         ))) {
-            model = StyleFormatParserFactory.getInstance().getParser().parse(br);
+            model = StyleFormatParserFactory.getInstance().getParser().parse(br, null);
         }
 
         Assertions.assertEquals("document {\n" +
                 "\tbackground-color: rgba(0.917647, 0.917647, 0.917647, 1.000000);\n" +
                 "\tcolor: rgba(0.200000, 0.200000, 0.200000, 1.000000);\n" +
-                "\tfont-family: url(my-cool-font.ttf);\n" +
+                "\tfont-family: Calibri;\n" +
                 "\tfont-kerning: native;\n" +
                 "\tfont-size: 12.000000pt;\n" +
                 "\tfont-variant: plain;\n" +

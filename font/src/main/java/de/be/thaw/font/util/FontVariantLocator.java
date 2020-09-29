@@ -18,9 +18,21 @@ public class FontVariantLocator {
      */
     private final String fontName;
 
-    public FontVariantLocator(FontFile fontFile, String fontName) {
+    /**
+     * Name of the font family.
+     */
+    private final String familyName;
+
+    /**
+     * The font variant of the font.
+     */
+    private final FontVariant variant;
+
+    public FontVariantLocator(FontFile fontFile, String fontName, String familyName, FontVariant variant) {
         this.fontFile = fontFile;
         this.fontName = fontName;
+        this.familyName = familyName;
+        this.variant = variant;
     }
 
     /**
@@ -39,6 +51,24 @@ public class FontVariantLocator {
      */
     public String getFontName() {
         return fontName;
+    }
+
+    /**
+     * Get the font family name of the font.
+     *
+     * @return family name
+     */
+    public String getFamilyName() {
+        return familyName;
+    }
+
+    /**
+     * Get the variant of the locator.
+     *
+     * @return variant
+     */
+    public FontVariant getVariant() {
+        return variant;
     }
 
     @Override

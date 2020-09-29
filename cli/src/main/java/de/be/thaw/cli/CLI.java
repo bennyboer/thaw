@@ -14,8 +14,8 @@ import de.be.thaw.shared.ThawContext;
 import de.be.thaw.style.model.StyleModel;
 import de.be.thaw.style.model.impl.DefaultStyleModel;
 import de.be.thaw.style.parser.StyleFormatParser;
+import de.be.thaw.style.parser.StyleFormatParserFactory;
 import de.be.thaw.style.parser.exception.StyleModelParseException;
-import de.be.thaw.style.parser.impl.DefaultStyleFormatParser;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.parser.TextParser;
 import de.be.thaw.text.parser.exception.ParseException;
@@ -192,7 +192,7 @@ public class CLI implements Callable<Integer> {
 
         String[] styleFiles = root.list((dir, name) -> name.endsWith(".tds"));
 
-        StyleFormatParser styleFormatParser = new DefaultStyleFormatParser();
+        StyleFormatParser styleFormatParser = StyleFormatParserFactory.getInstance().getParser();
         ThawContext.getInstance().setStyleParser(styleFormatParser);
         StyleModel styleModel;
         if (styleFiles.length > 1) {
@@ -204,7 +204,7 @@ public class CLI implements Callable<Integer> {
             File styleFile = new File(root, styleFiles[0]);
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(styleFile), info.getEncoding()))) {
-                styleModel = styleFormatParser.parse(br);
+                styleModel = styleFormatParser.parse(br, ThawContext.getInstance().getRootFolder());
                 styleModel = styleModel.merge(DefaultStyleModel.defaultModel());
             } catch (StyleModelParseException e) {
                 System.err.println(String.format(
