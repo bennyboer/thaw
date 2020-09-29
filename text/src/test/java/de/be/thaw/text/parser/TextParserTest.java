@@ -203,4 +203,16 @@ public class TextParserTest {
                 "    - [TEXT]: ' erstellt.'\n", model.getRoot().toString());
     }
 
+    @Test
+    public void testFormattedInLineText() throws ParseException {
+        String text = "Test *.myClass*Hello world**";
+
+        TextModel model = parse(text);
+
+        Assertions.assertEquals("- [ROOT]: ~\n" +
+                "  - [BOX]: ~\n" +
+                "    - [TEXT]: 'Test '\n" +
+                "    - [FORMATTED]: 'Hello world' [CUSTOM] (.myclass)\n", model.getRoot().toString());
+    }
+
 }

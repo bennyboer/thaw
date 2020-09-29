@@ -28,7 +28,8 @@ public class ThingyRule implements ParseRule {
             Node fmt = new FormattedNode(
                     "",
                     token.getPosition(),
-                    tt.getEmphases()
+                    tt.getEmphases(),
+                    tt.getClassName().orElse(null)
             );
 
             fmt.addChild(thingyNode);

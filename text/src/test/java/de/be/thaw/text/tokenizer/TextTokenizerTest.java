@@ -16,6 +16,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class TextTokenizerTest {
 
@@ -546,6 +547,34 @@ public class TextTokenizerTest {
         List<Token> tokens = tokenize(text);
 
         Assertions.assertEquals(TextEmphasis.BOLD, ((ThingyToken) tokens.get(3)).getEmphases().iterator().next());
+    }
+
+    @Test
+    public void testCustomInLineTextFormatting() throws TokenizeException {
+        String text = "Test *.myClass*Hello world**";
+
+        List<Token> tokens = tokenize(text);
+
+        Assertions.assertEquals(TextEmphasis.CUSTOM, ((FormattedToken) tokens.get(1)).getEmphases().iterator().next());
+        Assertions.assertEquals("myclass", ((FormattedToken) tokens.get(1)).getClassName().orElse(null));
+    }
+
+    @Test
+    public void testCustomInLineTextFormattingNested() throws TokenizeException {
+        String text = "Test **_*.hello-world*Hello world**_ Test** Test";
+
+        List<Token> tokens = tokenize(text);
+
+        FormattedToken token = (FormattedToken) tokens.get(1);
+        Set<TextEmphasis> emphases = token.getEmphases();
+
+        Assertions.assertTrue(emphases.contains(TextEmphasis.CUSTOM));
+        Assertions.assertTrue(emphases.contains(TextEmphasis.BOLD));
+        Assertions.assertTrue(emphases.contains(TextEmphasis.UNDERLINED));
+        Assertions.assertEquals("hello-world", token.getClassName().orElse(null));
+
+        Assertions.assertEquals(1, ((FormattedToken) tokens.get(2)).getEmphases().size());
+        Assertions.assertEquals(TextEmphasis.BOLD, ((FormattedToken) tokens.get(2)).getEmphases().iterator().next());
     }
 
 }

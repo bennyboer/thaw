@@ -29,7 +29,8 @@ public class FormattedRule implements ParseRule {
         Node fmt = new FormattedNode(
                 token.getValue(),
                 token.getPosition(),
-                ((FormattedToken) token).getEmphases()
+                ((FormattedToken) token).getEmphases(),
+                fmtToken.getClassName().orElse(null)
         );
 
         return switch (node.getType()) {

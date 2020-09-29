@@ -28,6 +28,16 @@ public class FormattedState implements State {
      */
     private int lastEmphasesChangePos = -1;
 
+    /**
+     * Whether a custom style class name is currently being parsed.
+     */
+    private boolean isParsingClassName = false;
+
+    /**
+     * Buffer for a custom class name.
+     */
+    private final StringBuilder classNameBuffer = new StringBuilder();
+
     public FormattedState(TextEmphasis emphasis, TokenizingContext ctx) {
         emphases.push(emphasis);
         lastEmphasesChangePos = ctx.getCurrentPos();
@@ -41,6 +51,7 @@ public class FormattedState implements State {
             case ITALIC -> handleItalic(c, ctx);
             case UNDERLINED -> handleUnderlined(c, ctx);
             case CODE -> handleCode(c, ctx);
+            case CUSTOM -> handleCustom(c, ctx);
         };
     }
 
@@ -191,7 +202,108 @@ public class FormattedState implements State {
                     }
                 }
             }
+            case '.' -> {
+                int currentLength = ctx.getBuffer().length();
+                if (currentLength == 0) {
+                    // Start a new custom block
+                    emphases.pop();
+                    lastEmphasesChangePos = ctx.getCurrentPos();
+                    isParsingClassName = true;
+                    emphases.push(TextEmphasis.CUSTOM);
+
+                    yield this;
+                } else {
+                    yield handleDefault(c, ctx);
+                }
+            }
             default -> handleDefault(c, ctx);
+        };
+    }
+
+    /**
+     * Handle a custom class name tokenizing.
+     *
+     * @param c   the current character to process
+     * @param ctx the tokenizing context
+     * @return the next state
+     * @throws InvalidStateException in case the state is invalid
+     */
+    private State handleCustom(char c, TokenizingContext ctx) throws InvalidStateException {
+        return switch (c) {
+            case '*' -> {
+                if (isParsingClassName) {
+                    isParsingClassName = false; // Class name parsing ends
+                    yield this;
+                } else {
+                    // Check if it is an italic block start or the custom block end
+                    boolean isEndCustom;
+                    try {
+                        int nextChar = ctx.lookAhead(1);
+                        if (nextChar == -1) {
+                            // Text to tokenize ended
+                            ctx.getBuffer().append(c);
+
+                            throw new InvalidStateException(String.format(
+                                    "Missing custom block end for class name '%s' in line %d and position %d",
+                                    classNameBuffer.toString(),
+                                    ctx.getCurrentLine(),
+                                    ctx.getCurrentPos()
+                            ));
+                        }
+
+                        isEndCustom = ((char) nextChar) == '*';
+                    } catch (TokenizeException e) {
+                        throw new InvalidStateException(String.format(
+                                "Look ahead by one character went wrong at %d:%d",
+                                ctx.getCurrentLine(),
+                                ctx.getCurrentPos()
+                        ), e);
+                    }
+
+                    if (isEndCustom) {
+                        ctx.ignoreNext(1); // Ignore the next star character
+
+                        // End the custom block
+                        ctx.accept((value, pos) -> new FormattedToken(
+                                value,
+                                new TextPosition(
+                                        ctx.getStartLine(),
+                                        ctx.getStartPos(),
+                                        ctx.getCurrentLine(),
+                                        ctx.getCurrentPos() + 1
+                                ),
+                                Set.copyOf(emphases),
+                                classNameBuffer.toString().trim().toLowerCase()
+                        ));
+
+                        emphases.pop();
+                        if (emphases.isEmpty()) {
+                            yield new TextState();
+                        } else {
+                            yield this;
+                        }
+                    } else {
+                        yield handleDefault(c, ctx);
+                    }
+                }
+            }
+            default -> {
+                if (isParsingClassName) {
+                    if (c == '.' || c == '\\' || c == '`' || c == '_') {
+                        throw new IllegalStateException(String.format(
+                                "Encountered illegal character '%c' in a class name in line %d and position %d",
+                                c,
+                                ctx.getCurrentLine(),
+                                ctx.getCurrentPos()
+                        ));
+                    }
+
+                    classNameBuffer.append(c);
+                    yield this;
+                } else {
+                    yield handleDefault(c, ctx);
+                }
+            }
         };
     }
 

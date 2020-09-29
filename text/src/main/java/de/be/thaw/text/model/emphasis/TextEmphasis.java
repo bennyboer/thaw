@@ -8,6 +8,7 @@ public enum TextEmphasis {
     BOLD,
     ITALIC,
     UNDERLINED,
-    CODE
+    CODE,
+    CUSTOM
 
 }

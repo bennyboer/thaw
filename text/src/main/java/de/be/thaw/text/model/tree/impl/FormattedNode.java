@@ -4,7 +4,9 @@ import de.be.thaw.text.model.emphasis.TextEmphasis;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
 import de.be.thaw.text.util.TextPosition;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -28,12 +30,19 @@ public class FormattedNode extends Node {
      */
     private final Set<TextEmphasis> emphases;
 
-    public FormattedNode(String value, TextPosition position, Set<TextEmphasis> emphases) {
+    /**
+     * Custom class name that applies on the node.
+     */
+    @Nullable
+    private final String className;
+
+    public FormattedNode(String value, TextPosition position, Set<TextEmphasis> emphases, @Nullable String className) {
         super(NodeType.FORMATTED);
 
         this.value = value;
         this.position = position;
         this.emphases = emphases;
+        this.className = className;
     }
 
     @Override
@@ -53,9 +62,10 @@ public class FormattedNode extends Node {
     @Override
     public String getInternalNodeRepresentation() {
         return String.format(
-                "'%s' [%s]",
+                "'%s' [%s]%s",
                 getValue(),
-                getEmphases().stream().map(TextEmphasis::name).sorted().collect(Collectors.joining(", "))
+                getEmphases().stream().map(TextEmphasis::name).sorted().collect(Collectors.joining(", ")),
+                getClassName().isPresent() ? String.format(" (.%s)", getClassName().orElseThrow()) : ""
         );
     }
 
@@ -75,6 +85,15 @@ public class FormattedNode extends Node {
      */
     public Set<TextEmphasis> getEmphases() {
         return emphases;
+    }
+
+    /**
+     * Get a custom class name that applies on the node.
+     *
+     * @return class name
+     */
+    public Optional<String> getClassName() {
+        return Optional.ofNullable(className);
     }
 
 }
