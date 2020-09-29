@@ -20,6 +20,7 @@ class ThawLexer(RegexLexer):
         ],
         'italic-or-bold-start': [
             (r'\*', Generic.Strong, ('#pop', 'bold')),
+            (r'\.', Keyword, ('#pop', 'custom-style-class-name')),
             (r'.', Generic.Emph, ('#pop', 'italic')),
         ],
         'italic-leave-or-bold-start': [
@@ -33,6 +34,10 @@ class ThawLexer(RegexLexer):
             (r'`', String.Backtick, 'inline-code'),
             (r'#', Keyword, 'thingy-start'),
             (r'.', Generic.Emph),
+        ],
+        'custom-style-class-name': [
+            (r'\*', Generic.Strong, ('#pop', 'bold')),
+            (r'.', Keyword),
         ],
         'bold': [
             (r'\\.', String.Escape, 'escaped'),
