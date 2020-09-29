@@ -558,13 +558,6 @@ public class StyleFormatLexerTest {
     }
 
     @Test
-    public void testForgotNeededSemicolonForValueEnd() throws StyleFormatLexerException {
-        String text = "h1 {font-family: Arial font-size: 12pt}";
-
-        Assertions.assertThrows(StyleFormatLexerException.class, () -> tokenize(text));
-    }
-
-    @Test
     public void testWindowsNewLineSequence() throws StyleFormatLexerException {
         String text = "h1:first-page {\r\n" +
                 "   font-family: Arial;\r\n" +
