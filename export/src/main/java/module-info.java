@@ -2,6 +2,7 @@ module de.be.thaw.export {
     requires org.apache.pdfbox;
     requires org.apache.fontbox;
     requires java.logging;
+    requires org.jetbrains.annotations;
 
     requires de.be.thaw.typeset;
     requires de.be.thaw.core;

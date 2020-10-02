@@ -2,6 +2,7 @@ package de.be.thaw.export.pdf.font;
 
 import de.be.thaw.export.pdf.font.exception.FontParseException;
 import de.be.thaw.font.AbstractFont;
+import de.be.thaw.font.opentype.gpos.GlyphPositioningTable;
 import de.be.thaw.font.util.CharacterSize;
 import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.typeset.kerning.glyph.Coordinate;
@@ -18,15 +19,19 @@ import org.apache.fontbox.ttf.GlyphDescription;
 import org.apache.fontbox.ttf.GlyphTable;
 import org.apache.fontbox.ttf.KerningSubtable;
 import org.apache.fontbox.ttf.KerningTable;
+import org.apache.fontbox.ttf.OpenTypeScript;
 import org.apache.fontbox.ttf.TTFParser;
+import org.apache.fontbox.ttf.TTFTable;
 import org.apache.fontbox.ttf.TrueTypeCollection;
 import org.apache.fontbox.ttf.TrueTypeFont;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType0Font;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -83,6 +88,12 @@ public class ThawPdfFont extends AbstractFont {
      * Kerning mode to use.
      */
     private KerningMode kerningMode = KerningMode.NATIVE;
+
+    /**
+     * The glyph positioning table.
+     */
+    @Nullable
+    private GlyphPositioningTable gposTable;
 
     /**
      * Create new PDF font.
@@ -182,9 +193,17 @@ public class ThawPdfFont extends AbstractFont {
         glyphTable = ttf.getGlyph();
         unitsPerEm = ttf.getUnitsPerEm();
 
-        KerningTable kerningTable = ttf.getKerning();
-        if (kerningTable != null) {
-            kerningSubtable = kerningTable.getHorizontalKerningSubtable();
+        // Fetch GPOS table for getting kerning information
+        TTFTable gpos = ttf.getTableMap().get(GlyphPositioningTable.TAG);
+        if (gpos != null) {
+            // Parse GPOS table to fetch pair positioning (kerning) information
+            gposTable = new GlyphPositioningTable(new ByteArrayInputStream(ttf.getTableBytes(gpos)));
+        } else {
+            // Fallback to the older KERN table
+            KerningTable kerningTable = ttf.getKerning();
+            if (kerningTable != null) {
+                kerningSubtable = kerningTable.getHorizontalKerningSubtable();
+            }
         }
 
         // Load or calculate optical kerning table
@@ -295,7 +314,9 @@ public class ThawPdfFont extends AbstractFont {
     public double getKerningAdjustment(int leftChar, int rightChar, double fontSize) {
         switch (kerningMode) {
             case NATIVE -> {
-                if (kerningSubtable != null) {
+                if (gposTable != null) {
+                    return gposTable.getKerning(characterMap.getGlyphId(leftChar), characterMap.getGlyphId(rightChar), OpenTypeScript.getScriptTags(leftChar), null) * fontSize / unitsPerEm;
+                } else if (kerningSubtable != null) {
                     return kerningSubtable.getKerning(characterMap.getGlyphId(leftChar), characterMap.getGlyphId(rightChar)) * fontSize / unitsPerEm;
                 }
             }
