@@ -8,6 +8,7 @@ import de.be.thaw.typeset.knuthplass.converter.context.ConversionContext;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.ThingyHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.image.ImageParagraph;
 import de.be.thaw.util.HorizontalAlignment;
+import de.be.thaw.util.unit.Unit;
 
 import java.io.IOException;
 import java.util.Set;
@@ -52,7 +53,7 @@ public class ImageHandler implements ThingyHandler {
         String scaleStr = node.getOptions().get("scale");
         boolean scale = scaleStr == null || Boolean.parseBoolean(scaleStr);
 
-        double imageWidth = scale ? ctx.getLineWidth() : imgSrc.getSize().getWidth();
+        double imageWidth = scale ? ctx.getLineWidth() : Unit.convert(imgSrc.getSize().getWidth(), imgSrc.getSizeUnit(), Unit.POINTS);
         String imageWidthStr = node.getOptions().get("width");
         if (imageWidthStr != null) {
             try {

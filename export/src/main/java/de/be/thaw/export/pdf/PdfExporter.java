@@ -35,10 +35,12 @@ import de.be.thaw.util.Size;
 import de.be.thaw.util.unit.Unit;
 import org.apache.fontbox.ttf.TTFParser;
 import org.apache.fontbox.ttf.TrueTypeFont;
+import org.apache.pdfbox.multipdf.LayerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 import java.io.BufferedReader;
@@ -303,10 +305,27 @@ public class PdfExporter implements Exporter {
                     File currentProcessingFolder = ThawContext.getInstance().getCurrentFolder();
                     File imgFile = new File(currentProcessingFolder, src);
 
-                    return new PdfImageSource(
-                            PDImageXObject.createFromFile(imgFile.getAbsolutePath(), ctx.getPdDocument()),
-                            Unit.convert(1, Unit.PIXEL, Unit.POINTS)
-                    );
+                    if (imgFile.getName().endsWith(".pdf")) {
+                        PDDocument srcDoc = PDDocument.load(imgFile);
+                        PDPage srcPage = srcDoc.getPage(0);
+
+                        LayerUtility layerUtility = new LayerUtility(ctx.getPdDocument());
+                        PDFormXObject form = layerUtility.importPageAsForm(srcDoc, srcPage);
+
+                        return new PdfImageSource(
+                                form,
+                                new Size(srcPage.getMediaBox().getWidth(), srcPage.getMediaBox().getHeight()),
+                                Unit.POINTS
+                        );
+                    } else {
+                        PDImageXObject imageXObject = PDImageXObject.createFromFile(imgFile.getAbsolutePath(), ctx.getPdDocument());
+
+                        return new PdfImageSource(
+                                imageXObject,
+                                new Size(imageXObject.getWidth(), imageXObject.getHeight()),
+                                Unit.PIXEL
+                        );
+                    }
                 })
                 .build());
     }

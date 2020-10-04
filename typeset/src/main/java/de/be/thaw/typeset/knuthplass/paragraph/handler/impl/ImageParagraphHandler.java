@@ -80,7 +80,10 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
                 - (marginLeft + marginRight)
                 - (paddingLeft + paddingRight);
 
-        double ratio = imageParagraph.getSrc().getSize().getWidth() / imageParagraph.getSrc().getSize().getHeight();
+        final double imgWidth = Unit.convert(imageParagraph.getSrc().getSize().getWidth(), imageParagraph.getSrc().getSizeUnit(), Unit.POINTS);
+        final double imgHeight = Unit.convert(imageParagraph.getSrc().getSize().getHeight(), imageParagraph.getSrc().getSizeUnit(), Unit.POINTS);
+
+        double ratio = imgWidth / imgHeight;
         double height = width / ratio;
 
         double maxWidth = ctx.getConfig().getPageSize().getWidth()
