@@ -30,6 +30,7 @@ import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.ImageHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.MathHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.PageHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.RefHandler;
+import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.TableHandler;
 import de.be.thaw.typeset.knuthplass.converter.thingyhandler.impl.TableOfContentsHandler;
 import de.be.thaw.typeset.knuthplass.item.impl.box.EnumerationItemStartBox;
 import de.be.thaw.typeset.knuthplass.item.impl.box.TextBox;
@@ -63,6 +64,7 @@ public class KnuthPlassConverter implements DocumentConverter<List<List<Paragrap
         initThingyHandler(new MathHandler());
         initThingyHandler(new CodeHandler());
         initThingyHandler(new DateHandler());
+        initThingyHandler(new TableHandler());
     }
 
     /**
