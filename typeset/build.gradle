@@ -12,6 +12,7 @@ dependencies {
     implementation project(':util')
     implementation project(':math')
     implementation project(':code')
+    implementation project(':table')
 
     // Library for parsing RTF (Rich-Text-Format)
     implementation group: 'com.github.joniles', name: 'rtfparserkit', version: '1.15.0'

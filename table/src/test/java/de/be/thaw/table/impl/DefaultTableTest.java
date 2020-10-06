@@ -248,7 +248,7 @@ public class DefaultTableTest {
         }
     }
 
-    private static class TestCell implements Cell {
+    public static class TestCell implements Cell {
 
         private CellSpan span;
 

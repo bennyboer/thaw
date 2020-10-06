@@ -35,7 +35,7 @@ public class Styles {
      * @param styles to copy
      */
     public Styles(Styles styles) {
-        blocks = styles.blocks;
+        blocks = styles.getBlocks();
     }
 
     /**
@@ -74,6 +74,15 @@ public class Styles {
         }
 
         overriddenStyles.put(type, value);
+    }
+
+    /**
+     * Get the style blocks.
+     *
+     * @return style blocks
+     */
+    public List<StyleBlock> getBlocks() {
+        return blocks;
     }
 
 }

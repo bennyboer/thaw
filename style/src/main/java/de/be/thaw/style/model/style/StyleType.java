@@ -163,7 +163,9 @@ public enum StyleType {
     FOOT_NOTE_LINE_SIZE("foot-note-line-size", new DoubleValueParser(Unit.MILLIMETER)),
     FOOT_NOTE_LINE_COLOR("foot-note-line-color", new ColorValueParser()),
 
-    HYPHENATION("hyphenation", new BooleanValueParser());
+    HYPHENATION("hyphenation", new BooleanValueParser()),
+
+    MERGE("merge", new BooleanValueParser());
 
     /**
      * Lookup of style types by their key.
