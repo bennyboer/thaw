@@ -56,8 +56,10 @@ public class TableHandler implements ThingyHandler {
             Map.entry("cells", 900),
             Map.entry("row", 600),
             Map.entry("column", 500),
-            Map.entry("rows", 300),
-            Map.entry("columns", 200)
+            Map.entry("rows", 400),
+            Map.entry("columns", 300),
+            Map.entry("even-rows", 200),
+            Map.entry("even-columns", 100)
     );
 
     @Override
@@ -93,7 +95,7 @@ public class TableHandler implements ThingyHandler {
             // Fetch set separator or the default separator
             String csvSeparator = node.getOptions().getOrDefault("csv-separator", DEFAULT_CSV_SEPARATOR).trim();
 
-            reader = new CSVTableReader<>(csvSeparator, 25, availableWidth);
+            reader = new CSVTableReader<>(csvSeparator, 0, availableWidth);
         } else {
             throw new DocumentConversionException(String.format(
                     "Could not read table contents for #TABLE# thingy at %s since format '%s' is not supported. Try 'csv' as format.",
@@ -110,7 +112,7 @@ public class TableHandler implements ThingyHandler {
             throw new DocumentConversionException(e);
         }
 
-        applyStyles(table, node, ctx.getDocument().getStyleModel());
+        applyCellStyles(table, node, ctx.getDocument().getStyleModel());
 
         ctx.setCurrentParagraph(new TableParagraph(
                 table,
@@ -128,7 +130,7 @@ public class TableHandler implements ThingyHandler {
      */
     private boolean checkIfStyleBlockApplies(StyleBlock block, @Nullable String className) {
         if (block.getSelector().targetName().isPresent()) {
-            if (block.getSelector().targetName().orElseThrow().equals("table")) {
+            if (block.getSelector().targetName().orElseThrow().equals("table-cell")) {
                 boolean hasPseudoClass = block.getSelector().pseudoClassName().isPresent();
                 boolean hasClassName = block.getSelector().className().isPresent();
 
@@ -177,13 +179,13 @@ public class TableHandler implements ThingyHandler {
     }
 
     /**
-     * Apply styles set in the given style model to the table.
+     * Apply cell styles set in the given style model to the table cells.
      *
-     * @param table      to apply styles to
+     * @param table      to apply styles to cells of
      * @param node       of the table thingy
      * @param styleModel the style model to apply styles set in
      */
-    private void applyStyles(Table<ThawTableCell> table, ThingyNode node, StyleModel styleModel) throws DocumentConversionException {
+    private void applyCellStyles(Table<ThawTableCell> table, ThingyNode node, StyleModel styleModel) throws DocumentConversionException {
         String className = node.getOptions().get("class");
 
         if (table instanceof DefaultTable) {
@@ -193,23 +195,57 @@ public class TableHandler implements ThingyHandler {
                     // Sort blocks by their importance (First index should be the least important afterwards).
                     .sorted(Comparator.comparingInt(this::getPriorityForStyleBlock))
                     // Apply styles in the order of the table blocks (least important first)
-                    .forEach(block -> applyStyleBlockToTable((DefaultTable<ThawTableCell>) table, block));
+                    .forEach(block -> applyStyleBlockToTableCells((DefaultTable<ThawTableCell>) table, block));
         } else {
             throw new DocumentConversionException("Could not apply styles to the table");
         }
     }
 
     /**
-     * Apply the passed style block to the given table.
+     * Apply the passed style block to the given tables cells.
      *
-     * @param table to apply styles to
+     * @param table to apply styles to cells of
      * @param block to process styles in
      */
-    private void applyStyleBlockToTable(DefaultTable<ThawTableCell> table, StyleBlock block) {
+    private void applyStyleBlockToTableCells(DefaultTable<ThawTableCell> table, StyleBlock block) {
         boolean hasPseudoClass = block.getSelector().pseudoClassName().isPresent();
 
         if (hasPseudoClass) {
-            List<String> settings = block.getSelector().pseudoClassSettings().orElse(Collections.emptyList());
+            List<Integer> settings = new ArrayList<>();
+            List<String> rawSettings = block.getSelector().pseudoClassSettings().orElse(Collections.emptyList());
+            for (int i = 0; i < rawSettings.size(); i++) {
+                String rawSetting = rawSettings.get(i);
+
+                if (rawSetting.equals("*")) {
+                    String pseudoClassName = block.getSelector().pseudoClassName().orElseThrow();
+
+                    // Means last row or column depending on pseudo class name
+                    if (pseudoClassName.equals("row") || pseudoClassName.equals("rows")) {
+                        settings.add(table.getRows());
+                    } else if (pseudoClassName.equals("column") || pseudoClassName.equals("columns")) {
+                        settings.add(table.getColumns());
+                    } else if (pseudoClassName.equals("cell")) {
+                        if (i == 0) {
+                            settings.add(table.getRows());
+                        } else {
+                            settings.add(table.getColumns());
+                        }
+                    } else if (pseudoClassName.equals("cells")) {
+                        if (i == 0 || i == 1) {
+                            settings.add(table.getRows());
+                        } else {
+                            settings.add(table.getColumns());
+                        }
+                    } else {
+                        throw new RuntimeException(String.format(
+                                "* modifier of selector '%s' can only be applied to :row, :rows, :column or :columns pseudo classes",
+                                block.getSelector().toString()
+                        ));
+                    }
+                } else {
+                    settings.add(Integer.parseInt(rawSetting));
+                }
+            }
 
             // Build cell span to apply styles to
             boolean allowMerge = false;
@@ -217,22 +253,22 @@ public class TableHandler implements ThingyHandler {
             boolean setColumnSize = false;
             CellSpan span = switch (block.getSelector().pseudoClassName().orElseThrow()) {
                 case "cell" -> new CellSpan(
-                        Integer.parseInt(settings.get(0)),
-                        Integer.parseInt(settings.get(1))
+                        settings.get(0),
+                        settings.get(1)
                 );
                 case "cells" -> {
                     allowMerge = true;
 
                     yield new CellSpan(
-                            new CellRange(Integer.parseInt(settings.get(0)), Integer.parseInt(settings.get(1))),
-                            new CellRange(Integer.parseInt(settings.get(2)), Integer.parseInt(settings.get(3)))
+                            new CellRange(settings.get(0), settings.get(1)),
+                            new CellRange(settings.get(2), settings.get(3))
                     );
                 }
                 case "row" -> {
                     setRowSize = true;
 
                     yield new CellSpan(
-                            new CellRange(Integer.parseInt(settings.get(0))),
+                            new CellRange(settings.get(0)),
                             new CellRange(1, table.getColumns())
                     );
                 }
@@ -241,14 +277,14 @@ public class TableHandler implements ThingyHandler {
 
                     yield new CellSpan(
                             new CellRange(1, table.getRows()),
-                            new CellRange(Integer.parseInt(settings.get(0)))
+                            new CellRange(settings.get(0))
                     );
                 }
                 case "rows" -> {
                     setRowSize = true;
 
                     yield new CellSpan(
-                            new CellRange(Integer.parseInt(settings.get(0)), Integer.parseInt(settings.get(1))),
+                            new CellRange(settings.get(0), settings.get(1)),
                             new CellRange(1, table.getColumns())
                     );
                 }
@@ -257,7 +293,7 @@ public class TableHandler implements ThingyHandler {
 
                     yield new CellSpan(
                             new CellRange(1, table.getRows()),
-                            new CellRange(Integer.parseInt(settings.get(0)), Integer.parseInt(settings.get(1)))
+                            new CellRange(settings.get(0), settings.get(1))
                     );
                 }
                 default -> new CellSpan(
@@ -323,8 +359,22 @@ public class TableHandler implements ThingyHandler {
             }
         }
 
+        String pseudoClassName = block.getSelector().pseudoClassName().orElse("");
+        boolean evenRows = pseudoClassName.equals("even-rows");
+        boolean evenColumns = pseudoClassName.equals("even-columns");
+
         for (int row = span.getRowRange().getStart(); row <= span.getRowRange().getEnd(); row++) {
+            boolean isEvenRow = row % 2 == 0;
+            if (evenRows && !isEvenRow) {
+                continue;
+            }
+
             for (int column = span.getColumnRange().getStart(); column <= span.getColumnRange().getEnd(); column++) {
+                boolean isEvenColumn = column % 2 == 0;
+                if (evenColumns && !isEvenColumn) {
+                    continue;
+                }
+
                 // Set individual cell styles
                 ThawTableCell cell = table.getCell(row, column).orElseThrow();
 
