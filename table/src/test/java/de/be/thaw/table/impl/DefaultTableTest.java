@@ -37,6 +37,8 @@ public class DefaultTableTest {
                 table.toString()
         );
         Assertions.assertEquals(new Size(400, 125), table.getSize());
+        Assertions.assertEquals(25, table.getDefaultRowSize());
+        Assertions.assertEquals(100, table.getDefaultColumnSize());
     }
 
     @Test

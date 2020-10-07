@@ -210,6 +210,8 @@ public class DefaultTable<C extends Cell> implements Table<C> {
         for (int r = row + 1; r <= getRows(); r++) {
             rowOffsets.set(r - 1, rowOffsets.get(r - 1) + sizeDiff);
         }
+
+        height += sizeDiff;
     }
 
     @Override
@@ -232,6 +234,8 @@ public class DefaultTable<C extends Cell> implements Table<C> {
         for (int c = column + 1; c <= getColumns(); c++) {
             columnOffsets.set(c - 1, columnOffsets.get(c - 1) + sizeDiff);
         }
+
+        width += sizeDiff;
     }
 
     @Override
@@ -360,6 +364,24 @@ public class DefaultTable<C extends Cell> implements Table<C> {
                 }
             }
         }
+    }
+
+    /**
+     * Get the default row size.
+     *
+     * @return default row size
+     */
+    public double getDefaultRowSize() {
+        return defaultRowSize;
+    }
+
+    /**
+     * Get the default column size.
+     *
+     * @return default column size
+     */
+    public double getDefaultColumnSize() {
+        return defaultColumnSize;
     }
 
     @Override

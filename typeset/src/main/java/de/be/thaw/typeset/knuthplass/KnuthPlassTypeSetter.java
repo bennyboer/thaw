@@ -11,11 +11,12 @@ import de.be.thaw.typeset.knuthplass.converter.KnuthPlassConverter;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
-import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.CodeParagraphHandler;
-import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.ImageParagraphHandler;
-import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.MathParagraphHandler;
-import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.TableOfContentsItemParagraphHandler;
-import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.TextParagraphHandler;
+import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.code.CodeParagraphHandler;
+import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.image.ImageParagraphHandler;
+import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.math.MathParagraphHandler;
+import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.table.TableParagraphHandler;
+import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.tableofcontents.TableOfContentsItemParagraphHandler;
+import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.text.TextParagraphHandler;
 import de.be.thaw.typeset.page.Page;
 
 import java.util.EnumMap;
@@ -40,6 +41,7 @@ public class KnuthPlassTypeSetter implements TypeSetter {
         initParagraphTypesetHandler(new TableOfContentsItemParagraphHandler());
         initParagraphTypesetHandler(new MathParagraphHandler());
         initParagraphTypesetHandler(new CodeParagraphHandler());
+        initParagraphTypesetHandler(new TableParagraphHandler());
     }
 
     /**
