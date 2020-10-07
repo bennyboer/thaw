@@ -24,9 +24,10 @@ import de.be.thaw.util.Bounds;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.unit.Unit;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Handler for table paragraphs.
@@ -46,51 +47,35 @@ public class TableParagraphHandler implements ParagraphTypesetHandler {
 
         Table<ThawTableCell> table = tableParagraph.getTable();
 
-        /*
-        Collect cells that span multiple cells to be processed later
-        as they do not affect row heights.
-         */
-        Map<CellSpan, ThawTableCell> cellsSpanningMultipleCells = new HashMap<>();
+        // Fetch rows with specially set (fixed) row sizes
+        Set<Integer> fixedSizedRows = new HashSet<>();
         for (int row = 1; row <= table.getRows(); row++) {
-            // Typeset row-wise to set the row sizes properly
-            List<ThawTableCell> cellsInRow = table.getCells(new CellSpan(
-                    new CellRange(row),
-                    new CellRange(1, table.getColumns())
-            ));
+            if (table.getRowSize(row) != ((DefaultTable<ThawTableCell>) table).getDefaultRowSize()) {
+                fixedSizedRows.add(row);
+            }
+        }
 
-            for (ThawTableCell cell : cellsInRow) {
-                if (cell.getSpan().isSingleCellSpan()) {
-                    double actualCellHeight = typeSetCell(cell, table.getBounds(cell.getSpan()), ctx);
+        for (ThawTableCell cell : table.getCells()) {
+            double actualCellHeight = typeSetCell(cell, table.getBounds(cell.getSpan()), ctx);
 
-                    // Only set a new row size if the current row size is not specially set (fixed size)
-                    if (!isSpecialRowSize(table, row)) {
-                        if (table.getRowSize(row) < actualCellHeight) {
-                            ((DefaultTable<ThawTableCell>) table).setRowSize(row, actualCellHeight);
-                        }
-                    }
-                } else {
-                    cellsSpanningMultipleCells.put(cell.getSpan(), cell);
+            // Only set a new row size if the current row size is not specially set (fixed size)
+            if (!fixedSizedRows.contains(cell.getSpan().getRowRange().getEnd())) {
+                double neededRowHeight = actualCellHeight;
+                if (cell.getSpan().getRowRange().getStart() != cell.getSpan().getRowRange().getEnd()) {
+                    // Cell spans over multiple rows -> only change the last row size
+                    neededRowHeight = actualCellHeight - table.getBounds(new CellSpan(
+                            new CellRange(cell.getSpan().getRowRange().getStart(), cell.getSpan().getRowRange().getEnd() - 1),
+                            cell.getSpan().getColumnRange()
+                    )).getSize().getHeight();
+                }
+
+                if (table.getRowSize(cell.getSpan().getRowRange().getEnd()) < neededRowHeight) {
+                    ((DefaultTable<ThawTableCell>) table).setRowSize(cell.getSpan().getRowRange().getEnd(), neededRowHeight);
                 }
             }
         }
 
-        // Then typeset cells spanning multiple cells
-        for (Map.Entry<CellSpan, ThawTableCell> cellEntry : cellsSpanningMultipleCells.entrySet()) {
-            typeSetCell(cellEntry.getValue(), table.getBounds(cellEntry.getKey()), ctx);
-        }
-
         ctx.getPositionContext().increaseY(table.getSize().getHeight());
-    }
-
-    /**
-     * Check whether the passed table has a special row size set at the given row.
-     *
-     * @param table to check in
-     * @param row   to check for special row sizes
-     * @return whether the table has a special row size set at the given row
-     */
-    private boolean isSpecialRowSize(Table<ThawTableCell> table, int row) {
-        return table.getRowSize(row) != ((DefaultTable<ThawTableCell>) table).getDefaultRowSize();
     }
 
     /**
