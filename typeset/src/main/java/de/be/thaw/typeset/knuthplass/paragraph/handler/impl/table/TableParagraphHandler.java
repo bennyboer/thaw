@@ -122,12 +122,32 @@ public class TableParagraphHandler implements ParagraphTypesetHandler {
         }
 
         // Now align, add backgrounds, add borders and add the cells actually to the current page
+        double yOffsetCorrector = 0; // y-offset corrector needed when the table does not fit on the current page
         for (int i = 0; i < cells.size(); i++) {
             ThawTableCell cell = cells.get(i);
             TypeSetCellInfo info = typeSetCellInfos[i];
 
             // Fetch final row size
             Bounds bounds = table.getBounds(cell.getSpan());
+
+            // Check if cell fits on the current page
+            double availableHeight = ctx.getAvailableHeight();
+            if (bounds.getPosition().getY() + bounds.getSize().getHeight() + yOffsetCorrector > availableHeight) {
+                ctx.pushPage();
+
+                yOffsetCorrector -= bounds.getPosition().getY() + yOffsetCorrector;
+            }
+
+            // Re-layout elements for the current page
+            if (yOffsetCorrector != 0) {
+                for (Element element : info.getElements()) {
+                    AbstractElement abstractElement = (AbstractElement) element;
+                    abstractElement.setPosition(new Position(
+                            abstractElement.getPosition().getX(),
+                            abstractElement.getPosition().getY() + yOffsetCorrector
+                    ));
+                }
+            }
 
             // Add background and borders
             RectangleElement rectangleElement = new RectangleElement(
@@ -138,7 +158,7 @@ public class TableParagraphHandler implements ParagraphTypesetHandler {
                     ),
                     new Position(
                             ctx.getPositionContext().getX() + bounds.getPosition().getX() + info.getMargin().getLeft(),
-                            ctx.getPositionContext().getY() + bounds.getPosition().getY() + info.getMargin().getTop()
+                            ctx.getPositionContext().getY() + bounds.getPosition().getY() + info.getMargin().getTop() + yOffsetCorrector
                     )
             );
             rectangleElement.setFillColor(info.getBackgroundColor());

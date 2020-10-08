@@ -49,11 +49,24 @@ public class CSVTableReader<C extends Cell> implements TableReader<C> {
         List<C> cells = new ArrayList<>();
 
         int row = 1;
+        int anticipatedColumns = -1;
         double defaultColumnSize = 0;
         try (BufferedReader br = new BufferedReader(reader)) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] parts = line.split(Pattern.quote(separator));
+                if (anticipatedColumns == -1) {
+                    // Could occurrences of the separator
+                    anticipatedColumns = 1; // Always one more
+                    int idx = -1;
+                    do {
+                        idx = line.indexOf(separator, idx + 1);
+                        if (idx != -1) {
+                            anticipatedColumns++;
+                        }
+                    } while (idx != -1);
+                }
+
+                String[] parts = line.split(Pattern.quote(separator), anticipatedColumns);
                 if (row == 1) {
                     defaultColumnSize = totalTableWidth / parts.length;
                 }
@@ -61,12 +74,10 @@ public class CSVTableReader<C extends Cell> implements TableReader<C> {
                 int column = 1;
 
                 for (String part : parts) {
-                    if (!part.isBlank()) {
-                        C cell = converter.convert(part.trim());
-                        cell.setSpan(new CellSpan(row, column));
+                    C cell = converter.convert(part.trim());
+                    cell.setSpan(new CellSpan(row, column));
 
-                        cells.add(cell);
-                    }
+                    cells.add(cell);
 
                     column++;
                 }
