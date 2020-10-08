@@ -1,0 +1,3 @@
+#TABLE, '
+Built at *#DATE#* | #VAR, var.author# | Page **#PAGE#**
+', class=footer-table#

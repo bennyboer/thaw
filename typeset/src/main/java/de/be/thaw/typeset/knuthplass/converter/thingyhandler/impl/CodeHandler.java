@@ -23,11 +23,6 @@ import java.util.Set;
  */
 public class CodeHandler implements ThingyHandler {
 
-    /**
-     * The default counter name to use for counting references.
-     */
-    private static final String DEFAULT_COUNTER_NAME = "listing";
-
     @Override
     public Set<String> getThingyNames() {
         return Set.of("CODE");
@@ -85,12 +80,6 @@ public class CodeHandler implements ThingyHandler {
         // Read additional options
         String caption = node.getOptions().get("caption");
         String captionPrefix = node.getOptions().get("caption-prefix");
-
-        // Set the code reference counter (if the code got a caption or label -> is referencable).
-        if (node.getOptions().containsKey("label") || caption != null) {
-            String counterName = node.getOptions().getOrDefault("counter", DEFAULT_COUNTER_NAME);
-            ctx.getDocument().getReferenceModel().setReferenceNumber(counterName, documentNode.getId());
-        }
 
         // Finalize the current paragraph -> we'll create a special code block paragraph instead
         ctx.finalizeParagraph();

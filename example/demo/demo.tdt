@@ -1,0 +1,195 @@
+#TITLE# Thaw Demo
+
+For demonstration purposes we show some of the features *Thaw* has to offer.
+We begin with a table of contents that is simply included in the text file with `#TOC#`.
+The table of contents will be automatically generated from the present headlines.
+
+#TOC#
+
+
+#H1# Images
+
+Most likely when you create a document you will have something like charts or other images - depending on the document type - that you want to display.
+As an example you can see a bird I took a picture of a while ago in #REF, bird-image, prefix=Image#.
+
+#IMAGE,
+src="res/bird.jpg",
+caption="This is an image of a bird. I don't know which kind, since I am hardly an ornithologist. But it is fun to take pictures of those animals!",
+label=bird-image
+#
+
+
+#BREAK, type=page#
+
+#H1# Tables
+
+Tables are mostly tricky to deal with, but Thaw should make it comparatively easy for you.
+Mostly you will just have to provide a simple *CSV* formatted string or file.
+In #REF, table-example, prefix=table# you will see a table that has been created from just one simple CSV string.
+
+#TABLE, '
+Name | Age | Sex | Weight
+John Doe | 43 | male | 78kg
+Steven MacDonald | 30 | male | 96kg
+Sharon Olsson | 28 | female | 67kg
+William Zeus | 24 | male | 72kg
+', class=person-table, caption="This is a simple example for a table in a document.", label=table-example#
+
+
+#H1# Enumerations
+
+- Now we certainly will need an example for an enumeration as well
+- This one is that example we are writing about
+    - The funny thing is that you just need to use the '-' character to display an enumeration
+    - For ordered enumerations we need to apply a simple trick that is shown below this unordered enumeration
+
+#ENUMERATION, type=ordered#
+- This in contrast to the above enumeration is an ordered enumeration
+- That means we are counting instead of just using the same item symbol for the same level all over again
+    - Of course this works for deeper levels as well
+    - It will just choose another counting type to have the levels separated visually
+
+
+#BREAK, type=page#
+
+#H1# Code blocks
+
+For the coders among you, you can find an example #REF, example-code-block, prefix=code block# in the following lines.
+If you want to mention something like a variable name in-line with text you can also use in-line code snippets like: `System.out.println`.
+
+#CODE, '
+public static void main(String... args) {
+    System.out.println("Hello World");
+}
+', language=java, style=manni, caption="A cool caption for my secret code!", label=example-code-block#
+
+
+#H1# Math typesetting
+
+Apart from those very important features Thaw is able to typeset mathematical expressions.
+Note that this feature is currently considered experimental as important things like matrices are not working right now.
+If you just need to typeset simple expressions it should work quite fine!
+Currently we only support MathML syntax to write expressions.
+Support for LaTeX syntax is yet to come.
+
+We support two math typesetting types: **Math block** and **in-line math**.
+In-line means that you can display math expressions in line with text.
+
+#H2# Math block
+
+#MATH, '
+<math>
+    <munder>
+        <mi>lim</mi>
+        <mrow>
+            <mi>n</mi>
+            <mo>→</mo>
+            <mo rspace="0">+</mo>
+            <mi>∞</mi>
+        </mrow>
+    </munder>
+    <mfrac>
+        <msqrt>
+            <mrow>
+                <mn>2</mn>
+                <mi>&pi;</mi>
+                <mi>n</mi>
+            </mrow>
+        </msqrt>
+        <mrow>
+            <mn>n</mn>
+            <mo>!</mo>
+        </mrow>
+    </mfrac>
+    <msup>
+        <mrow>
+            <mo>(</mo>
+            <mfrac>
+                <mi>n</mi>
+                <mi>e</mi>
+            </mfrac>
+            <mo>)</mo>
+        </mrow>
+        <mi>n</mi>
+    </msup>
+    <mo>=</mo>
+    <mn>1</mn>
+</math>
+'#
+
+#H2# In-line math
+
+At vero eos et accusam et justo duo #MATH, '<math><msqrt><mi>x</mi></msqrt></math>'# dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+Lorem #MATH, '
+      <math>
+          <mfrac>
+              <mrow>
+                  <mi>x</mi>
+                  <mo>+</mo>
+                  <msup>
+                      <mi>y</mi>
+                      <mn>2</mn>
+                  </msup>
+              </mrow>
+              <mrow>
+                  <mi>k</mi>
+                  <mo>+</mo>
+                  <mn>1</mn>
+              </mrow>
+          </mfrac>
+      </math>
+'# ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
+#MATH, '
+<math>
+    <mfrac>
+        <mi>a</mi>
+        <mfrac bevelled="true">
+            <mi>b</mi>
+            <mn>2</mn>
+        </mfrac>
+    </mfrac>
+</math>
+'# et dolore magna aliquyam erat, sed diam voluptua.
+
+
+#BREAK, type=page#
+
+#H1# Citations
+
+Thaw supports automatic citations (using `#CITE, 'KEY, locator=page 124'#`) and reference list generating using the `#REFERENCES#` thingy.
+
+#H2# In-text citation example
+
+For this demo document we will cite a paper from Donald Knuth and Michael Plass that we used to implement the line breaking algorithm in Thaw #CITE, Knuth1981#.
+
+#H2, label=references# References
+
+#REFERENCES#
+
+
+#H1# Some Lorem Ipsum text
+
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, At accusam aliquyam diam diam dolore dolores duo eirmod eos erat, et nonumy sed tempor et et invidunt justo labore Stet clita ea et gubergren, kasd magna no rebum. sanctus sea sed takimata ut vero voluptua. est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat.
+
+Consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus.
+
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+
+Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+
+Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.

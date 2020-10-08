@@ -1,0 +1,8 @@
+encoding = UTF-8
+language = en
+
+bibliography.file = literature.bib
+bibliography.style = apa
+
+var.version = v0.1
+var.author = Benjamin Eder

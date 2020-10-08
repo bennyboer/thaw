@@ -1,5 +1,6 @@
 package de.be.thaw.typeset.page.impl;
 
+import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.typeset.page.AbstractElement;
 import de.be.thaw.typeset.page.ElementType;
 import de.be.thaw.typeset.page.util.LineStyle;
@@ -7,6 +8,9 @@ import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
 import de.be.thaw.util.color.Color;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Optional;
 
 /**
  * An rectangle element.
@@ -53,6 +57,12 @@ public class RectangleElement extends AbstractElement {
      * Widths of the border sides.
      */
     private Insets borderWidths = new Insets(0);
+
+    /**
+     * Optional document node of the rectangle element.
+     */
+    @Nullable
+    private DocumentNode node;
 
     public RectangleElement(int pageNumber, Size size, Position position) {
         super(pageNumber, size, position);
@@ -322,6 +332,20 @@ public class RectangleElement extends AbstractElement {
     @Override
     public ElementType getType() {
         return ElementType.RECTANGLE;
+    }
+
+    @Override
+    public Optional<DocumentNode> getNode() {
+        return Optional.ofNullable(node);
+    }
+
+    /**
+     * Set the document node of the rectangle element.
+     *
+     * @param node to set
+     */
+    public void setNode(@Nullable DocumentNode node) {
+        this.node = node;
     }
 
 }

@@ -370,6 +370,13 @@ public class CodeParagraphHandler extends AbstractParagraphHandler {
          */
         private final LineStyle[] borderStyles;
 
+        /**
+         * Whether we haven't typeset a rectangle (as background) yet.
+         * This is needed because we need one element that acts as link target for the
+         * code paragraphs document node.
+         */
+        private boolean isFirstRectangle = true;
+
         RTFCodeParser(CodeParagraph codeParagraph, TypeSettingContext ctx) {
             this.codeParagraph = codeParagraph;
             this.ctx = ctx;
@@ -481,7 +488,7 @@ public class CodeParagraphHandler extends AbstractParagraphHandler {
 
         @Override
         public void processDocumentEnd() {
-            pushRectangleElementIfNecessary();
+            pushRectangleElement();
 
             ctx.getPositionContext().increaseY(paddingBottom);
         }
@@ -693,7 +700,7 @@ public class CodeParagraphHandler extends AbstractParagraphHandler {
                     // Not enough space for this line left on the current page -> Create next page
 
                     // First create rectangle element for the background (if necessary)
-                    pushRectangleElementIfNecessary();
+                    pushRectangleElement();
 
                     try {
                         ctx.pushPage();
@@ -718,7 +725,7 @@ public class CodeParagraphHandler extends AbstractParagraphHandler {
         /**
          * Push a rectangle element for the background if necessary.
          */
-        private void pushRectangleElementIfNecessary() {
+        private void pushRectangleElement() {
             Size size = new Size(
                     ctx.getConfig().getPageSize().getWidth() - ctx.getConfig().getPageInsets().getLeft() - ctx.getConfig().getPageInsets().getRight() - marginLeft - marginRight,
                     ctx.getPositionContext().getY() - startY + paddingBottom
@@ -730,24 +737,19 @@ public class CodeParagraphHandler extends AbstractParagraphHandler {
 
             RectangleElement rect = new RectangleElement(ctx.getCurrentPageNumber(), size, position);
 
-            // Check if we have enough settings to push a rectangle
-            boolean pushRectangle = false;
-            if (backgroundColor.getAlpha() > 0.0) {
-                pushRectangle = true;
-                rect.setFillColor(backgroundColor);
-            }
-            if (borderWidths.getTop() > 0 || borderWidths.getRight() > 0 || borderWidths.getBottom() > 0 || borderWidths.getLeft() > 0) {
-                pushRectangle = true;
-                rect.setBorderWidths(borderWidths);
+            rect.setFillColor(backgroundColor);
+            rect.setBorderWidths(borderWidths);
+            rect.setStrokeColors(borderColors);
+            rect.setBorderStyles(borderStyles);
+            rect.setBorderRadius(borderRadius);
+
+            if (isFirstRectangle) {
+                // Add code paragraph node to the rectangle, so that internal links to code blocks are possible
+                isFirstRectangle = false;
+                rect.setNode(codeParagraph.getNode());
             }
 
-            if (pushRectangle) {
-                rect.setStrokeColors(borderColors);
-                rect.setBorderStyles(borderStyles);
-                rect.setBorderRadius(borderRadius);
-
-                ctx.getCurrentPageElements().add(startElementIndex, rect);
-            }
+            ctx.getCurrentPageElements().add(startElementIndex, rect);
         }
 
         /**

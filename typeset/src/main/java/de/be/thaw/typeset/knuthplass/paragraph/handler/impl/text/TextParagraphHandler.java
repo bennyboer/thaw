@@ -179,6 +179,19 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
         // Split the text paragraph into lines using the previously computed break points
         List<List<Item>> lines = splitParagraphIntoLines(textParagraph, result);
 
+        // End-line may contain no boxes -> filter those end-lines
+        List<Item> lastLine = lines.get(lines.size() - 1);
+        boolean filterLastLine = true;
+        for (Item item : lastLine) {
+            if (item.getType() == ItemType.BOX) {
+                filterLastLine = false;
+                break;
+            }
+        }
+        if (filterLastLine) {
+            lines.remove(lines.size() - 1);
+        }
+
         // Lay out the found lines
         double indent = marginLeft + paddingLeft; // Indent of the paragraph (if any), set for example for enumerations.
         for (int i = 0; i < lines.size(); i++) {

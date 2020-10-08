@@ -362,7 +362,7 @@ public class TypeSettingContext {
         }
 
         if (footerParagraphList != null) {
-            TypeSettingContext newContext = new TypeSettingContext(config, document, footerParagraphList, null, null, null, null, null);
+            TypeSettingContext newContext = new TypeSettingContext(config, document, footerParagraphList, null, null, null, null, typesetDocumentFunction);
             newContext.setPageNumberOffset(currentPageNumber - 1);
 
             List<Page> footerPages = typesettingFunction.apply(footerParagraphList, newContext);

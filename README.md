@@ -1,22 +1,34 @@
 # Thaw
 
-*Thaw* is an hierarchical organizable and perfectly versionable document framework with an export to PDF.
+*Thaw* is a tool to create documents with export to **PDF** in a *text-concentrated* working style.
+It offers a *feature-rich* and *easy to learn* **markup language** that you can write your documents in a human-readable way.
 
-> Note that this software is currently under heavy development and thus cannot not be considered stable software and neither is very well documented yet.
+> We are currently very near to a first release `v0.1`, yet this is still an experimental project.
+> I am currently testing Thaw by writing scientific documents and fixing bugs that come up.
+
 
 ## Motivation
 
-Current modern alternatives to TeX/LaTeX and its derivatives include WYSIWYG editors like DTP software which is usually very expensive (Adobe InDesign) or human-readable formats like Markdown that lack a lot of features.
-We want to improve the situation by proposing *Thaw* which lets you organize your documents in a human-readable way while being easy to learn and use as well as being suitable for version control software like Git.
+Current modern alternatives to TeX/LaTeX and its derivatives include WYSIWYG editors like DTP software that are usually *very expensive* (InDesign), *hard to learn* (LaTeX/TeX) or *human-readable* formats like Markdown that lack a lot of features (Math typesetting, Captions, ...).
+We want to improve the situation by proposing *Thaw* which lets you write your documents in a *distraction-free* and *human-readable* way while at the same time being *easy to learn*.
+
+Since Thaw documents only consist of simple text files (except from images) you'll have no problems using Git or another version control software to version your document.
 
 
 ## Example
 
-A Thaw document is defined by four files: **Text**, **Style**, **Info** and **References**.
-We've prepared an example using the below file contents (shown here only in extracts).
-Running the CLI with gradle (later an executable version will be provided) using the files with `./gradlew.bat :cli:run --args="--root-folder='C:\test' --output='C:\test.pdf'"`we get the following PDF:
+Usually a Thaw document is defined by three files:
+- A text file (ending with `*.tdt`) - *in some ways similar to Markdown* - where you define the contents (text) of the document
+- A style file (ending with `*.tds`) - *very similar to CSS* - where you define the style of the document (page size, colors, fonts, ...)
+- A info file (ending with `*.tdi`) - *a properties file* - where you define the encoding of the project files, a bibliography to use, citation style, variables, ...
 
-![Screenshot](docs/img/screenshot.png)
+In the following we want to show some code snippets as well as the result taken from the [Demo example](demo/example/demo.pdf) in this repository under `example/demo`.
+Running the CLI with gradle (An executable version should be downloadable from the [Releases](https://github.com/bennyboer/thaw/releases) page once there is a release) using the demo example files with `./gradlew.bat :cli:run --args="--root-folder='../example/demo' --output='../example/demo/demo.pdf'"`, we get the following PDF (Only a screenshot shown):
+
+![Screenshot](docs/img/demo-example-screenshot.png)
+
+Check out the full PDF [here](example/demo/demo.pdf).
+
 
 ### Info file
 
@@ -26,30 +38,32 @@ The info file defines some info about the document.
 encoding = UTF-8
 language = en
 
-author.name = Benjamin Eder
+bibliography.file = literature.bib
+bibliography.style = apa
+
+var.version = v0.1
+var.author = Benjamin Eder
 ```
 
 ### Style file
 
-The style file is used to alter the document looks.
+The style file is used to alter the document looks to your needs.
 
-```json
-{
-  "DOCUMENT": {
-    "size": {
-	  "width": 210,
-	  "height": 297
-    },
-	"insets": {
-	  "top": 20,
-	  "bottom": 20,
-	  "left": 20,
-	  "right": 20
-	},
-    ...
-  },
-  ...
+```css
+document {
+	font-family: Cambria;
+	inline-code-font-family: Consolas;
+
+	font-size: 13pt;
+	color: #222222;
+
+	width: 210mm;
+	height: 297mm;
+
+	margin: 2cm 3cm;
 }
+
+/* ... */
 ```
 
 ### Text file
@@ -59,33 +73,42 @@ The text file defines the contents and the structure of the document.
 ```
 #TITLE# Thaw Demo
 
-
-#H1, numbered=false# Table of contents
+For demonstration purposes we show some of the features *Thaw* has to offer.
+We begin with a table of contents that is simply included in the text file with `#TOC#`.
+The table of contents will be automatically generated from the present headlines.
 
 #TOC#
 
+#H1# Images
 
-#H1, label=headline1# Some headline
+Most likely when you create a document you will have something like charts or other images - depending on the document type - that you want to display.
+As an example you can see a bird I took a picture of a while ago in #REF, bird-image, prefix=Image#.
 
-#IMAGE, src=C:/Users/beder/Downloads/test/bird.jpg, float=true, width=220, alignment=RIGHT, label=bird#
+#IMAGE,
+src="res/bird.jpg",
+caption="This is an image of a bird. I don't know which kind, since I am hardly an ornithologist. But it is fun to take pictures of those animals!",
+label=bird-image
+#
 
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
-At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
-At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
-At vero eos et accusam et.
-
-#H1, label=another-headline# Another headline
-
-Hey there! This is a basic paragraph with **nothing** special about it.
-You can write the documents content without being *distracted* by having to style it properly.
+...
 ```
+
+
+## Documentation
+
+We are currently trying to establish a documentation for the project that specifies all available features and how to use them.
+In the meantime you can check out the demo example project at `example/demo`.
+
+
+## Contributing
+
+I'd be glad if you want to contribute to the project.
+If you're interested write a message to me via email (See my [GitHub profile](https://github.com/bennyboer)).
 
 
 ## Project structure
 
-The project is organized in multiple modules:
+The project is organized in multiple modules that each take care of a specific part of the application:
 
 | Module name | Folder | Description |
 | --- | --- | --- |

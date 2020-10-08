@@ -49,11 +49,6 @@ public class TableHandler implements ThingyHandler {
     private static final String DEFAULT_CSV_SEPARATOR = "|";
 
     /**
-     * The default counter name to use for counting references.
-     */
-    private static final String DEFAULT_COUNTER_NAME = "table";
-
-    /**
      * Importance of different pseudo selectors possible with tables.
      * Higher numbers mean higher importance.
      */
@@ -93,12 +88,6 @@ public class TableHandler implements ThingyHandler {
 
         String caption = node.getOptions().get("caption");
         String captionPrefix = node.getOptions().get("caption-prefix");
-
-        // Set the table reference counter (if the table got a caption or label -> is referencable).
-        if (node.getOptions().containsKey("label") || caption != null) {
-            String counterName = node.getOptions().getOrDefault("counter", DEFAULT_COUNTER_NAME);
-            ctx.getDocument().getReferenceModel().setReferenceNumber(counterName, documentNode.getId());
-        }
 
         Styles styles = documentNode.getStyles();
         Insets margin = new Insets(

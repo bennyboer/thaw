@@ -1,0 +1,85 @@
+document {
+	font-family: Cambria;
+	inline-code-font-family: Consolas;
+
+	font-size: 13pt;
+	color: #222222;
+
+    // Set the document page dimensions
+	width: 210mm;
+	height: 297mm;
+
+	margin: 2cm 3cm;
+}
+
+page {
+    footer: footer; // We want the sub-folder "footer" to be included as footer to all pages
+}
+
+title {
+    font-family: Arial;
+    font-size: 48pt;
+    text-align: center;
+}
+
+code {
+	font-family: Consolas;
+	line-number-font-family: Consolas;
+}
+
+h {
+    font-family: Arial;
+    margin: 4mm 0 0 0;
+    padding: 0;
+}
+
+table-cell.footer-table {
+    border-width: 0.25mm 0 0 0; // Hide borders of the tables cells, except on the top
+
+    // Font settings
+    font-family: Arial;
+    font-size: 11pt;
+}
+
+table-cell.footer-table:column(1) {
+    text-align: left;
+}
+
+table-cell.footer-table:column(*) {
+    text-align: right;
+}
+
+table-cell.person-table {
+	border-width: 0;
+	font-size: 13pt;
+}
+
+table-cell.person-table:even-rows {
+	background-color: rgb(0.98, 0.98, 0.98);
+}
+
+table-cell.person-table:row(1) {
+	font-variant: bold;
+	border-width: 0;
+}
+
+table-cell.person-table:cell(2, 1) {
+	border-radius-top: 2mm;
+}
+
+table-cell.person-table:cell(2, *) {
+	border-radius-right: 2mm;
+}
+
+table-cell.person-table:cell(*, 1) {
+	border-radius-left: 2mm;
+}
+
+table-cell.person-table:cell(*, *) {
+	border-radius-bottom: 2mm;
+}
+
+table-cell.person-table:column(1) {
+	text-align: right;
+	font-variant: italic;
+}

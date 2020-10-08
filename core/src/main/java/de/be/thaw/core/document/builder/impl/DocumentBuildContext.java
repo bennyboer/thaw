@@ -4,11 +4,14 @@ import de.be.thaw.core.document.Document;
 import de.be.thaw.core.document.builder.impl.exception.DocumentBuildException;
 import de.be.thaw.core.document.builder.impl.thingy.ThingyHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.CiteHandler;
+import de.be.thaw.core.document.builder.impl.thingy.impl.CodeHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.FootNoteHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.HyperRefHandler;
+import de.be.thaw.core.document.builder.impl.thingy.impl.ImageHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.IncludeHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.RefHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.ReferenceListHandler;
+import de.be.thaw.core.document.builder.impl.thingy.impl.TableHandler;
 import de.be.thaw.core.document.builder.impl.thingy.impl.VariableHandler;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.core.document.util.PageRange;
@@ -65,6 +68,9 @@ public class DocumentBuildContext {
         initThingyHandler(new CiteHandler());
         initThingyHandler(new ReferenceListHandler());
         initThingyHandler(new VariableHandler());
+        initThingyHandler(new ImageHandler());
+        initThingyHandler(new TableHandler());
+        initThingyHandler(new CodeHandler());
     }
 
     /**

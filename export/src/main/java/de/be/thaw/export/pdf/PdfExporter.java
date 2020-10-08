@@ -279,12 +279,12 @@ public class PdfExporter implements Exporter {
                 .setGlueConfig(new GlueConfig() {
                     @Override
                     public double getInterWordStretchability(DocumentNode node, char lastChar) throws Exception {
-                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() / 2;
+                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth();
                     }
 
                     @Override
                     public double getInterWordShrinkability(DocumentNode node, char lastChar) throws Exception {
-                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() * 0.7;
+                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() * 0.4;
                     }
                 })
                 .setHyphenator(new Hyphenator() {

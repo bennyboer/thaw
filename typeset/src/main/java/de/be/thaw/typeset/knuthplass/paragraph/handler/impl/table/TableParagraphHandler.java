@@ -91,6 +91,9 @@ public class TableParagraphHandler extends AbstractParagraphHandler {
         Insets margin = tableParagraph.getMargin();
         Insets padding = tableParagraph.getPadding();
 
+        // Set proper starting position to the context
+        ctx.getPositionContext().setX(ctx.getConfig().getPageInsets().getLeft());
+
         Table<ThawTableCell> table = tableParagraph.getTable();
 
         // Fetch rows with specially set (fixed) row sizes
@@ -129,6 +132,7 @@ public class TableParagraphHandler extends AbstractParagraphHandler {
 
         // Now align, add backgrounds, add borders and add the cells actually to the current page
         double yOffsetCorrector = margin.getTop() + padding.getTop(); // y-offset corrector needed when the table does not fit on the current page
+
         for (int i = 0; i < cells.size(); i++) {
             ThawTableCell cell = cells.get(i);
             TypeSetCellInfo info = typeSetCellInfos[i];
@@ -149,8 +153,14 @@ public class TableParagraphHandler extends AbstractParagraphHandler {
             for (Element element : info.getElements()) {
                 AbstractElement abstractElement = (AbstractElement) element;
                 abstractElement.setPosition(new Position(
-                        abstractElement.getPosition().getX() + margin.getLeft() + padding.getLeft(),
-                        abstractElement.getPosition().getY() + yOffsetCorrector
+                        ctx.getPositionContext().getX() + bounds.getPosition().getX()
+                                + info.getMargin().getLeft() + info.getPadding().getLeft()
+                                + margin.getLeft() + padding.getLeft()
+                                + abstractElement.getPosition().getX(),
+                        ctx.getPositionContext().getY() + bounds.getPosition().getY()
+                                + info.getMargin().getTop() + info.getPadding().getTop()
+                                + abstractElement.getPosition().getY()
+                                + yOffsetCorrector
                 ));
             }
 
@@ -158,12 +168,18 @@ public class TableParagraphHandler extends AbstractParagraphHandler {
             RectangleElement rectangleElement = new RectangleElement(
                     ctx.getCurrentPageNumber(),
                     new Size(
-                            info.getTypeSetSize().getWidth() + info.getPadding().getLeft() + info.getPadding().getRight(),
-                            bounds.getSize().getHeight() - info.getMargin().getTop() - info.getMargin().getBottom()
+                            info.getTypeSetSize().getWidth()
+                                    + info.getPadding().getLeft() + info.getPadding().getRight(),
+                            bounds.getSize().getHeight()
+                                    - info.getMargin().getTop() - info.getMargin().getBottom()
                     ),
                     new Position(
-                            ctx.getPositionContext().getX() + bounds.getPosition().getX() + info.getMargin().getLeft() + margin.getLeft() + padding.getLeft(),
-                            ctx.getPositionContext().getY() + bounds.getPosition().getY() + info.getMargin().getTop() + yOffsetCorrector
+                            ctx.getPositionContext().getX() + bounds.getPosition().getX()
+                                    + info.getMargin().getLeft()
+                                    + margin.getLeft() + padding.getLeft(),
+                            ctx.getPositionContext().getY() + bounds.getPosition().getY()
+                                    + info.getMargin().getTop()
+                                    + yOffsetCorrector
                     )
             );
             rectangleElement.setFillColor(info.getBackgroundColor());
@@ -171,6 +187,11 @@ public class TableParagraphHandler extends AbstractParagraphHandler {
             rectangleElement.setBorderWidths(info.getBorderWidths());
             rectangleElement.setStrokeColors(info.getBorderColors());
             rectangleElement.setBorderRadius(info.getBorderRadius());
+
+            if (i == 0) { // Is first cell
+                rectangleElement.setNode(paragraph.getNode()); // Set document node to the rectangle element so that the table can be linked internally
+            }
+
             ctx.pushPageElement(rectangleElement);
 
             // Vertically align element (if necessary)
@@ -321,16 +342,9 @@ public class TableParagraphHandler extends AbstractParagraphHandler {
                 styleModel
         ).get(0);
 
-        // Re-layout elements
         double typeSetHeight = 0;
         for (Element element : page.getElements()) {
             typeSetHeight = Math.max(typeSetHeight, element.getPosition().getY() + element.getSize().getHeight());
-
-            AbstractElement abstractElement = (AbstractElement) element;
-            abstractElement.setPosition(new Position(
-                    abstractElement.getPosition().getX() + cellBounds.getPosition().getX() + ctx.getPositionContext().getX() + marginLeft + paddingLeft,
-                    abstractElement.getPosition().getY() + cellBounds.getPosition().getY() + ctx.getPositionContext().getY() + marginTop + paddingTop
-            ));
         }
 
         return new TypeSetCellInfo(
