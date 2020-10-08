@@ -14,6 +14,7 @@ As an example you can see a bird I took a picture of a while ago in #REF, bird-i
 
 #IMAGE,
 src="res/bird.jpg",
+width=300,
 caption="This is an image of a bird. I don't know which kind, since I am hardly an ornithologist. But it is fun to take pictures of those animals!",
 label=bird-image
 #
