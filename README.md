@@ -22,7 +22,7 @@ Usually a Thaw document is defined by three files:
 - A style file (ending with `*.tds`) - *very similar to CSS* - where you define the style of the document (page size, colors, fonts, ...)
 - A info file (ending with `*.tdi`) - *a properties file* - where you define the encoding of the project files, a bibliography to use, citation style, variables, ...
 
-In the following we want to show some code snippets as well as the result taken from the [Demo example](demo/example/demo.pdf) in this repository under `example/demo`.
+In the following we want to show some code snippets as well as the result taken from the [Demo example](example/demo/demo.pdf) in this repository under `example/demo`.
 Running the CLI with gradle (An executable version should be downloadable from the [Releases](https://github.com/bennyboer/thaw/releases) page once there is a release) using the demo example files with `./gradlew.bat :cli:run --args="--root-folder='../example/demo' --output='../example/demo/demo.pdf'"`, we get the following PDF (Only a screenshot shown):
 
 ![Screenshot](docs/img/demo-example-screenshot.png)
