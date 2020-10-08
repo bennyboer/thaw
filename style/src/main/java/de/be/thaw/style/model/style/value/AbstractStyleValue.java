@@ -5,6 +5,7 @@ import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.style.model.style.util.FillStyle;
 import de.be.thaw.style.model.style.util.list.ListStyleType;
 import de.be.thaw.util.HorizontalAlignment;
+import de.be.thaw.util.VerticalAlignment;
 import de.be.thaw.util.color.Color;
 import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
@@ -44,6 +45,11 @@ public abstract class AbstractStyleValue implements StyleValue {
     @Override
     public HorizontalAlignment horizontalAlignment() {
         throw new UnsupportedOperationException("Could not express style value as horizontal alignment");
+    }
+
+    @Override
+    public VerticalAlignment verticalAlignment() {
+        throw new UnsupportedOperationException("Could not express style value as vertical alignment");
     }
 
     @Override

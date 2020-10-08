@@ -1,34 +1,24 @@
-package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
+package de.be.thaw.typeset.knuthplass.paragraph.handler.impl.image;
 
-import de.be.thaw.style.model.StyleModel;
-import de.be.thaw.style.model.block.StyleBlock;
-import de.be.thaw.style.model.impl.DefaultStyleModel;
-import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;
-import de.be.thaw.style.model.style.value.DoubleStyleValue;
 import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
-import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
+import de.be.thaw.typeset.knuthplass.paragraph.handler.AbstractParagraphHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.image.ImageParagraph;
-import de.be.thaw.typeset.page.AbstractElement;
-import de.be.thaw.typeset.page.Element;
-import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.page.impl.ImageElement;
+import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
 import de.be.thaw.util.unit.Unit;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * Handler dealing with typesetting image paragraphs.
  */
-public class ImageParagraphHandler implements ParagraphTypesetHandler {
+public class ImageParagraphHandler extends AbstractParagraphHandler {
 
     /**
      * The default caption prefix for figures.
@@ -129,94 +119,20 @@ public class ImageParagraphHandler implements ParagraphTypesetHandler {
 
         // Deal with the image paragraphs caption (if any).
         if (imageParagraph.getCaption().isPresent()) {
-            String caption = imageParagraph.getCaption().orElseThrow();
-            addCaption(caption, imageParagraph, imageElement, marginBottom, paddingBottom, ctx);
-        }
-    }
-
-    /**
-     * Add the passed caption string under the image.
-     *
-     * @param caption       to add
-     * @param paragraph     the image paragraph
-     * @param imageElement  the already typeset image element
-     * @param marginBottom  the bottom margin of the image
-     * @param paddingBottom the bottom padding of the image
-     * @param ctx           the typesetting context
-     * @throws TypeSettingException in case the caption could not be added properly
-     */
-    private void addCaption(String caption, ImageParagraph paragraph, ImageElement imageElement, double marginBottom, double paddingBottom, TypeSettingContext ctx) throws TypeSettingException {
-        boolean isFloating = paragraph.isFloating() && paragraph.getAlignment() != HorizontalAlignment.CENTER;
-        double endY = imageElement.getPosition().getY() + imageElement.getSize().getHeight() + paddingBottom;
-        double x = imageElement.getPosition().getX();
-
-        // Typeset the caption
-
-        StyleModel styleModel = new DefaultStyleModel();
-        styleModel.addBlock(new StyleBlock(
-                new StyleSelectorBuilder().setTargetName("document").build(),
-                Map.ofEntries(
-                        Map.entry(StyleType.FIRST_LINE_INDENT, new DoubleStyleValue(0.0, Unit.MILLIMETER))
-                )
-        ));
-
-        List<Page> pages = ctx.typesetThawTextFormat(String.format(
-                "**%s %d**: %s",
-                paragraph.getCaptionPrefix() != null ? paragraph.getCaptionPrefix() : ctx.getConfig().getProperties().getOrDefault("image.caption.prefix", DEFAULT_FIGURE_CAPTION_PREFIX),
-                ctx.getDocument().getReferenceModel().getReferenceNumber(paragraph.getNode().getId()),
-                caption
-        ), imageElement.getSize().getWidth(), styleModel);
-
-        // Re-layout the elements below the image paragraph
-        double maxY = endY;
-        double startY = endY;
-        for (Page page : pages) {
-            for (Element element : page.getElements()) {
-                double oldX = element.getPosition().getX();
-                double oldY = element.getPosition().getY();
-
-                // Set new position
-                AbstractElement abstractElement = (AbstractElement) element;
-                abstractElement.setPosition(new Position(
-                        oldX + x,
-                        oldY + endY
-                ));
-
-                // Check if new line
-                if (element.getPosition().getY() + element.getSize().getHeight() > maxY) {
-                    maxY = element.getPosition().getY() + element.getSize().getHeight();
-
-                    // Check if there is enough space for the next line -> only when not floating
-                    if (!isFloating) {
-                        double captionHeight = maxY - startY;
-                        double availableHeight = ctx.getAvailableHeight() - captionHeight;
-                        if (availableHeight < element.getSize().getHeight()) {
-                            ctx.pushPage(); // Create next page
-
-                            startY = ctx.getConfig().getPageInsets().getTop();
-                            endY = -oldY + startY;
-                            maxY = startY + element.getSize().getHeight();
-
-                            // Update current element position again
-                            abstractElement.setPosition(new Position(
-                                    oldX + x,
-                                    oldY + endY
-                            ));
-                        }
-                    }
-                }
-
-                ctx.pushPageElement(element);
-            }
-        }
-
-        maxY += marginBottom;
-
-        // Adjust floating configuration (if needed)
-        if (isFloating) {
-            ctx.getFloatConfig().setFloatUntilY(maxY);
-        } else {
-            ctx.getPositionContext().setY(maxY);
+            addCaption(
+                    imageParagraph.getCaption().orElseThrow(),
+                    imageParagraph.getCaptionPrefix() != null ?
+                            imageParagraph.getCaptionPrefix() :
+                            (String) ctx.getConfig().getProperties().getOrDefault("image.caption.prefix", DEFAULT_FIGURE_CAPTION_PREFIX),
+                    imageParagraph,
+                    paragraph.isFloating() && imageParagraph.getAlignment() != HorizontalAlignment.CENTER,
+                    imageElement.getPosition().getY() + imageElement.getSize().getHeight() + paddingBottom,
+                    imageElement.getPosition().getX(),
+                    imageElement.getSize().getWidth(),
+                    new Insets(marginTop, marginRight, marginBottom, marginLeft),
+                    new Insets(paddingTop, paddingRight, paddingBottom, paddingLeft),
+                    ctx
+            );
         }
     }
 

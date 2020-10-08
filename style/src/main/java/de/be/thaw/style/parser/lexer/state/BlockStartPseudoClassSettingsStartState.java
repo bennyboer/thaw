@@ -11,7 +11,7 @@ public class BlockStartPseudoClassSettingsStartState implements SFLexerState {
 
     @Override
     public void process(char c, SFLexerContext ctx) throws StyleFormatLexerException {
-        if (Character.isLetterOrDigit(c)) {
+        if (Character.isLetterOrDigit(c) || c == '*') { // *-character allowed as placeholder
             ctx.popState();
             ctx.pushState(new BlockStartPseudoClassSettingState());
         } else if (c == ')') {

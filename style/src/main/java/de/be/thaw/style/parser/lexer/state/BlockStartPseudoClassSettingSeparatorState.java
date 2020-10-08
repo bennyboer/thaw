@@ -11,7 +11,7 @@ public class BlockStartPseudoClassSettingSeparatorState implements SFLexerState 
 
     @Override
     public void process(char c, SFLexerContext ctx) throws StyleFormatLexerException {
-        if (Character.isLetterOrDigit(c)) {
+        if (Character.isLetterOrDigit(c) || c == '*') { // *-character allowed as placeholder
             ctx.popState();
         } else if (c != ' ') {
             throw new StyleFormatLexerException(String.format(

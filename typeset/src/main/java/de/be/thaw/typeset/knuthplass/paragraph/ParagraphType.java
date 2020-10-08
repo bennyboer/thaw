@@ -9,6 +9,7 @@ public enum ParagraphType {
     IMAGE,
     TOC_ITEM,
     MATH,
-    CODE
+    CODE,
+    TABLE
 
 }

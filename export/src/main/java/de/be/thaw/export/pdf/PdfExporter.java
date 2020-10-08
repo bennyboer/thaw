@@ -306,15 +306,19 @@ public class PdfExporter implements Exporter {
                     File imgFile = new File(currentProcessingFolder, src);
 
                     if (imgFile.getName().endsWith(".pdf")) {
-                        PDDocument srcDoc = PDDocument.load(imgFile);
-                        PDPage srcPage = srcDoc.getPage(0);
+                        PDFormXObject form;
+                        Size size;
+                        try(PDDocument srcDoc = PDDocument.load(imgFile)) {
+                            PDPage srcPage = srcDoc.getPage(0);
 
-                        LayerUtility layerUtility = new LayerUtility(ctx.getPdDocument());
-                        PDFormXObject form = layerUtility.importPageAsForm(srcDoc, srcPage);
+                            LayerUtility layerUtility = new LayerUtility(ctx.getPdDocument());
+                            form = layerUtility.importPageAsForm(srcDoc, srcPage);
+                            size = new Size(srcPage.getMediaBox().getWidth(), srcPage.getMediaBox().getHeight());
+                        }
 
                         return new PdfImageSource(
                                 form,
-                                new Size(srcPage.getMediaBox().getWidth(), srcPage.getMediaBox().getHeight()),
+                                size,
                                 Unit.POINTS
                         );
                     } else {

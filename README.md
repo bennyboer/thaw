@@ -104,3 +104,4 @@ The project is organized in multiple modules:
 | Math | `/math` | LaTeX to MathML converter + MathML typesetting. |
 | Util | `/util` | Some useful module-spanning utilities. |
 | Code | `/code` | Dealing with syntax highlighting code. |
+| Table | `/table` | Table-related logic (Table model dealing with cell spans). |

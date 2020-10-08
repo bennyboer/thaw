@@ -23,7 +23,9 @@ import de.be.thaw.style.model.style.value.IntStyleValue;
 import de.be.thaw.style.model.style.value.KerningModeStyleValue;
 import de.be.thaw.style.model.style.value.ListStyleTypeStyleValue;
 import de.be.thaw.style.model.style.value.StringStyleValue;
+import de.be.thaw.style.model.style.value.VerticalAlignmentStyleValue;
 import de.be.thaw.util.HorizontalAlignment;
+import de.be.thaw.util.VerticalAlignment;
 import de.be.thaw.util.color.Color;
 import de.be.thaw.util.unit.Unit;
 
@@ -322,6 +324,56 @@ public class DefaultStyleModel implements StyleModel {
                     )
             ));
         }
+
+        // Add table and table cell styles
+        model.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("table")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(2.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(2.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_TOP, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(2.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER))
+                )
+        ));
+        model.addBlock(new StyleBlock(
+                new StyleSelectorBuilder()
+                        .setTargetName("table-cell")
+                        .build(),
+                Map.ofEntries(
+                        Map.entry(StyleType.FIRST_LINE_INDENT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.LINE_HEIGHT, new DoubleStyleValue(1.0, Unit.UNITARY)),
+                        Map.entry(StyleType.TEXT_JUSTIFY, new BooleanStyleValue(false)),
+                        Map.entry(StyleType.TEXT_ALIGN, new HorizontalAlignmentStyleValue(HorizontalAlignment.CENTER)),
+                        Map.entry(StyleType.VERTICAL_ALIGN, new VerticalAlignmentStyleValue(VerticalAlignment.CENTER)),
+                        Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_TOP, new DoubleStyleValue(1.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(1.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_LEFT, new DoubleStyleValue(1.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_RIGHT, new DoubleStyleValue(1.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.BACKGROUND_COLOR, new ColorStyleValue(new Color(1.0, 1.0, 1.0))),
+                        Map.entry(StyleType.BORDER_TOP_COLOR, new ColorStyleValue(new Color(0.7, 0.7, 0.7))),
+                        Map.entry(StyleType.BORDER_TOP_WIDTH, new DoubleStyleValue(0.25, Unit.MILLIMETER)),
+                        Map.entry(StyleType.BORDER_TOP_STYLE, new FillStyleValue(FillStyle.SOLID)),
+                        Map.entry(StyleType.BORDER_LEFT_COLOR, new ColorStyleValue(new Color(0.7, 0.7, 0.7))),
+                        Map.entry(StyleType.BORDER_LEFT_WIDTH, new DoubleStyleValue(0.25, Unit.MILLIMETER)),
+                        Map.entry(StyleType.BORDER_LEFT_STYLE, new FillStyleValue(FillStyle.SOLID)),
+                        Map.entry(StyleType.BORDER_BOTTOM_COLOR, new ColorStyleValue(new Color(0.7, 0.7, 0.7))),
+                        Map.entry(StyleType.BORDER_BOTTOM_WIDTH, new DoubleStyleValue(0.25, Unit.MILLIMETER)),
+                        Map.entry(StyleType.BORDER_BOTTOM_STYLE, new FillStyleValue(FillStyle.SOLID)),
+                        Map.entry(StyleType.BORDER_RIGHT_COLOR, new ColorStyleValue(new Color(0.7, 0.7, 0.7))),
+                        Map.entry(StyleType.BORDER_RIGHT_WIDTH, new DoubleStyleValue(0.25, Unit.MILLIMETER)),
+                        Map.entry(StyleType.BORDER_RIGHT_STYLE, new FillStyleValue(FillStyle.SOLID))
+                )
+        ));
 
         return model;
     }

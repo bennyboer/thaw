@@ -1,4 +1,4 @@
-package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
+package de.be.thaw.typeset.knuthplass.paragraph.handler.impl.math;
 
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;

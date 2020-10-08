@@ -27,6 +27,7 @@ module de.be.thaw.typeset {
     requires de.be.thaw.util;
     requires de.be.thaw.math;
     requires de.be.thaw.code;
+    requires de.be.thaw.table;
     requires org.jetbrains.annotations;
     requires java.desktop;
     requires rtfparserkit;

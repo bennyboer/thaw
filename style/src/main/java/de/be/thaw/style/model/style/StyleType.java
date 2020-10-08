@@ -16,6 +16,7 @@ import de.be.thaw.style.parser.value.impl.HorizontalAlignmentValueParser;
 import de.be.thaw.style.parser.value.impl.InsetsValueParser;
 import de.be.thaw.style.parser.value.impl.ListStyleTypeValueParser;
 import de.be.thaw.style.parser.value.impl.StringValueParser;
+import de.be.thaw.style.parser.value.impl.VerticalAlignmentValueParser;
 import de.be.thaw.util.unit.Unit;
 
 import java.io.File;
@@ -83,7 +84,7 @@ public enum StyleType {
     NUMBERING("numbering", new StringValueParser()), // TODO Implement
 
     BORDER_TOP_STYLE("border-top-style", new FillValueParser()),
-    BORDER_TOP_WIDTH("border-top-width", new StringValueParser()),
+    BORDER_TOP_WIDTH("border-top-width", new DoubleValueParser(Unit.MILLIMETER)),
     BORDER_TOP_COLOR("border-top-color", new ColorValueParser()),
     BORDER_TOP("border-top", new BorderSideValueParser(
             new StyleType[]{BORDER_TOP_WIDTH},
@@ -91,7 +92,7 @@ public enum StyleType {
             new StyleType[]{BORDER_TOP_COLOR}
     )),
     BORDER_BOTTOM_STYLE("border-bottom-style", new FillValueParser()),
-    BORDER_BOTTOM_WIDTH("border-bottom-width", new StringValueParser()),
+    BORDER_BOTTOM_WIDTH("border-bottom-width", new DoubleValueParser(Unit.MILLIMETER)),
     BORDER_BOTTOM_COLOR("border-bottom-color", new ColorValueParser()),
     BORDER_BOTTOM("border-bottom", new BorderSideValueParser(
             new StyleType[]{BORDER_BOTTOM_WIDTH},
@@ -99,7 +100,7 @@ public enum StyleType {
             new StyleType[]{BORDER_BOTTOM_COLOR}
     )),
     BORDER_LEFT_STYLE("border-left-style", new FillValueParser()),
-    BORDER_LEFT_WIDTH("border-left-width", new StringValueParser()),
+    BORDER_LEFT_WIDTH("border-left-width", new DoubleValueParser(Unit.MILLIMETER)),
     BORDER_LEFT_COLOR("border-left-color", new ColorValueParser()),
     BORDER_LEFT("border-left", new BorderSideValueParser(
             new StyleType[]{BORDER_LEFT_WIDTH},
@@ -107,7 +108,7 @@ public enum StyleType {
             new StyleType[]{BORDER_LEFT_COLOR}
     )),
     BORDER_RIGHT_STYLE("border-right-style", new FillValueParser()),
-    BORDER_RIGHT_WIDTH("border-right-width", new StringValueParser()),
+    BORDER_RIGHT_WIDTH("border-right-width", new DoubleValueParser(Unit.MILLIMETER)),
     BORDER_RIGHT_COLOR("border-right-color", new ColorValueParser()),
     BORDER_RIGHT("border-right", new BorderSideValueParser(
             new StyleType[]{BORDER_RIGHT_WIDTH},
@@ -163,7 +164,10 @@ public enum StyleType {
     FOOT_NOTE_LINE_SIZE("foot-note-line-size", new DoubleValueParser(Unit.MILLIMETER)),
     FOOT_NOTE_LINE_COLOR("foot-note-line-color", new ColorValueParser()),
 
-    HYPHENATION("hyphenation", new BooleanValueParser());
+    HYPHENATION("hyphenation", new BooleanValueParser()),
+
+    MERGE("merge", new BooleanValueParser()),
+    VERTICAL_ALIGN("vertical-align", new VerticalAlignmentValueParser());
 
     /**
      * Lookup of style types by their key.

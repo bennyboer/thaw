@@ -5,6 +5,7 @@ import de.be.thaw.font.util.KerningMode;
 import de.be.thaw.style.model.style.util.FillStyle;
 import de.be.thaw.style.model.style.util.list.ListStyleType;
 import de.be.thaw.util.HorizontalAlignment;
+import de.be.thaw.util.VerticalAlignment;
 import de.be.thaw.util.color.Color;
 import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
@@ -69,6 +70,13 @@ public interface StyleValue {
      * @return horizontal alignment
      */
     HorizontalAlignment horizontalAlignment();
+
+    /**
+     * Get the vertical alignment this values expresses.
+     *
+     * @return vertical alignment
+     */
+    VerticalAlignment verticalAlignment();
 
     /**
      * Get the font variant representation from this style value.

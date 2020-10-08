@@ -176,36 +176,36 @@ public class RectangleElementExporter implements ElementExporter {
      */
     private void doRectPath(PDPageContentStream out, double xStart, double xEnd, double yStart, double yEnd, RectangleElement rect) throws IOException {
         // Top line (without border radius curves)
-        out.moveTo((float) (xStart + rect.getBorderRadius().getTop()), (float) yStart);
-        out.lineTo((float) (xEnd - rect.getBorderRadius().getRight()), (float) yStart);
+        out.moveTo((float) (xStart + rect.getBorderRadius().getTop()), (float) yEnd);
+        out.lineTo((float) (xEnd - rect.getBorderRadius().getRight()), (float) yEnd);
 
         // Border radius curve to the top on the right
         if (rect.getBorderRadius().getRight() > 0) {
-            out.curveTo1((float) xEnd, (float) yStart, (float) xEnd, (float) (yStart + rect.getBorderRadius().getRight()));
+            out.curveTo1((float) xEnd, (float) yEnd, (float) xEnd, (float) (yEnd - rect.getBorderRadius().getRight()));
         }
 
         // Right line (without border radius curves)
-        out.lineTo((float) xEnd, (float) (yEnd - rect.getBorderRadius().getBottom()));
+        out.lineTo((float) xEnd, (float) (yStart + rect.getBorderRadius().getBottom()));
 
         // Border radius curve to the bottom on the right
         if (rect.getBorderRadius().getBottom() > 0) {
-            out.curveTo2((float) xEnd, (float) yEnd, (float) (xEnd - rect.getBorderRadius().getBottom()), (float) yEnd);
+            out.curveTo2((float) xEnd, (float) yStart, (float) (xEnd - rect.getBorderRadius().getBottom()), (float) yStart);
         }
 
         // Bottom line (without border radius curves)
-        out.lineTo((float) (xStart + rect.getBorderRadius().getLeft()), (float) yEnd);
+        out.lineTo((float) (xStart + rect.getBorderRadius().getLeft()), (float) yStart);
 
         // Border radius curve to the bottom on the left
         if (rect.getBorderRadius().getLeft() > 0) {
-            out.curveTo1((float) xStart, (float) yEnd, (float) xStart, (float) (yEnd - rect.getBorderRadius().getLeft()));
+            out.curveTo1((float) xStart, (float) yStart, (float) xStart, (float) (yStart + rect.getBorderRadius().getLeft()));
         }
 
         // Left line (without border radius curves)
-        out.lineTo((float) xStart, (float) (yStart + rect.getBorderRadius().getTop()));
+        out.lineTo((float) xStart, (float) (yEnd - rect.getBorderRadius().getTop()));
 
         // Border radius curve to the top on the left
         if (rect.getBorderRadius().getTop() > 0) {
-            out.curveTo1((float) xStart, (float) yStart, (float) (xStart + rect.getBorderRadius().getTop()), (float) yStart);
+            out.curveTo1((float) xStart, (float) yEnd, (float) (xStart + rect.getBorderRadius().getTop()), (float) yEnd);
         }
     }
 

@@ -1,4 +1,4 @@
-package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
+package de.be.thaw.typeset.knuthplass.paragraph.handler.impl.code;
 
 import com.rtfparserkit.parser.IRtfListener;
 import com.rtfparserkit.parser.IRtfParser;
@@ -9,10 +9,6 @@ import com.rtfparserkit.rtf.Command;
 import com.rtfparserkit.rtf.CommandType;
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.font.util.FontVariant;
-import de.be.thaw.style.model.StyleModel;
-import de.be.thaw.style.model.block.StyleBlock;
-import de.be.thaw.style.model.impl.DefaultStyleModel;
-import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.style.model.style.value.BooleanStyleValue;
@@ -27,11 +23,8 @@ import de.be.thaw.typeset.knuthplass.TypeSettingContext;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
-import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
+import de.be.thaw.typeset.knuthplass.paragraph.handler.AbstractParagraphHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.code.CodeParagraph;
-import de.be.thaw.typeset.page.AbstractElement;
-import de.be.thaw.typeset.page.Element;
-import de.be.thaw.typeset.page.Page;
 import de.be.thaw.typeset.page.impl.RectangleElement;
 import de.be.thaw.typeset.page.impl.TextElement;
 import de.be.thaw.typeset.page.util.LineStyle;
@@ -48,14 +41,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Stack;
 
 /**
  * Paragraph handler dealing with typesetting code block paragraphs.
  */
-public class CodeParagraphHandler implements ParagraphTypesetHandler {
+public class CodeParagraphHandler extends AbstractParagraphHandler {
 
     /**
      * The default code paragraph caption prefix.
@@ -72,16 +64,20 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
         CodeParagraph codeParagraph = (CodeParagraph) paragraph;
 
         Styles styles = paragraph.getNode().getStyles();
+        Insets margin = new Insets(
+                styles.resolve(StyleType.MARGIN_TOP).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.MARGIN_RIGHT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.MARGIN_BOTTOM).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.MARGIN_LEFT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0)
+        );
+        Insets padding = new Insets(
+                styles.resolve(StyleType.PADDING_TOP).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.PADDING_RIGHT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.PADDING_BOTTOM).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.PADDING_LEFT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0)
+        );
 
-        // Calculate margins
-        final double marginTop = styles.resolve(StyleType.MARGIN_TOP)
-                .orElseThrow()
-                .doubleValue(Unit.POINTS);
-        final double marginBottom = styles.resolve(StyleType.MARGIN_BOTTOM)
-                .orElseThrow()
-                .doubleValue(Unit.POINTS);
-
-        ctx.getPositionContext().increaseY(marginTop);
+        ctx.getPositionContext().increaseY(margin.getTop());
 
         // Parse the RTF code
         IRtfSource source = new RtfStreamSource(new ByteArrayInputStream(codeParagraph.getRtfCode().getBytes(StandardCharsets.UTF_8)));
@@ -97,105 +93,26 @@ public class CodeParagraphHandler implements ParagraphTypesetHandler {
             ), e.getCause());
         }
 
+        double captionStartY = ctx.getPositionContext().getY();
+        ctx.getPositionContext().increaseY(margin.getBottom());
+
         // Add caption (if any)
         if (codeParagraph.getCaption().isPresent()) {
-            String caption = codeParagraph.getCaption().orElseThrow();
-            addCaption(caption, codeParagraph, ctx);
+            addCaption(
+                    codeParagraph.getCaption().orElseThrow(),
+                    codeParagraph.getCaptionPrefix() != null ?
+                            codeParagraph.getCaptionPrefix() :
+                            (String) ctx.getConfig().getProperties().getOrDefault("code.caption.prefix", DEFAULT_CODE_CAPTION_PREFIX),
+                    codeParagraph,
+                    false,
+                    captionStartY + padding.getBottom(),
+                    ctx.getPositionContext().getX(),
+                    codeParagraph.getDefaultLineWidth() - margin.getLeft() - margin.getRight() - padding.getLeft() - padding.getRight(),
+                    margin,
+                    padding,
+                    ctx
+            );
         }
-
-        ctx.getPositionContext().increaseY(marginBottom);
-    }
-
-    /**
-     * Add a caption under the code paragraph.
-     *
-     * @param caption   to add
-     * @param paragraph the code paragraph
-     * @param ctx       the typesetting context
-     * @throws TypeSettingException in case the caption could not be added properly
-     */
-    private void addCaption(String caption, CodeParagraph paragraph, TypeSettingContext ctx) throws TypeSettingException {
-        Styles styles = paragraph.getNode().getStyles();
-
-        final double marginLeft = styles.resolve(StyleType.MARGIN_LEFT)
-                .orElseThrow()
-                .doubleValue(Unit.POINTS);
-        final double marginRight = styles.resolve(StyleType.MARGIN_RIGHT)
-                .orElseThrow()
-                .doubleValue(Unit.POINTS);
-
-        final double paddingBottom = styles.resolve(StyleType.PADDING_BOTTOM)
-                .orElseThrow()
-                .doubleValue(Unit.POINTS);
-        final double paddingLeft = styles.resolve(StyleType.PADDING_LEFT)
-                .orElseThrow()
-                .doubleValue(Unit.POINTS);
-        final double paddingRight = styles.resolve(StyleType.PADDING_RIGHT)
-                .orElseThrow()
-                .doubleValue(Unit.POINTS);
-
-        // Typeset the caption
-        StyleModel styleModel = new DefaultStyleModel();
-        styleModel.addBlock(new StyleBlock(
-                new StyleSelectorBuilder().setTargetName("document").build(),
-                Map.ofEntries(
-                        Map.entry(StyleType.FIRST_LINE_INDENT, new DoubleStyleValue(0.0, Unit.MILLIMETER))
-                )
-        ));
-
-        List<Page> pages = ctx.typesetThawTextFormat(String.format(
-                "**%s %d**: %s",
-                paragraph.getCaptionPrefix() != null ? paragraph.getCaptionPrefix() : ctx.getConfig().getProperties().getOrDefault("code.caption.prefix", DEFAULT_CODE_CAPTION_PREFIX),
-                ctx.getDocument().getReferenceModel().getReferenceNumber(paragraph.getNode().getId()),
-                caption
-        ), paragraph.getDefaultLineWidth() - marginLeft - marginRight - paddingLeft - paddingRight, styleModel);
-
-        // Re-layout the elements below the code paragraph
-        double endY = ctx.getPositionContext().getY() + paddingBottom;
-
-        double startY = endY;
-        double maxY = endY;
-
-        double x = ctx.getPositionContext().getX();
-        for (Page page : pages) {
-            for (Element element : page.getElements()) {
-                double oldX = element.getPosition().getX();
-                double oldY = element.getPosition().getY();
-
-                // Set new position
-                AbstractElement abstractElement = (AbstractElement) element;
-                abstractElement.setPosition(new Position(
-                        oldX + x,
-                        oldY + endY
-                ));
-
-                // Check if new line
-                if (element.getPosition().getY() + element.getSize().getHeight() > maxY) {
-                    maxY = element.getPosition().getY() + element.getSize().getHeight();
-
-                    // Check if there is enough space for the next line
-                    double captionHeight = maxY - startY;
-                    double availableHeight = ctx.getAvailableHeight() - captionHeight;
-                    if (availableHeight < element.getSize().getHeight()) {
-                        ctx.pushPage(); // Create next page
-
-                        startY = ctx.getConfig().getPageInsets().getTop();
-                        endY = -oldY + startY;
-                        maxY = startY + element.getSize().getHeight();
-
-                        // Update current element position again
-                        abstractElement.setPosition(new Position(
-                                oldX + x,
-                                oldY + endY
-                        ));
-                    }
-                }
-
-                ctx.pushPageElement(element);
-            }
-        }
-
-        ctx.getPositionContext().setY(maxY);
     }
 
     /**

@@ -1,4 +1,4 @@
-package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
+package de.be.thaw.typeset.knuthplass.paragraph.handler.impl.text;
 
 import de.be.thaw.core.document.node.DocumentNode;
 import de.be.thaw.font.util.FontVariant;

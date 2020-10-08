@@ -20,7 +20,7 @@ public class RectangleElement extends AbstractElement {
      * bottom means radius on the bottom to the right,
      * left means radius on the bottom to the left.
      */
-    private Insets borderRadius = new Insets(10);
+    private Insets borderRadius = new Insets(0);
 
     /**
      * The fill color to use.

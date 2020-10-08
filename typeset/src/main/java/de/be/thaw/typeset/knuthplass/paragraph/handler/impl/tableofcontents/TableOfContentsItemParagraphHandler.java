@@ -1,4 +1,4 @@
-package de.be.thaw.typeset.knuthplass.paragraph.handler.impl;
+package de.be.thaw.typeset.knuthplass.paragraph.handler.impl.tableofcontents;
 
 import de.be.thaw.style.model.style.StyleType;
 import de.be.thaw.style.model.style.Styles;
@@ -8,6 +8,7 @@ import de.be.thaw.typeset.knuthplass.TypeSettingContext;
 import de.be.thaw.typeset.knuthplass.config.util.FontDetailsSupplier;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
+import de.be.thaw.typeset.knuthplass.paragraph.handler.impl.text.TextParagraphHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.toc.TableOfContentsItemParagraph;
 import de.be.thaw.typeset.knuthplass.util.LazySize;
 import de.be.thaw.typeset.page.Element;
