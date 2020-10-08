@@ -334,7 +334,11 @@ public class DefaultStyleModel implements StyleModel {
                         Map.entry(StyleType.MARGIN_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
                         Map.entry(StyleType.MARGIN_TOP, new DoubleStyleValue(2.0, Unit.MILLIMETER)),
-                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(2.0, Unit.MILLIMETER))
+                        Map.entry(StyleType.MARGIN_BOTTOM, new DoubleStyleValue(2.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_TOP, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_BOTTOM, new DoubleStyleValue(2.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_LEFT, new DoubleStyleValue(0.0, Unit.MILLIMETER)),
+                        Map.entry(StyleType.PADDING_RIGHT, new DoubleStyleValue(0.0, Unit.MILLIMETER))
                 )
         ));
         model.addBlock(new StyleBlock(

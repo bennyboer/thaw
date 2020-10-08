@@ -22,6 +22,7 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.table.TableParagraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.table.ThawTableCell;
+import de.be.thaw.typeset.util.Insets;
 import de.be.thaw.util.unit.Unit;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,6 +47,11 @@ public class TableHandler implements ThingyHandler {
      * The default separator to use for reading CSV tables.
      */
     private static final String DEFAULT_CSV_SEPARATOR = "|";
+
+    /**
+     * The default counter name to use for counting references.
+     */
+    private static final String DEFAULT_COUNTER_NAME = "table";
 
     /**
      * Importance of different pseudo selectors possible with tables.
@@ -85,7 +91,30 @@ public class TableHandler implements ThingyHandler {
             ));
         }
 
-        double availableWidth = ctx.getLineWidth(); // TODO Take margins and paddings into account
+        String caption = node.getOptions().get("caption");
+        String captionPrefix = node.getOptions().get("caption-prefix");
+
+        // Set the table reference counter (if the table got a caption or label -> is referencable).
+        if (node.getOptions().containsKey("label") || caption != null) {
+            String counterName = node.getOptions().getOrDefault("counter", DEFAULT_COUNTER_NAME);
+            ctx.getDocument().getReferenceModel().setReferenceNumber(counterName, documentNode.getId());
+        }
+
+        Styles styles = documentNode.getStyles();
+        Insets margin = new Insets(
+                styles.resolve(StyleType.MARGIN_TOP).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.MARGIN_RIGHT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.MARGIN_BOTTOM).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.MARGIN_LEFT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0)
+        );
+        Insets padding = new Insets(
+                styles.resolve(StyleType.PADDING_TOP).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.PADDING_RIGHT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.PADDING_BOTTOM).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0),
+                styles.resolve(StyleType.PADDING_LEFT).map(v -> v.doubleValue(Unit.POINTS)).orElse(0.0)
+        );
+
+        double availableWidth = ctx.getLineWidth() - (margin.getLeft() + margin.getRight() + padding.getLeft() + padding.getRight());
 
         String tableContent = readTableContent(node, ctx);
 
@@ -117,7 +146,11 @@ public class TableHandler implements ThingyHandler {
         ctx.setCurrentParagraph(new TableParagraph(
                 table,
                 availableWidth,
-                documentNode
+                documentNode,
+                margin,
+                padding,
+                caption,
+                captionPrefix
         ));
     }
 

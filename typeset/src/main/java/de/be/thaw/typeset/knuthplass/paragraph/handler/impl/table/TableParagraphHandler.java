@@ -14,7 +14,7 @@ import de.be.thaw.typeset.exception.TypeSettingException;
 import de.be.thaw.typeset.knuthplass.TypeSettingContext;
 import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
-import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
+import de.be.thaw.typeset.knuthplass.paragraph.handler.AbstractParagraphHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.table.TableParagraph;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.table.ThawTableCell;
 import de.be.thaw.typeset.page.AbstractElement;
@@ -39,7 +39,12 @@ import java.util.Set;
 /**
  * Handler for table paragraphs.
  */
-public class TableParagraphHandler implements ParagraphTypesetHandler {
+public class TableParagraphHandler extends AbstractParagraphHandler {
+
+    /**
+     * The default caption prefix for tables.
+     */
+    private static final String DEFAULT_TABLE_CAPTION_PREFIX = "Table";
 
     /**
      * Style types that are forbidden for the cell typesetting process.
@@ -83,7 +88,8 @@ public class TableParagraphHandler implements ParagraphTypesetHandler {
     public void handle(Paragraph paragraph, TypeSettingContext ctx) throws TypeSettingException {
         TableParagraph tableParagraph = (TableParagraph) paragraph;
 
-        // TODO deal with margins paddings on the whole table (how do we set then in the styles?)
+        Insets margin = tableParagraph.getMargin();
+        Insets padding = tableParagraph.getPadding();
 
         Table<ThawTableCell> table = tableParagraph.getTable();
 
@@ -122,7 +128,7 @@ public class TableParagraphHandler implements ParagraphTypesetHandler {
         }
 
         // Now align, add backgrounds, add borders and add the cells actually to the current page
-        double yOffsetCorrector = 0; // y-offset corrector needed when the table does not fit on the current page
+        double yOffsetCorrector = margin.getTop() + padding.getTop(); // y-offset corrector needed when the table does not fit on the current page
         for (int i = 0; i < cells.size(); i++) {
             ThawTableCell cell = cells.get(i);
             TypeSetCellInfo info = typeSetCellInfos[i];
@@ -132,21 +138,20 @@ public class TableParagraphHandler implements ParagraphTypesetHandler {
 
             // Check if cell fits on the current page
             double availableHeight = ctx.getAvailableHeight();
-            if (bounds.getPosition().getY() + bounds.getSize().getHeight() + yOffsetCorrector > availableHeight) {
+            double sizeDiff = availableHeight - (bounds.getPosition().getY() + bounds.getSize().getHeight() + yOffsetCorrector);
+            if (sizeDiff < 0) {
                 ctx.pushPage();
 
                 yOffsetCorrector -= bounds.getPosition().getY() + yOffsetCorrector;
             }
 
             // Re-layout elements for the current page
-            if (yOffsetCorrector != 0) {
-                for (Element element : info.getElements()) {
-                    AbstractElement abstractElement = (AbstractElement) element;
-                    abstractElement.setPosition(new Position(
-                            abstractElement.getPosition().getX(),
-                            abstractElement.getPosition().getY() + yOffsetCorrector
-                    ));
-                }
+            for (Element element : info.getElements()) {
+                AbstractElement abstractElement = (AbstractElement) element;
+                abstractElement.setPosition(new Position(
+                        abstractElement.getPosition().getX() + margin.getLeft() + padding.getLeft(),
+                        abstractElement.getPosition().getY() + yOffsetCorrector
+                ));
             }
 
             // Add background and borders
@@ -157,7 +162,7 @@ public class TableParagraphHandler implements ParagraphTypesetHandler {
                             bounds.getSize().getHeight() - info.getMargin().getTop() - info.getMargin().getBottom()
                     ),
                     new Position(
-                            ctx.getPositionContext().getX() + bounds.getPosition().getX() + info.getMargin().getLeft(),
+                            ctx.getPositionContext().getX() + bounds.getPosition().getX() + info.getMargin().getLeft() + margin.getLeft() + padding.getLeft(),
                             ctx.getPositionContext().getY() + bounds.getPosition().getY() + info.getMargin().getTop() + yOffsetCorrector
                     )
             );
@@ -191,7 +196,25 @@ public class TableParagraphHandler implements ParagraphTypesetHandler {
             ctx.getCurrentPageElements().addAll(info.getElements());
         }
 
-        ctx.getPositionContext().increaseY(table.getSize().getHeight());
+        ctx.getPositionContext().increaseY(table.getSize().getHeight() + yOffsetCorrector + margin.getBottom() + padding.getBottom());
+
+        // Deal with the table paragraphs caption (if any).
+        if (tableParagraph.getCaption().isPresent()) {
+            addCaption(
+                    tableParagraph.getCaption().orElseThrow(),
+                    tableParagraph.getCaptionPrefix().isPresent() ?
+                            tableParagraph.getCaptionPrefix().orElseThrow() :
+                            (String) ctx.getConfig().getProperties().getOrDefault("table.caption.prefix", DEFAULT_TABLE_CAPTION_PREFIX),
+                    tableParagraph,
+                    false,
+                    ctx.getPositionContext().getY() - margin.getBottom(),
+                    ctx.getPositionContext().getX() + margin.getLeft() + padding.getLeft(),
+                    table.getSize().getWidth(),
+                    margin,
+                    padding,
+                    ctx
+            );
+        }
     }
 
     /**
