@@ -1,8 +1,18 @@
-#H1, lable=example# Example
+#H1, lable=examples# Examples
 
-Now, for demonstrative purposes, we are giving a quick example on what is possible using the Thaw document framework.
-Therefore we include something that is called a "Code block", which will display the source code.
-Additionally the result will be inserted right after the code block for you to see!
+Now, for demonstrative purposes, we are giving quick examples for the most common features you most likely will want to use.
+Therefore we have to introduce something that is called a "Code block", which will display source code.
+We need this in this document to show you the actual code that leads to the depicted results.
+
+
+#H2# Basic formatting and a headline
+
+In the Thaw text format we have derived some cool features from Markdown like formatting italic with single-star-enclosed text `*I am italic!*` or bold with double-star-enclosed text `**I am bold!**`.
+
+Since Markdown does not have syntax to format text **underlined**, we have used the underscore character `_` to do just that: `_I am underlined!_`.
+
+Additionally in the first line of the code block you can see the syntax to add a headline to the document.
+`H1` is short for a first-level headline, you'll have `H2`, `H3`, and so on available as well.
 
 #CODE, '
 #H1# Headline
@@ -13,7 +23,4 @@ Even combining emphasis is allowed ***_in this example_***.
 
 From the above code the following is generated:
 
-#H1# Headline
-
-This is some text with emphasis applied **here**, *here* and _here_.
-Even combining emphasis is allowed ***_in this example_***.
+#IMAGE, src="example/res/basic.png"#

@@ -1,4 +1,7 @@
-#TITLE# Thaw Documentation
+#TITLE# Thaw documentation
+
+In this documentation of *Thaw* we will explore the application by going through some examples - both code and result.
+Additionally this document should be a *mostly* complete specification of the available features.
 
 
 #H1, numbered=false# Table of contents
@@ -11,5 +14,11 @@
 #INCLUDE, introduction#
 
 #BREAK, type=PAGE#
+
+
+#INCLUDE, installation#
+
+#BREAK, type=PAGE#
+
 
 #INCLUDE, example#

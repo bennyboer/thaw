@@ -16,7 +16,8 @@ For example the language (used for example for hyphenation) and encoding of the 
 This file is aimed to be as human-readable as possible to allow distraction-free working on the contents of a document.
 - **Style file** (\*.tds): This one defines all the styling of a document, as well as individual paragraphs.
 For example the documents page size, paragraph insets, fonts, ...
-- **Reference source file** (\*.tdr): Defines all the literature sources that you want to cite within the document (if any).
+- **Bibliography files** (\*.bib, \*.ris, \*.enl): Defines literature sources that you want to cite within the document (if any).
+As you can see from the file endings we support BibTeX, RIS and EndNote bibliography files.
 
 You may wonder why we're using just text files and no fancy graphical user interface (e. g. *WYSIWYG*-Editor) like Desktop-Publishing (*DTP*) software.
 The answer is that we want to have an easy usable, human-readable **and** versionable document format that makes it easy to collaboratively write documents using version-control software like *Git*.

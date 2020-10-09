@@ -1,1 +1,3 @@
-Page #PAGE#
+#TABLE, '
+Built on *#DATE#* | Thaw #VAR, var.version# | Page **#PAGE#**
+', class=footer-table#

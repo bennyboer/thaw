@@ -1,0 +1,4 @@
+document {
+	font-family: Segoe UI;
+	inline-code-font-family: Consolas;
+}

@@ -1,0 +1,17 @@
+#H1, label=installation# Installation
+
+Releases should always be available on the GitHub repositories #HREF, https://github.com/bennyboer/thaw/releases, name=releases page#.
+So when you want to install Thaw head over to the releases page, pick the latest version distribution for your system and download it.
+
+Afterwards you can extract the downloaded file to a location on your filesystem.
+In the distribution you should have an executable file `thaw` (Linux, Mac OS) or `thaw.exe` (Windows).
+Make sure that your systems `PATH` environment variable points to the folder where the executable file is in, so that you are able to call the Thaw CLI application from the command line.
+
+To validate whether Thaw is properly installed on your system you should be able to type `thaw --version` in your terminal.
+You should get the following output:
+
+#CODE, '
+C:\> thaw --version
+v0.1.0
+C:\>
+', style=manni, language=PowerShell#

@@ -2,17 +2,11 @@ document {
     width: 210mm;
     height: 297mm;
 
-    margin-top: 20mm;
-    margin-bottom: 20mm;
-    margin-left: 20mm;
-    margin-right: 20mm;
+    margin: 3cm 2cm;
 
-    background-color: #FFFFFF;
-
-    font-family: Cambria;
+    font-family: Segoe UI;
     inline-code-font-family: Consolas;
-    font-size: 11pt;
-    font-kerning: native;
+    font-size: 12pt;
     color: rgb(0.1, 0.1, 0.1);
 
     line-height: 1.4;
@@ -22,39 +16,72 @@ page {
     footer: footer;
 }
 
+paragraph {
+    first-line-indent: 0;
+}
+
+paragraph.result {
+    margin-left: 1cm;
+    border-left: 2mm solid #778899;
+}
+
 code {
-    font-family: Consolas;
+	font-family: Consolas;
+	line-number-font-family: Consolas;
+	font-size: 11pt;
+	line-number-font-size: 11pt;
+	margin-bottom: 4mm;
 }
 
 title {
     font-family: Segoe UI;
-    color: rgb(0.4, 0.5, 0.6);
+    color: #778899;
     font-size: 40pt;
-    font-kerning: optical;
+    line-height: 1.0;
 
     text-align: center;
 
-    margin-bottom: 25mm;
+    margin-bottom: 1cm;
+    padding: 0;
+
+    border-bottom: 1mm dotted #778899;
 }
 
 h {
     font-family: Segoe UI;
     font-variant: plain;
+    margin: 2mm 0 3mm 0;
+    line-height: 1.0;
 }
 
 h1 {
-    font-size: 16pt;
+    font-size: 24pt;
+    border-bottom: 0.5mm solid #EAEAEA;
+    margin-bottom: 5mm;
 }
 
 h2 {
-    font-size: 14pt;
+    font-size: 20pt;
 }
 
-image {
-    margin-left: 20mm;
+h3 {
+    font-size: 16pt;
 }
 
 toc {
     font-family: Segoe UI;
     line-height: 20pt;
+}
+
+table-cell.footer-table {
+    border-width: 0.25mm 0 0 0; // Hide borders of the tables cells, except on the top
+    font-size: 11pt;
+}
+
+table-cell.footer-table:column(1) {
+    text-align: left;
+}
+
+table-cell.footer-table:column(*) {
+    text-align: right;
 }
