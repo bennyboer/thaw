@@ -273,18 +273,18 @@ public class PdfExporter implements Exporter {
 
                     @Override
                     public double getSpaceWidth(DocumentNode node) throws Exception {
-                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth();
+                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth(); // TODO Make this adjustable using the style file
                     }
                 })
                 .setGlueConfig(new GlueConfig() {
                     @Override
                     public double getInterWordStretchability(DocumentNode node, char lastChar) throws Exception {
-                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth();
+                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() * 0.66; // TODO Make this adjustable using the style file
                     }
 
                     @Override
                     public double getInterWordShrinkability(DocumentNode node, char lastChar) throws Exception {
-                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() * 0.4;
+                        return ctx.getFontForNode(node).getCharacterSize(' ', ctx.getFontSizeForNode(node)).getWidth() * 0.33; // TODO Make this adjustable using the style file
                     }
                 })
                 .setHyphenator(new Hyphenator() {
