@@ -30,6 +30,8 @@ import de.be.thaw.typeset.knuthplass.paragraph.Paragraph;
 import de.be.thaw.typeset.knuthplass.paragraph.ParagraphType;
 import de.be.thaw.typeset.knuthplass.paragraph.handler.ParagraphTypesetHandler;
 import de.be.thaw.typeset.knuthplass.paragraph.impl.TextParagraph;
+import de.be.thaw.typeset.knuthplass.util.BreakPoint;
+import de.be.thaw.typeset.knuthplass.util.LineBreakingContext;
 import de.be.thaw.typeset.page.Element;
 import de.be.thaw.typeset.page.impl.MathExpressionElement;
 import de.be.thaw.typeset.page.impl.RectangleElement;
@@ -40,12 +42,15 @@ import de.be.thaw.util.HorizontalAlignment;
 import de.be.thaw.util.Position;
 import de.be.thaw.util.Size;
 import de.be.thaw.util.color.Color;
+import de.be.thaw.util.debug.Debug;
 import de.be.thaw.util.unit.BaseUnit;
 import de.be.thaw.util.unit.Unit;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntToDoubleFunction;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Handler dealing with type setting text paragraphs.
@@ -55,7 +60,12 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
     /**
      * The worst quality the Knuth-Plass algorithm is allowed to output in.
      */
-    private static final int WORST_QUALITY = 10;
+    private static final int WORST_QUALITY = 5;
+
+    /**
+     * Logger for the class.
+     */
+    private static final Logger LOGGER = Logger.getLogger(TextParagraphHandler.class.getSimpleName());
 
     @Override
     public ParagraphType supportedType() {
@@ -528,8 +538,43 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
             try {
                 return algorithm.findBreakPoints(textParagraph);
             } catch (CouldNotFindFeasibleSolutionException e) {
-                if (quality == 9) {
-                    throw new TypeSettingException("Typesetting failed because the line breaking algorithm could not find a feasible solution", e);
+                if (quality == WORST_QUALITY - 1) {
+                    if (Debug.isDebug()) {
+                        LOGGER.log(Level.INFO, String.format(
+                                "Paragraph at %s could not be split into lines properly using the Knuth-Plass algorithm. Instead using the first-fit algorithm now.",
+                                textParagraph.getNode() != null && textParagraph.getNode().getTextNode() != null ? textParagraph.getNode().getTextNode().getTextPosition() : "UNKNOWN"
+                        ));
+                    }
+
+                    // Do the first-fit algorithm instead
+                    int currentLineNumber = 1;
+                    double lineWidth = textParagraph.getLineWidth(currentLineNumber);
+                    double currentWidth = 0;
+                    List<BreakPoint> breakPoints = new ArrayList<>();
+                    for (int i = 0; i < textParagraph.items().size(); i++) {
+                        Item item = textParagraph.items().get(i);
+
+                        boolean breakLine;
+                        if (item.getType() == ItemType.PENALTY) {
+                            // Check if is explicit line-break
+                            breakLine = ((Penalty) item).isMandatoryLineBreak();
+                        } else {
+                            breakLine = currentWidth + item.getWidth() > lineWidth;
+                        }
+
+                        if (breakLine) {
+                            breakPoints.add(new BreakPoint(i));
+
+                            lineWidth = textParagraph.getLineWidth(++currentLineNumber);
+                            currentWidth = 0;
+                        }
+
+                        currentWidth += item.getWidth();
+                    }
+
+                    return new KnuthPlassAlgorithm.LineBreakingResult(
+                            breakPoints, new LineBreakingContext(textParagraph,
+                            Integer.MAX_VALUE));
                 }
             }
         }

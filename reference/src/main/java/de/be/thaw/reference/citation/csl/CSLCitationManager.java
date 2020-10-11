@@ -681,7 +681,7 @@ public class CSLCitationManager implements CitationManager {
 
         convertHTMLtoTDTForElement(document.body().getElementsByClass("csl-entry").first(), sb::append);
 
-        return sb.toString().replace("#", "\\#"); // Making sure that thingies are escaped
+        return sb.toString().replace("#", "\\#").trim(); // Making sure that thingies are escaped
     }
 
     /**

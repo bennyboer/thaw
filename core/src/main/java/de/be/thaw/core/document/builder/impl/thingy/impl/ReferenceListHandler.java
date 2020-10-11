@@ -8,6 +8,8 @@ import de.be.thaw.reference.citation.exception.CouldNotLoadBibliographyException
 import de.be.thaw.reference.citation.referencelist.ReferenceList;
 import de.be.thaw.reference.citation.referencelist.ReferenceListEntry;
 import de.be.thaw.shared.ThawContext;
+import de.be.thaw.style.model.selector.builder.StyleSelectorBuilder;
+import de.be.thaw.style.model.style.Styles;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.model.tree.Node;
 import de.be.thaw.text.model.tree.NodeType;
@@ -48,6 +50,19 @@ public class ReferenceListHandler implements ThingyHandler {
 
         // TODO Deal with additional reference list settings (hanging indent, entry spacing).
 
+        // Fetch styles for the references paragraphs
+        String className = thingyNode.getOptions().get("class");
+        Styles styles = ctx.getStyleModel().select(new StyleSelectorBuilder()
+                .setTargetName("references")
+                .setClassName(className)
+                .build(), new StyleSelectorBuilder()
+                .setTargetName("paragraph")
+                .setClassName(className)
+                .build(), new StyleSelectorBuilder()
+                .setTargetName("page")
+                .setClassName(className)
+                .build());
+
         // Build document nodes for all reference list entries
         for (ReferenceListEntry entry : referenceList.getEntries()) {
             // Parse entry to text model
@@ -65,7 +80,7 @@ public class ReferenceListHandler implements ThingyHandler {
             boolean isFirst = true;
             for (Node node : textModel.getRoot().children()) {
                 if (node.getType() == NodeType.BOX) {
-                    ctx.processBoxNode((BoxNode) node, root);
+                    ctx.processBoxNode((BoxNode) node, root, styles);
                     if (isFirst) {
                         isFirst = false;
 

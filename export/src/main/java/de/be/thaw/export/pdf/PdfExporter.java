@@ -54,18 +54,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
  * Exporter exporting documents to PDF.
  */
 public class PdfExporter implements Exporter {
-
-    /**
-     * Logger for the class.
-     */
-    private static final Logger LOGGER = Logger.getLogger(PdfExporter.class.getSimpleName());
 
     @Override
     public void export(Document document, Path path) throws ExportException {
@@ -308,7 +302,7 @@ public class PdfExporter implements Exporter {
                     if (imgFile.getName().endsWith(".pdf")) {
                         PDFormXObject form;
                         Size size;
-                        try(PDDocument srcDoc = PDDocument.load(imgFile)) {
+                        try (PDDocument srcDoc = PDDocument.load(imgFile)) {
                             PDPage srcPage = srcDoc.getPage(0);
 
                             LayerUtility layerUtility = new LayerUtility(ctx.getPdDocument());

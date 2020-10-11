@@ -30,7 +30,7 @@ public class ConversionContext {
     /**
      * Pattern matching punctuation characters.
      */
-    private static final Pattern PUNCTUATION_CHARACTER_PATTERN = Pattern.compile("[.,;!?'\"\\u201E\\u201C\\u201D\\u201F\\u201A\\u2019\\u2018\\u00AB\\u00BB]");
+    private static final Pattern PUNCTUATION_CHARACTER_PATTERN = Pattern.compile("[.,;!?/'\"\\u201E\\u201C\\u201D\\u201F\\u201A\\u2019\\u2018\\u00AB\\u00BB]");
 
     /**
      * Configuration of the line breaking algorithm.

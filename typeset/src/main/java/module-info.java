@@ -31,4 +31,5 @@ module de.be.thaw.typeset {
     requires org.jetbrains.annotations;
     requires java.desktop;
     requires rtfparserkit;
+    requires java.logging;
 }
