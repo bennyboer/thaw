@@ -679,7 +679,7 @@ public class CSLCitationManager implements CitationManager {
         Document document = Jsoup.parseBodyFragment(html);
         StringBuilder sb = new StringBuilder();
 
-        convertHTMLtoTDTForElement(document.body().getElementsByClass("csl-entry").first(), str -> sb.append(escapeStringForTDT(str)));
+        convertHTMLtoTDTForElement(document.body().getElementsByClass("csl-entry").first(), sb::append);
 
         return sb.toString().trim();
     }
@@ -723,7 +723,7 @@ public class CSLCitationManager implements CitationManager {
     private void convertHTMLtoTDTForElement(Element element, Consumer<String> textConsumer) {
         for (Node child : element.childNodes()) {
             if (child instanceof TextNode) {
-                textConsumer.accept(((TextNode) child).text());
+                textConsumer.accept(escapeStringForTDT(((TextNode) child).text()));
             } else if (child instanceof Element) {
                 Element childElement = (Element) child;
 
