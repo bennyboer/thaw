@@ -679,9 +679,39 @@ public class CSLCitationManager implements CitationManager {
         Document document = Jsoup.parseBodyFragment(html);
         StringBuilder sb = new StringBuilder();
 
-        convertHTMLtoTDTForElement(document.body().getElementsByClass("csl-entry").first(), sb::append);
+        convertHTMLtoTDTForElement(document.body().getElementsByClass("csl-entry").first(), str -> sb.append(escapeStringForTDT(str)));
 
-        return sb.toString().replace("#", "\\#").trim(); // Making sure that thingies are escaped
+        return sb.toString().trim();
+    }
+
+    /**
+     * Escape characters of the Thaw document text format in the passed string.
+     *
+     * @param str to escape characters in
+     * @return the escaped string
+     */
+    private String escapeStringForTDT(final String str) {
+        char[] toEscape = new char[]{'_', '*', '#', '`'};
+
+        StringBuilder sb = new StringBuilder(str);
+        for (char toEscapeChar : toEscape) {
+            String toEscapeCharStr = String.valueOf(toEscapeChar);
+
+            int index = sb.indexOf(toEscapeCharStr);
+            while (index != -1) {
+                // Check if already escaped
+                char before = index > 0 ? sb.charAt(index - 1) : ' ';
+                if (before != '\\') {
+                    // Escape char
+                    sb.insert(index, '\\');
+                    index++;
+                }
+
+                index = sb.indexOf(toEscapeCharStr, index + 1);
+            }
+        }
+
+        return sb.toString();
     }
 
     /**
