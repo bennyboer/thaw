@@ -551,19 +551,19 @@ public class TextParagraphHandler implements ParagraphTypesetHandler {
                     double lineWidth = textParagraph.getLineWidth(currentLineNumber);
                     double currentWidth = 0;
                     List<BreakPoint> breakPoints = new ArrayList<>();
+                    int lastPossibleLineBreakIndex = 0;
                     for (int i = 0; i < textParagraph.items().size(); i++) {
                         Item item = textParagraph.items().get(i);
 
-                        boolean breakLine;
-                        if (item.getType() == ItemType.PENALTY) {
-                            // Check if is explicit line-break
-                            breakLine = ((Penalty) item).isMandatoryLineBreak();
-                        } else {
-                            breakLine = currentWidth + item.getWidth() > lineWidth;
+                        boolean forceLineBreak = false;
+                        if (item.getType() == ItemType.PENALTY || item.getType() == ItemType.GLUE) {
+                            lastPossibleLineBreakIndex = i;
+
+                            forceLineBreak = item instanceof Penalty && ((Penalty) item).isMandatoryLineBreak();
                         }
 
-                        if (breakLine) {
-                            breakPoints.add(new BreakPoint(i));
+                        if (forceLineBreak || currentWidth + item.getWidth() > lineWidth) {
+                            breakPoints.add(new BreakPoint(lastPossibleLineBreakIndex));
 
                             lineWidth = textParagraph.getLineWidth(++currentLineNumber);
                             currentWidth = 0;
