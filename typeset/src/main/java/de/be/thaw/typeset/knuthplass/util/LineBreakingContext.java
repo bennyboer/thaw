@@ -49,7 +49,7 @@ public class LineBreakingContext {
 
         for (Item item : paragraph.items()) {
             totalWidth += item.getWidth();
-            totalStretch += item.getStretchability();
+            totalStretch += item.getStretchability() * Math.pow(2, lineBreakingQuality);
             totalShrink += item.getShrinkability();
 
             cumulativeMetrics.add(new CumulativeMetrics(
