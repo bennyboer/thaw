@@ -3,6 +3,10 @@ package de.be.thaw.reference.citation.csl;
 import de.be.thaw.info.model.language.Language;
 import de.be.thaw.reference.citation.Citation;
 import de.be.thaw.reference.citation.CitationManager;
+import de.be.thaw.reference.citation.csl.xml.style.CSLStyle;
+import de.be.thaw.reference.citation.csl.xml.style.parser.CSLStyleParser;
+import de.be.thaw.reference.citation.csl.xml.style.parser.XMLCSLStyleParser;
+import de.be.thaw.reference.citation.csl.xml.style.parser.exception.CSLStyleParseException;
 import de.be.thaw.reference.citation.exception.CouldNotLoadBibliographyException;
 import de.be.thaw.reference.citation.exception.MissingSourceException;
 import de.be.thaw.reference.citation.exception.UnsupportedBibliographyFormatException;
@@ -13,24 +17,6 @@ import de.be.thaw.shared.ThawContext;
 import de.be.thaw.util.cache.CacheUtil;
 import de.be.thaw.util.cache.exception.CouldNotGetProjectCacheDirectoryException;
 import de.be.thaw.util.debug.Debug;
-import de.undercouch.citeproc.CSL;
-import de.undercouch.citeproc.ItemDataProvider;
-import de.undercouch.citeproc.bibtex.BibTeXConverter;
-import de.undercouch.citeproc.bibtex.BibTeXItemDataProvider;
-import de.undercouch.citeproc.csl.CSLCitation;
-import de.undercouch.citeproc.csl.CSLCitationItem;
-import de.undercouch.citeproc.csl.CSLCitationItemBuilder;
-import de.undercouch.citeproc.csl.CSLLabel;
-import de.undercouch.citeproc.csl.CSLProperties;
-import de.undercouch.citeproc.endnote.EndNoteConverter;
-import de.undercouch.citeproc.endnote.EndNoteItemDataProvider;
-import de.undercouch.citeproc.endnote.EndNoteLibrary;
-import de.undercouch.citeproc.output.Bibliography;
-import de.undercouch.citeproc.ris.RISConverter;
-import de.undercouch.citeproc.ris.RISItemDataProvider;
-import de.undercouch.citeproc.ris.RISLibrary;
-import org.jbibtex.BibTeXDatabase;
-import org.jbibtex.ParseException;
 import org.jetbrains.annotations.Nullable;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -38,11 +24,14 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,7 +93,7 @@ public class CSLCitationManager implements CitationManager {
      * The citation style to use, loaded lazily using the getCsl() method.
      */
     @Nullable
-    private CSL csl;
+    private Object csl; // TODO Remove
 
     /**
      * Citation style name to use.
@@ -120,11 +109,6 @@ public class CSLCitationManager implements CitationManager {
      * The bibliography file to load from.
      */
     private final File bibliographyFile;
-
-    /**
-     * Provider for items in the bibliography.
-     */
-    private final ItemDataProvider provider;
 
     /**
      * All available source IDs in the bibliography.
@@ -173,38 +157,48 @@ public class CSLCitationManager implements CitationManager {
         this.citationStyleLanguageCode = language.getLocale().toString().replace("_", "-");
         this.bibliographyFile = bibliography;
 
-        // Check if the citation style specified is supported
-        try {
-            if (!CSL.getSupportedStyles().contains(citationStyleName)) {
-                throw new UnsupportedCitationStyleException(String.format(
-                        "Citation style '%s' is not supported. Pick one of the following:%n%s",
-                        citationStyleName,
-                        CSL.getSupportedStyles().stream()
-                                .sorted()
-                                .collect(Collectors.joining("\n"))
-                ));
-            }
-        } catch (IOException e) {
-            throw new UnsupportedCitationStyleException("Could not supported citation styles");
+        // TODO Just for testing - Remove later
+        CSLStyleParser styleParser = new XMLCSLStyleParser();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(String.format("/%s.csl", citationStyleName)), StandardCharsets.UTF_8))) {
+            CSLStyle style = styleParser.parse(br);
+
+            System.out.println("OK!");
+        } catch (CSLStyleParseException | IOException e) {
+            e.printStackTrace();
         }
+
+//        // Check if the citation style specified is supported
+//        try {
+//            if (!CSL.getSupportedStyles().contains(citationStyleName)) {
+//                throw new UnsupportedCitationStyleException(String.format(
+//                        "Citation style '%s' is not supported. Pick one of the following:%n%s",
+//                        citationStyleName,
+//                        CSL.getSupportedStyles().stream()
+//                                .sorted()
+//                                .collect(Collectors.joining("\n"))
+//                ));
+//            }
+//        } catch (IOException e) {
+//            throw new UnsupportedCitationStyleException("Could not supported citation styles");
+//        }
 
         // Load bibliography from file
-        if (bibliography.getName().endsWith(".bib")) {
-            provider = loadBibTeXBibliography(bibliography);
-        } else if (bibliography.getName().endsWith(".enl")) {
-            provider = loadEndNoteBibliography(bibliography);
-        } else if (bibliography.getName().endsWith(".ris")) {
-            provider = loadRISBibliography(bibliography);
-        } else {
-            throw new UnsupportedBibliographyFormatException(String.format(
-                    "The bibliography file at '%s' does not seem to be either in BibTeX (*.bib), EndNote (*.enl) or RIS (*.ris) format.",
-                    bibliography.getAbsolutePath()
-            ));
-        }
-
-        // Load all available source IDs
+//        if (bibliography.getName().endsWith(".bib")) {
+//            provider = loadBibTeXBibliography(bibliography);
+//        } else if (bibliography.getName().endsWith(".enl")) {
+//            provider = loadEndNoteBibliography(bibliography);
+//        } else if (bibliography.getName().endsWith(".ris")) {
+//            provider = loadRISBibliography(bibliography);
+//        } else {
+//            throw new UnsupportedBibliographyFormatException(String.format(
+//                    "The bibliography file at '%s' does not seem to be either in BibTeX (*.bib), EndNote (*.enl) or RIS (*.ris) format.",
+//                    bibliography.getAbsolutePath()
+//            ));
+//        }
+//
+//        // Load all available source IDs
         sourceIDs = new HashSet<>();
-        sourceIDs.addAll(Arrays.asList(provider.getIds()));
+//        sourceIDs.addAll(Arrays.asList(provider.getIds()));
 
         // Load cached citations and bibliographies
         try {
@@ -214,35 +208,35 @@ public class CSLCitationManager implements CitationManager {
         }
     }
 
-    /**
-     * Get the CSL to generate citations and bibliographies.
-     *
-     * @return csl
-     */
-    private CSL getCsl() throws CouldNotLoadBibliographyException {
-        if (csl == null) {
-            try {
-                long timer = System.nanoTime();
-
-                csl = new CSL(provider, citationStyleName, citationStyleLanguageCode);
-                csl.setOutputFormat("text");
-
-                if (Debug.isDebug()) {
-                    LOGGER.log(Level.INFO, String.format(
-                            "Loading citeproc-java CSL took %d ms",
-                            (System.nanoTime() - timer) / 1_000_000
-                    ));
-                }
-            } catch (IOException e) {
-                throw new CouldNotLoadBibliographyException(String.format(
-                        "Citation style could not be loaded: '%s'",
-                        e.getMessage()
-                ), e);
-            }
-        }
-
-        return csl;
-    }
+//    /**
+//     * Get the CSL to generate citations and bibliographies.
+//     *
+//     * @return csl
+//     */
+//    private CSL getCsl() throws CouldNotLoadBibliographyException {
+//        if (csl == null) {
+//            try {
+//                long timer = System.nanoTime();
+//
+//                csl = new CSL(provider, citationStyleName, citationStyleLanguageCode);
+//                csl.setOutputFormat("text");
+//
+//                if (Debug.isDebug()) {
+//                    LOGGER.log(Level.INFO, String.format(
+//                            "Loading citeproc-java CSL took %d ms",
+//                            (System.nanoTime() - timer) / 1_000_000
+//                    ));
+//                }
+//            } catch (IOException e) {
+//                throw new CouldNotLoadBibliographyException(String.format(
+//                        "Citation style could not be loaded: '%s'",
+//                        e.getMessage()
+//                ), e);
+//            }
+//        }
+//
+//        return csl;
+//    }
 
     /**
      * Check whether we are allowed to load citations and bibliography from cache.
@@ -375,80 +369,80 @@ public class CSLCitationManager implements CitationManager {
         }
     }
 
-    /**
-     * Load a BibTeX bibliography file.
-     *
-     * @param bibliography to load
-     * @return the data provider for the citation style
-     * @throws CouldNotLoadBibliographyException in case the file could not be loaded
-     */
-    private ItemDataProvider loadBibTeXBibliography(File bibliography) throws CouldNotLoadBibliographyException {
-        BibTeXDatabase database;
-        try {
-            database = new BibTeXConverter().loadDatabase(new FileInputStream(bibliography));
-        } catch (ParseException | FileNotFoundException e) {
-            throw new CouldNotLoadBibliographyException(String.format(
-                    "BibTeX bibliography file at '%s' could not be loaded: '%s'",
-                    bibliography.getAbsolutePath(),
-                    e.getMessage()
-            ), e);
-        }
-
-        BibTeXItemDataProvider newProvider = new BibTeXItemDataProvider();
-        newProvider.addDatabase(database);
-
-        return newProvider;
-    }
-
-    /**
-     * Load a EndNote bibliography file.
-     *
-     * @param bibliography to load
-     * @return the data provider for the citation style
-     * @throws CouldNotLoadBibliographyException in case the file could not be loaded
-     */
-    private ItemDataProvider loadEndNoteBibliography(File bibliography) throws CouldNotLoadBibliographyException {
-        EndNoteLibrary library;
-        try {
-            library = new EndNoteConverter().loadLibrary(new FileInputStream(bibliography));
-        } catch (IOException | ParseException e) {
-            throw new CouldNotLoadBibliographyException(String.format(
-                    "EndNote library file at '%s' could not be loaded: '%s'",
-                    bibliography.getAbsolutePath(),
-                    e.getMessage()
-            ), e);
-        }
-
-        EndNoteItemDataProvider newProvider = new EndNoteItemDataProvider();
-        newProvider.addLibrary(library);
-
-        return newProvider;
-    }
-
-    /**
-     * Load a RIS bibliography file.
-     *
-     * @param bibliography to load
-     * @return the data provider for the citation style
-     * @throws CouldNotLoadBibliographyException in case the file could not be loaded
-     */
-    private ItemDataProvider loadRISBibliography(File bibliography) throws CouldNotLoadBibliographyException {
-        RISLibrary library;
-        try {
-            library = new RISConverter().loadLibrary(new FileInputStream(bibliography));
-        } catch (IOException | ParseException e) {
-            throw new CouldNotLoadBibliographyException(String.format(
-                    "RIS library file at '%s' could not be loaded: '%s'",
-                    bibliography.getAbsolutePath(),
-                    e.getMessage()
-            ), e);
-        }
-
-        RISItemDataProvider newProvider = new RISItemDataProvider();
-        newProvider.addLibrary(library);
-
-        return newProvider;
-    }
+//    /**
+//     * Load a BibTeX bibliography file.
+//     *
+//     * @param bibliography to load
+//     * @return the data provider for the citation style
+//     * @throws CouldNotLoadBibliographyException in case the file could not be loaded
+//     */
+//    private ItemDataProvider loadBibTeXBibliography(File bibliography) throws CouldNotLoadBibliographyException {
+//        BibTeXDatabase database;
+//        try {
+//            database = new BibTeXConverter().loadDatabase(new FileInputStream(bibliography));
+//        } catch (ParseException | FileNotFoundException e) {
+//            throw new CouldNotLoadBibliographyException(String.format(
+//                    "BibTeX bibliography file at '%s' could not be loaded: '%s'",
+//                    bibliography.getAbsolutePath(),
+//                    e.getMessage()
+//            ), e);
+//        }
+//
+//        BibTeXItemDataProvider newProvider = new BibTeXItemDataProvider();
+//        newProvider.addDatabase(database);
+//
+//        return newProvider;
+//    }
+//
+//    /**
+//     * Load a EndNote bibliography file.
+//     *
+//     * @param bibliography to load
+//     * @return the data provider for the citation style
+//     * @throws CouldNotLoadBibliographyException in case the file could not be loaded
+//     */
+//    private ItemDataProvider loadEndNoteBibliography(File bibliography) throws CouldNotLoadBibliographyException {
+//        EndNoteLibrary library;
+//        try {
+//            library = new EndNoteConverter().loadLibrary(new FileInputStream(bibliography));
+//        } catch (IOException | ParseException e) {
+//            throw new CouldNotLoadBibliographyException(String.format(
+//                    "EndNote library file at '%s' could not be loaded: '%s'",
+//                    bibliography.getAbsolutePath(),
+//                    e.getMessage()
+//            ), e);
+//        }
+//
+//        EndNoteItemDataProvider newProvider = new EndNoteItemDataProvider();
+//        newProvider.addLibrary(library);
+//
+//        return newProvider;
+//    }
+//
+//    /**
+//     * Load a RIS bibliography file.
+//     *
+//     * @param bibliography to load
+//     * @return the data provider for the citation style
+//     * @throws CouldNotLoadBibliographyException in case the file could not be loaded
+//     */
+//    private ItemDataProvider loadRISBibliography(File bibliography) throws CouldNotLoadBibliographyException {
+//        RISLibrary library;
+//        try {
+//            library = new RISConverter().loadLibrary(new FileInputStream(bibliography));
+//        } catch (IOException | ParseException e) {
+//            throw new CouldNotLoadBibliographyException(String.format(
+//                    "RIS library file at '%s' could not be loaded: '%s'",
+//                    bibliography.getAbsolutePath(),
+//                    e.getMessage()
+//            ), e);
+//        }
+//
+//        RISItemDataProvider newProvider = new RISItemDataProvider();
+//        newProvider.addLibrary(library);
+//
+//        return newProvider;
+//    }
 
     @Override
     public String register(List<Citation> citations) throws MissingSourceException, CouldNotLoadBibliographyException {
@@ -465,37 +459,39 @@ public class CSLCitationManager implements CitationManager {
             return cachedCitation.orElseThrow();
         }
 
-        // Map citations to the CSLCitationItems
-        CSLCitationItem[] items = citations.stream().map(c -> new CSLCitationItemBuilder(c.getSourceID())
-                .label(c.getLabel().map(String::toLowerCase).map(CSLLabel::fromString).orElse(null))
-                .locator(c.getLocator().orElse(null))
-                .prefix(c.getPrefix().orElse(null))
-                .suffix(c.getSuffix().orElse(null))
-                .nearNote(c.isNearNote().orElse(null))
-                .authorOnly(c.isAuthorOnly())
-                .suppressAuthor(c.isSuppressAuthor())
-                .build()
-        ).toArray(CSLCitationItem[]::new);
+//        // Map citations to the CSLCitationItems
+//        CSLCitationItem[] items = citations.stream().map(c -> new CSLCitationItemBuilder(c.getSourceID())
+//                .label(c.getLabel().map(String::toLowerCase).map(CSLLabel::fromString).orElse(null))
+//                .locator(c.getLocator().orElse(null))
+//                .prefix(c.getPrefix().orElse(null))
+//                .suffix(c.getSuffix().orElse(null))
+//                .nearNote(c.isNearNote().orElse(null))
+//                .authorOnly(c.isAuthorOnly())
+//                .suppressAuthor(c.isSuppressAuthor())
+//                .build()
+//        ).toArray(CSLCitationItem[]::new);
+//
+//        // Generate the citation
+//        List<de.undercouch.citeproc.output.Citation> output;
+//        try {
+//            output = getCsl().makeCitation(new CSLCitation(
+//                    items,
+//                    UUID.randomUUID().toString(),
+//                    new CSLProperties()
+//            ));
+//        } catch (IllegalArgumentException e) {
+//            throw new MissingSourceException(String.format(
+//                    "Could not find all needed source IDs '%s' in the provided bibliography",
+//                    citations.stream().map(Citation::getSourceID).collect(Collectors.joining(", "))
+//            ), e);
+//        }
 
-        // Generate the citation
-        List<de.undercouch.citeproc.output.Citation> output;
-        try {
-            output = getCsl().makeCitation(new CSLCitation(
-                    items,
-                    UUID.randomUUID().toString(),
-                    new CSLProperties()
-            ));
-        } catch (IllegalArgumentException e) {
-            throw new MissingSourceException(String.format(
-                    "Could not find all needed source IDs '%s' in the provided bibliography",
-                    citations.stream().map(Citation::getSourceID).collect(Collectors.joining(", "))
-            ), e);
-        }
+//        // Generate citation string
+//        String result = output.stream()
+//                .map(de.undercouch.citeproc.output.Citation::getText)
+//                .collect(Collectors.joining());
 
-        // Generate citation string
-        String result = output.stream()
-                .map(de.undercouch.citeproc.output.Citation::getText)
-                .collect(Collectors.joining());
+        String result = ""; // TODO Remove
 
         // Cache resulting citation string
         writeCitationToCache(result, citationHash);
@@ -638,30 +634,32 @@ public class CSLCitationManager implements CitationManager {
 
         // Make sure that citations for source IDs that have been restored are still registered in the citation style
         if (!citedSourceIDs.isEmpty()) {
-            getCsl().registerCitationItems(citedSourceIDs.toArray(String[]::new));
+//            getCsl().registerCitationItems(citedSourceIDs.toArray(String[]::new));
         }
 
         // Create bibliography
-        getCsl().setOutputFormat("html");
-        Bibliography bib = getCsl().makeBibliography();
+//        getCsl().setOutputFormat("html");
+//        Bibliography bib = getCsl().makeBibliography();
 
         // TODO for bib.getSecondFieldAlign() (for example when using the ieee style) we need tables!
 
         // Convert entries from HTML to the Thaw document text format.
-        List<ReferenceListEntry> entries = new ArrayList<>();
-        String[] bibEntries = bib.getEntries();
-        String[] bibEntryIds = bib.getEntryIds();
-        for (int i = 0; i < bibEntries.length; i++) {
-            String sourceID = bibEntryIds[i];
-            String bibEntryHTML = bibEntries[i];
+//        List<ReferenceListEntry> entries = new ArrayList<>();
+//        String[] bibEntries = bib.getEntries();
+//        String[] bibEntryIds = bib.getEntryIds();
+//        for (int i = 0; i < bibEntries.length; i++) {
+//            String sourceID = bibEntryIds[i];
+//            String bibEntryHTML = bibEntries[i];
+//
+//            entries.add(new ReferenceListEntry(sourceID, convertHTMLtoTDT(bibEntryHTML)));
+//        }
+//
+//        // Create reference list and apply additional settings.
+//        ReferenceList referenceList = new ReferenceList(entries);
+//        referenceList.setEntrySpacing(bib.getEntrySpacing());
+//        referenceList.setHangingIndent(bib.getHangingIndent());
 
-            entries.add(new ReferenceListEntry(sourceID, convertHTMLtoTDT(bibEntryHTML)));
-        }
-
-        // Create reference list and apply additional settings.
-        ReferenceList referenceList = new ReferenceList(entries);
-        referenceList.setEntrySpacing(bib.getEntrySpacing());
-        referenceList.setHangingIndent(bib.getHangingIndent());
+        ReferenceList referenceList = new ReferenceList(new ArrayList<>()); // TODO Remove
 
         // Update reference list/bibliography cache
         updateBibliographyCacheFile(referenceList);

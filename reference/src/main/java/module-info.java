@@ -1,13 +1,12 @@
 module de.be.thaw.reference {
     requires org.jetbrains.annotations;
-    requires com.fasterxml.jackson.databind;
-    requires de.undercouch.citeproc;
-    requires org.jbibtex;
     requires de.be.thaw.shared;
     requires de.be.thaw.info;
     requires de.be.thaw.util;
     requires java.logging;
     requires org.jsoup;
+    requires com.fasterxml.jackson.databind;
+    requires com.fasterxml.jackson.dataformat.xml;
 
     exports de.be.thaw.reference;
     exports de.be.thaw.reference.impl;
