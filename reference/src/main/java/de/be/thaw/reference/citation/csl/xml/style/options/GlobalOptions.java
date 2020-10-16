@@ -1,4 +1,4 @@
-package de.be.thaw.reference.citation.csl.xml.style;
+package de.be.thaw.reference.citation.csl.xml.style.options;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import org.jetbrains.annotations.Nullable;
@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Global options allowed in a CSL specification.
  */
-public abstract class GlobalOptions {
+public abstract class GlobalOptions extends InheritableNameOptions {
 
     /**
      * Specifies whether compound given names (e.g. "Jean-Luc") should be initialized
@@ -26,6 +26,12 @@ public abstract class GlobalOptions {
      */
     @JacksonXmlProperty(isAttribute = true, localName = "page-range-delimiter")
     private String pageRangeDelimiter = "-";
+
+    /**
+     * Demotion type for non-dropping particles.
+     */
+    @JacksonXmlProperty(isAttribute = true, localName = "demote-non-dropping-particle")
+    private NonDroppingParticleDemotion demoteNonDroppingParticle = NonDroppingParticleDemotion.DISPLAY_AND_SORT;
 
     public boolean isInitializeWithHyphen() {
         return initializeWithHyphen;
@@ -50,6 +56,14 @@ public abstract class GlobalOptions {
 
     public void setPageRangeDelimiter(String pageRangeDelimiter) {
         this.pageRangeDelimiter = pageRangeDelimiter;
+    }
+
+    public NonDroppingParticleDemotion getDemoteNonDroppingParticle() {
+        return demoteNonDroppingParticle;
+    }
+
+    public void setDemoteNonDroppingParticle(NonDroppingParticleDemotion demoteNonDroppingParticle) {
+        this.demoteNonDroppingParticle = demoteNonDroppingParticle;
     }
 
 }

@@ -1,4 +1,4 @@
-package de.be.thaw.reference.citation.csl.xml.style;
+package de.be.thaw.reference.citation.csl.xml.style.options;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

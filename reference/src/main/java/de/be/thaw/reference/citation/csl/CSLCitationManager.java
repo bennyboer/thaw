@@ -27,14 +27,15 @@ import org.jsoup.nodes.TextNode;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -42,11 +43,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
+import java.util.zip.ZipFile;
 
 /**
  * Citation manager using CLS by leveraging the citeproc-java library.
@@ -158,13 +158,22 @@ public class CSLCitationManager implements CitationManager {
         this.bibliographyFile = bibliography;
 
         // TODO Just for testing - Remove later
-        CSLStyleParser styleParser = new XMLCSLStyleParser();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(String.format("/%s.csl", citationStyleName)), StandardCharsets.UTF_8))) {
-            CSLStyle style = styleParser.parse(br);
+        String[] availableStyles;
+        try {
+            availableStyles = getAvailableStyles();
+        } catch (IOException | URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
 
-            System.out.println("OK!");
-        } catch (CSLStyleParseException | IOException e) {
-            e.printStackTrace();
+        CSLStyleParser styleParser = new XMLCSLStyleParser();
+        for (String styleName : availableStyles) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(String.format("/%s.csl", styleName)), StandardCharsets.UTF_8))) {
+                CSLStyle style = styleParser.parse(br);
+
+                System.out.println(styleName + " > OK!");
+            } catch (CSLStyleParseException | IOException e) {
+                e.printStackTrace();
+            }
         }
 
 //        // Check if the citation style specified is supported
@@ -206,6 +215,36 @@ public class CSLCitationManager implements CitationManager {
         } catch (IOException e) {
             throw new CouldNotLoadBibliographyException("Could not load cached citations and bibliographies", e);
         }
+    }
+
+    /**
+     * Get a set of available styles.
+     *
+     * @return available styles
+     */
+    private String[] getAvailableStyles() throws IOException, URISyntaxException {
+        Set<String> result = new HashSet<>();
+
+        // Load a style that is known to exist
+        URL known = CSLCitationManager.class.getResource("/ieee.csl");
+        if (known != null) {
+            // Fetch JAR file where the styles are included in
+            if (known.getPath().endsWith(String.format(".jar!/%s", "ieee.csl"))) {
+                String resourceJarPath = known.getPath().substring(0, known.getPath().length() - "ieee.csl".length() - 2);
+
+                try (ZipFile zipFile = new ZipFile(new File(new URI(resourceJarPath)))) {
+                    var entries = zipFile.entries();
+                    while (entries.hasMoreElements()) {
+                        var entry = entries.nextElement();
+                        if (entry.getName().endsWith(".csl")) {
+                            result.add(entry.getName().substring(0, entry.getName().length() - ".csl".length()));
+                        }
+                    }
+                }
+            }
+        }
+
+        return result.toArray(String[]::new);
     }
 
 //    /**

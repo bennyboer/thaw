@@ -2,6 +2,9 @@ package de.be.thaw.reference.citation.csl.xml.style;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import de.be.thaw.reference.citation.csl.xml.style.info.CSLInfo;
+import de.be.thaw.reference.citation.csl.xml.style.options.GlobalOptions;
+import de.be.thaw.reference.citation.csl.xml.style.options.StyleClass;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -31,6 +34,11 @@ public class CSLStyle extends GlobalOptions {
     @Nullable
     private String defaultLocale;
 
+    /**
+     * Info of the style.
+     */
+    private CSLInfo info;
+
     public StyleClass getStyleClass() {
         return styleClass;
     }
@@ -54,6 +62,14 @@ public class CSLStyle extends GlobalOptions {
 
     public void setDefaultLocale(@Nullable String defaultLocale) {
         this.defaultLocale = defaultLocale;
+    }
+
+    public CSLInfo getInfo() {
+        return info;
+    }
+
+    public void setInfo(CSLInfo info) {
+        this.info = info;
     }
 
 }

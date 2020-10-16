@@ -1,5 +1,6 @@
 package de.be.thaw.reference.citation.csl.xml.style;
 
+import de.be.thaw.reference.citation.csl.xml.style.options.PageRangeFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
