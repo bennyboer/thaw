@@ -138,7 +138,15 @@ public class FontManager {
         if (file.isCollection()) {
             List<FontVariantLocator> locators = new ArrayList<>();
             for (Font font : ((FontCollectionFile) file).getFonts()) {
-                locators.add(registerFontInternal(file, font));
+                try {
+                    locators.add(registerFontInternal(file, font));
+                } catch (FontRegisterException e) {
+                    if (e.getCause() instanceof CouldNotDetermineFontVariantException) {
+                        // Should not stop the application, will happen because we do not support all possible font variants like 'Medium', 'Black', etc.
+                    } else {
+                        throw e; // Rethrow
+                    }
+                }
             }
 
             return locators;
