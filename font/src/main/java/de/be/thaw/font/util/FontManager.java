@@ -99,11 +99,7 @@ public class FontManager {
             try {
                 locators.addAll(registerFont(file));
             } catch (FontRegisterException e) {
-                if (e.getCause() instanceof CouldNotDetermineFontVariantException) {
-                    // Should not stop the application, will happen because we do not support all possible font variants like 'Medium', 'Black', etc.
-                } else {
-                    throw e; // Rethrow
-                }
+                // Should not stop the application, will happen because we do not support all possible font variants like 'Medium', 'Black', etc.
             }
         }
 
