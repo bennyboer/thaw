@@ -285,7 +285,7 @@ public class DefaultStyleModel implements StyleModel {
             if (rest == 1) {
                 listStyleType = ListStyleType.BULLET;
             } else if (rest == 2) {
-                listStyleType = ListStyleType.SQUARE;
+                listStyleType = ListStyleType.ASTERISK;
             } else if (rest == 3) {
                 listStyleType = ListStyleType.CIRCLE;
             }

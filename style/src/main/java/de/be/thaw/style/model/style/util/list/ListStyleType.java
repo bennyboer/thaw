@@ -10,7 +10,7 @@ public enum ListStyleType {
 
     BULLET(n -> "\u2022"),
     MINUS(n -> "-"),
-    SQUARE(n -> "\u25AA"),
+    ASTERISK(n -> "\u2217"),
     CIRCLE(n -> "\u25CB"),
 
     DECIMAL(String::valueOf),
