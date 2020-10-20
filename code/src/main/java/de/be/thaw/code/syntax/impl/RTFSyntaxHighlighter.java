@@ -51,7 +51,7 @@ public class RTFSyntaxHighlighter implements SyntaxHighlighter {
     /**
      * Name of the python tool.
      */
-    private static final String PYTHON_CMD_NAME = "python";
+    private static final String PYTHON_CMD_NAME = "python3";
 
     /**
      * Name of the pygmentize tool.
