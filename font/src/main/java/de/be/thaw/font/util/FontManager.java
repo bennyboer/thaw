@@ -95,8 +95,16 @@ public class FontManager {
     public List<FontVariantLocator> registerFontFolder(File fontFolder) throws FontRegisterException {
         List<FontVariantLocator> locators = new ArrayList<>();
 
-        for (File files : fontFolder.listFiles()) {
-            locators.addAll(registerFont(files));
+        for (File file : fontFolder.listFiles()) {
+            try {
+                locators.addAll(registerFont(file));
+            } catch (FontRegisterException e) {
+                if (e.getCause() instanceof CouldNotDetermineFontVariantException) {
+                    // Should not stop the application, will happen because we do not support all possible font variants like 'Medium', 'Black', etc.
+                } else {
+                    throw e; // Rethrow
+                }
+            }
         }
 
         return locators;
@@ -138,15 +146,7 @@ public class FontManager {
         if (file.isCollection()) {
             List<FontVariantLocator> locators = new ArrayList<>();
             for (Font font : ((FontCollectionFile) file).getFonts()) {
-                try {
-                    locators.add(registerFontInternal(file, font));
-                } catch (FontRegisterException e) {
-                    if (e.getCause() instanceof CouldNotDetermineFontVariantException) {
-                        // Should not stop the application, will happen because we do not support all possible font variants like 'Medium', 'Black', etc.
-                    } else {
-                        throw e; // Rethrow
-                    }
-                }
+                locators.add(registerFontInternal(file, font));
             }
 
             return locators;

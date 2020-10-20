@@ -279,10 +279,11 @@ public class ExportContext {
      * @param value   to get locator for
      * @param variant the preferred variant
      * @param node    of the style value
+     * @param allowRecursion whether recursive calls of the same method are allowed
      * @return locator
      * @throws ExportException in case the variant locator could not be resolved
      */
-    private FontVariantLocator getFontVariantLocatorForStyleValue(StyleValue value, FontVariant variant, DocumentNode node) throws ExportException {
+    private FontVariantLocator getFontVariantLocatorForStyleValue(StyleValue value, FontVariant variant, DocumentNode node, boolean allowRecursion) throws ExportException {
         if (!(value instanceof FontFamilyStyleValue)) {
             throw new ExportException("Expected style value to fetch font from to be of type FontStyleValue");
         }
@@ -331,9 +332,9 @@ public class ExportContext {
             }
         }
 
-        if (locator == null && variant == FontVariant.MONOSPACE) {
+        if (locator == null && variant == FontVariant.MONOSPACE && allowRecursion) {
             StyleValue monospacedFontFamilyStyleValue = node.getStyles().resolve(StyleType.INLINE_CODE_FONT_FAMILY).orElseThrow();
-            return getFontVariantLocatorForStyleValue(monospacedFontFamilyStyleValue, FontVariant.MONOSPACE, node);
+            return getFontVariantLocatorForStyleValue(monospacedFontFamilyStyleValue, FontVariant.MONOSPACE, node, false);
         }
 
         if (locator != null) {
@@ -363,7 +364,8 @@ public class ExportContext {
         FontVariantLocator locator = getFontVariantLocatorForStyleValue(
                 node.getStyles().resolve(StyleType.FONT_FAMILY).orElseThrow(),
                 getFontVariantFromNode(node),
-                node
+                node,
+                true
         );
 
         ThawPdfFont font = (ThawPdfFont) fontCache.get(locator);
