@@ -86,7 +86,16 @@ You're able to obtain a copy of the license from https://github.com/michel-kraem
 
 ## Apache Commons IO
 
-This [library](https://github.com/apache/commons-io) is Licensed under the
-Apache License, Version 2.0 (the "License").you may not use this file except in
-compliance with the License. You may obtain a copy of the License at
+This [library](https://github.com/apache/commons-io) is licensed under the
+Apache License, Version 2.0 (the "License"). You may not use this file except in
+compliance with the license. You may obtain a copy of it at
 [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+Additionally the attribution notices of Apache Commons IO are included:
+```
+Apache Commons IO
+Copyright 2002-2020 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (https://www.apache.org/).
+```
