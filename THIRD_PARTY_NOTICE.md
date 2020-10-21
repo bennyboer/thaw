@@ -83,3 +83,19 @@ It is distributed under the Apache-2.0 License which can be obtained from https:
 
 citeproc-java is used (https://github.com/michel-kraemer/citeproc-java) which is distributed unter the Apache-2.0 License.
 You're able to obtain a copy of the license from https://github.com/michel-kraemer/citeproc-java/blob/master/LICENSE.txt or http://www.apache.org/licenses/LICENSE-2.0.
+
+## Apache Commons IO
+
+This [library](https://github.com/apache/commons-io) is licensed under the
+Apache License, Version 2.0 (the "License"). You may not use this file except in
+compliance with the license. You may obtain a copy of it at
+[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+Additionally the attribution notices of Apache Commons IO are included:
+```
+Apache Commons IO
+Copyright 2002-2020 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (https://www.apache.org/).
+```

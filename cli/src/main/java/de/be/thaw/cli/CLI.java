@@ -19,6 +19,7 @@ import de.be.thaw.style.parser.exception.StyleModelParseException;
 import de.be.thaw.text.model.TextModel;
 import de.be.thaw.text.parser.TextParser;
 import de.be.thaw.text.parser.exception.ParseException;
+import de.be.thaw.util.cache.CacheUtil;
 import picocli.CommandLine;
 
 import java.io.BufferedReader;
@@ -29,6 +30,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.concurrent.Callable;
+import java.io.IOException;
 
 /**
  * CLI entry point for Thaw.
@@ -59,6 +61,21 @@ public class CLI implements Callable<Integer> {
     @CommandLine.Option(names = {"-c", "--charset"}, description = "Name of the charset the files to process are encoded in. " +
             "If not specified the systems default charset will be used.")
     private String charsetName;
+
+    /**
+     * Subcommand to clean the cache folder
+     */
+    @CommandLine.Command(name="clean", description="Empty the root cache folder.")
+    int clean(){
+        try{
+            CacheUtil.cleanCacheRootDir();
+        }
+        catch(IOException e){
+            System.err.println("An exception has occurred. Root cache clean is not successful. Try again later.");
+            return ErrorResult.ROOT_CACHE_CLEANING_ERROR.getCode();
+        }
+        return ErrorResult.OK.getCode();
+    }
 
     /**
      * Entry point of the CLI application.

@@ -1,6 +1,7 @@
 package de.be.thaw.util.cache;
 
 import de.be.thaw.util.cache.exception.CouldNotGetProjectCacheDirectoryException;
+import org.apache.commons.io.FileUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -36,6 +37,22 @@ public class CacheUtil {
         }
 
         return dir;
+    }
+
+    /**
+     * Clean the root caching directory.
+     * Tries 3 times in case of IOException.
+     *
+     * @throws IOException  in case directory access failed or other errors related to IO
+     */
+    public static void cleanCacheRootDir() throws IOException {
+        try{
+            FileUtils.cleanDirectory(getCacheRootDir());
+        }
+        catch(IOException e){
+            throw e;
+        }
+        System.out.println("Root cache cleaned successfully");
     }
 
     /**
