@@ -25,12 +25,12 @@ import picocli.CommandLine;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.concurrent.Callable;
-import java.io.IOException;
 
 /**
  * CLI entry point for Thaw.
@@ -65,15 +65,16 @@ public class CLI implements Callable<Integer> {
     /**
      * Subcommand to clean the cache folder
      */
-    @CommandLine.Command(name="clean", description="Empty the root cache folder.")
-    int clean(){
-        try{
+    @CommandLine.Command(name = "clean", description = "Empty the root cache folder.")
+    int clean() {
+        try {
             CacheUtil.cleanCacheRootDir();
-        }
-        catch(IOException e){
-            System.err.println("An exception has occurred. Root cache clean is not successful. Try again later.");
+            System.out.println("Root cache cleaned successfully!");
+        } catch (IOException e) {
+            System.err.println(String.format("Could not clear the Thaw cache folder: '%s'", e.getMessage()));
             return ErrorResult.ROOT_CACHE_CLEANING_ERROR.getCode();
         }
+
         return ErrorResult.OK.getCode();
     }
 

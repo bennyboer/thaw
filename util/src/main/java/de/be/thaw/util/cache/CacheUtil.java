@@ -43,16 +43,10 @@ public class CacheUtil {
      * Clean the root caching directory.
      * Tries 3 times in case of IOException.
      *
-     * @throws IOException  in case directory access failed or other errors related to IO
+     * @throws IOException in case directory access failed or other errors related to IO
      */
     public static void cleanCacheRootDir() throws IOException {
-        try{
-            FileUtils.cleanDirectory(getCacheRootDir());
-        }
-        catch(IOException e){
-            throw e;
-        }
-        System.out.println("Root cache cleaned successfully");
+        FileUtils.cleanDirectory(getCacheRootDir());
     }
 
     /**

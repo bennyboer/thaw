@@ -1,5 +1,6 @@
 module de.be.thaw.util {
     requires org.apache.commons.io;
+
     exports de.be.thaw.util;
     exports de.be.thaw.util.os.exception;
     exports de.be.thaw.util.os;
@@ -9,5 +10,4 @@ module de.be.thaw.util {
     exports de.be.thaw.util.parser.location;
     exports de.be.thaw.util.unit;
     exports de.be.thaw.util.color;
-
 }
