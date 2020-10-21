@@ -15,7 +15,8 @@ public enum ErrorResult {
     MORE_THAN_ONE_STYLE_FILE(7),
     STYLE_FILE_PARSING_ERROR(8),
     MORE_THAN_ONE_SOURCE_FILE(9),
-    SOURCE_FILE_PARSING_ERROR(10);
+    SOURCE_FILE_PARSING_ERROR(10),
+    ROOT_CACHE_CLEANING_ERROR(11);
 
     /**
      * Code of the error.
