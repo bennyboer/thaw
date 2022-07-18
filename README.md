@@ -3,9 +3,8 @@
 *Thaw* is a tool to create documents with export to **PDF** in a *text-concentrated* working style.
 It offers a *feature-rich* and *easy to learn* **markup language** that you can write your documents in a human-readable way.
 
-> We are currently very near to a first release `v0.1`, yet this is still an experimental project.
-> I am currently testing Thaw by writing scientific documents and fixing bugs that come up.
-
+> Thaw is a prototype of a document layout engine and currently no more maintained.
+> The successor **Letter** can be found at https://github.com/bennyboer/letter and is under active development.
 
 ## Motivation
 
